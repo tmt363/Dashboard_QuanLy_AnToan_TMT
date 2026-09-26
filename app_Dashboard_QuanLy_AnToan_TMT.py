@@ -20,7 +20,7 @@ st.markdown("""
         padding: 0.5rem 0.8rem !important;
     }
 
-    /* 2. Mở rộng Sidebar đủ rộng để không bị che mất chữ nút Thoát/Cache */
+    /* 2. Mở rộng Sidebar & căn chỉnh lề đều đẹp */
     [data-testid="stSidebar"] {
         min-width: 250px !important;
         max-width: 270px !important;
@@ -30,6 +30,13 @@ st.markdown("""
 
     [data-testid="stSidebar"] > div:first-child {
         padding: 0.8rem 0.6rem !important;
+    }
+
+    /* Đảm bảo tất cả nút bấm trong Sidebar căn lề trái thẳng hàng 1 dãy */
+    [data-testid="stSidebar"] .stButton > button {
+        text-align: left !important;
+        justify-content: flex-start !important;
+        padding-left: 12px !important;
     }
 
     /* 3. Header Card tiêu đề */
@@ -207,7 +214,6 @@ def reindex_df(df):
         df["STT"] = df.index + 1
     return df
 
-# Hàm xuất DataFrame ra file Excel chuẩn ByteStream
 def to_excel_bytes(df):
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
@@ -299,9 +305,10 @@ with col_btn2:
 st.sidebar.markdown("<hr style='margin: 8px 0;'>", unsafe_allow_html=True)
 st.sidebar.markdown("**📁 MỤC LÀM VIỆC**")
 
+# Đã bổ sung _CV cho mục số 2 và đồng bộ định dạng
 menu_options = [
     ("1 🌐 DS WEBsites_CV", "1 🌐 DS WEBsites_CV"),
-    ("2 📋 DM QL Files", "2 📋 DM QL Files"),
+    ("2 📋 DM QL Files_CV", "2 📋 DM QL Files_CV"),
     ("3 📊 DS BCdinhky_CV", "3 📊 DS BCdinhky_CV"),
     ("4 🟢 DS Gsheet_CV", "4 🟢 DS Gsheet_CV")
 ]
@@ -417,7 +424,7 @@ if main_menu == "1 🌐 DS WEBsites_CV":
 
     render_io_excel_tools(st.session_state.web_tools_df, "web", "DanhMuc_CongCu_WEB_TMT")
 
-elif main_menu == "2 📋 DM QL Files":
+elif main_menu == "2 📋 DM QL Files_CV":
     selected_cat = st.sidebar.selectbox("📂 Chọn mảng công việc:", CATEGORIES)
     if selected_cat:
         st.subheader(f"📂 Quản Lý Hồ Sơ: {selected_cat}")
