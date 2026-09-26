@@ -2,29 +2,26 @@ import streamlit as st
 import pandas as pd
 import os
 import openpyxl
+from streamlit_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode, JsCode
 
 # ---------------------------------------------------------
-# 1. CẤU HÌNH TRANG & CUSTOM CSS (TỐI ƯU GIAO DIỆN & TỐI ĐA HÓA KHÔNG GIAN)
+# 1. CẤU HÌNH TRANG & CUSTOM CSS (TỐI ƯU TOÀN MÀN HÌNH)
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="Hệ Thống Quản Lý An Toàn TMT - Version 1.0 20260925",
+    page_title="Hệ Thống Quản Lý An Toàn TMT",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS tinh chỉnh Sidebar gọn gàng & đổi nút Radio thành Nút Bấm Đẹp
 st.markdown("""
     <style>
-    /* 1. Ép vùng nội dung chính chiếm tối đa độ rộng màn hình (99%) */
+    /* Ép giao diện chính chiếm 99% độ rộng màn hình */
     .main .block-container {
         max-width: 99% !important;
-        padding-left: 0.5rem !important;
-        padding-right: 0.5rem !important;
-        padding-top: 0.5rem !important;
-        padding-bottom: 0.5rem !important;
+        padding: 0.5rem 0.8rem !important;
     }
 
-    /* 2. Thu gọn tối đa độ rộng của Sidebar */
+    /* Thu gọn Sidebar tối đa */
     [data-testid="stSidebar"] {
         min-width: 200px !important;
         max-width: 210px !important;
@@ -32,12 +29,11 @@ st.markdown("""
         border-right: 1px solid #e9ecef;
     }
 
-    /* Giảm lề bên trong Sidebar */
     [data-testid="stSidebar"] > div:first-child {
         padding: 0.8rem 0.5rem !important;
     }
 
-    /* 3. Header Card tiêu đề gọn nhẹ */
+    /* Header Card sang trọng */
     .header-card {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         color: white;
@@ -54,7 +50,6 @@ st.markdown("""
         font-size: 16px !important;
         font-weight: 700 !important;
         margin: 0 !important;
-        padding: 0 !important;
     }
     .version-badge {
         background-color: rgba(255,255,255,0.2);
@@ -64,18 +59,25 @@ st.markdown("""
         font-weight: 600;
     }
 
-    /* 4. Tùy chỉnh Nút bấm Sidebar */
-    .sidebar-menu-btn button {
-        width: 100% !important;
-        text-align: left !important;
-        justify-content: flex-start !important;
-        padding: 6px 10px !important;
-        font-size: 13px !important;
-        margin-bottom: 4px !important;
-        border-radius: 6px !important;
+    /* CSS cho Nút Bấm trong AG-Grid */
+    .ag-link-btn {
+        background-color: #0d6efd;
+        color: white !important;
+        padding: 3px 10px;
+        border-radius: 4px;
+        text-decoration: none !important;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+        text-align: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .ag-link-btn:hover {
+        background-color: #0b5ed7;
+        color: white !important;
     }
 
-    /* Hiệu ứng đường dẫn thư mục gọn gàng */
+    /* Path Box trong Sidebar */
     .path-box {
         background-color: #eef2f7;
         border: 1px dashed #cbd5e1;
@@ -91,10 +93,7 @@ st.markdown("""
 # ---------------------------------------------------------
 # 2. BẢO MẬT ĐĂNG NHẬP
 # ---------------------------------------------------------
-USER_CREDENTIALS = {
-    "ttm": "123456",
-    "admin": "123456"
-}
+USER_CREDENTIALS = {"tmt": "123456", "admin": "123456"}
 
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -108,7 +107,7 @@ if not st.session_state.logged_in:
         st.markdown("""
             <div style="background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;">
                 <h3 style="color: #1e3c72; margin-bottom: 5px;">🛡️ HỆ THỐNG QUẢN LÝ AN TOÀN</h3>
-                <span style="background: #e7f1ff; color: #0d6efd; padding: 3px 10px; border-radius: 12px; font-weight: 600; font-size: 11px;">Version 1.0 20260925</span>
+                <span style="background: #e7f1ff; color: #0d6efd; padding: 3px 10px; border-radius: 12px; font-weight: 600; font-size: 11px;">Version 1.0</span>
                 <hr style="margin: 12px 0;">
             </div>
         """, unsafe_allow_html=True)
@@ -126,7 +125,7 @@ if not st.session_state.logged_in:
                     st.success("Đăng nhập thành công!")
                     st.rerun()
                 else:
-                    st.error("❌ Tên đăng nhập hoặc mật khẩu không chính xác!")
+                    st.error("❌ Mật khẩu hoặc Tên đăng nhập không đúng!")
     st.stop()
 
 # ---------------------------------------------------------
@@ -161,7 +160,16 @@ DEFAULT_WEBSITES = [
     {'STT': 4, 'Mô tả WEB': 'Lịch tuần', 'Link truy cập': 'https://lichtuan.evnspc.vn', 'Ghi chú': 'Công ty Điện lực Tây Ninh'},
     {'STT': 5, 'Mô tả WEB': 'Hệ thống PMIS', 'Link truy cập': 'https://pmis.evn.com.vn', 'Ghi chú': 'Quản lý vận hành thiết bị & lưới điện'},
     {'STT': 6, 'Mô tả WEB': 'Tritm.la Dashboard 2026 DTTU ', 'Link truy cập': 'https://docs.google.com/spreadsheets/d/1gVAroFIytWwrBMCScYuXWbzlS1ZNXrPY4Pcgb__Dv-c/edit?gid=964445540#gid=964445540', 'Ghi chú': 'Google sheet CV'},
-    {'STT': 7, 'Mô tả WEB': 'Hệ thống Giám sát Thiên tai Việt Nam', 'Link truy cập': 'https://vndms.gov.vn/', 'Ghi chú': 'Cảnh báo và phòng chống thiên tai'}
+    {'STT': 7, 'Mô tả WEB': 'Hệ thống Giám sát Thiên tai Việt Nam', 'Link truy cập': 'https://vndms.gov.vn/', 'Ghi chú': 'Cảnh báo và phòng chống thiên tai'},
+    {'STT': 8, 'Mô tả WEB': 'Hệ thống HRMS', 'Link truy cập': 'https://hrms.evn.com.vn', 'Ghi chú': 'Quản lý lao động tiền lương'},
+    {'STT': 9, 'Mô tả WEB': 'Hệ thống E-Learning', 'Link truy cập': 'https://elearning.evn.com.vn', 'Ghi chú': 'Huấn luyện an toàn & thi trực tuyến'},
+    {'STT': 10, 'Mô tả WEB': 'Cổng Dịch vụ công Quốc gia', 'Link truy cập': 'https://dichvucong.gov.vn', 'Ghi chú': 'Thực hiện thủ tục hành chính PCCC/ĐTXD'},
+    {'STT': 11, 'Mô tả WEB': 'Cổng Thông tin Bộ Công Thương', 'Link truy cập': 'https://moit.gov.vn', 'Ghi chú': 'Theo dõi văn bản quy phạm kỹ thuật'},
+    {'STT': 12, 'Mô tả WEB': 'Cổng Báo cáo Phòng chống thiên tai', 'Link truy cập': 'https://pctt.evn.com.vn', 'Ghi chú': 'Cập nhật tình hình PCTT & TKCN'},
+    {'STT': 13, 'Mô tả WEB': 'Hệ thống Quản lý Đầu tư Xây dựng (IMIS)', 'Link truy cập': 'https://imis.evn.com.vn', 'Ghi chú': 'Theo dõi an toàn dự án ĐTXD'},
+    {'STT': 14, 'Mô tả WEB': 'Hệ thống Thông tin Báo cáo EVN', 'Link truy cập': 'https://baocao.evn.com.vn', 'Ghi chú': 'Tổng hợp chỉ tiêu an toàn - kỹ thuật'},
+    {'STT': 15, 'Mô tả WEB': 'Lưu trữ Hồ sơ / Biểu mẫu TMT', 'Link truy cập': 'https://drive.google.com', 'Ghi chú': 'Kho lưu trữ dữ liệu dùng chung TMT'},
+    {'STT': 16, 'Mô tả WEB': 'Thư viện Quy chuẩn - Quy định An toàn', 'Link truy cập': 'https://drive.google.com', 'Ghi chú': 'Tra cứu tài liệu an toàn PCCC & ĐT'}
 ]
 
 def reindex_df(df):
@@ -170,27 +178,9 @@ def reindex_df(df):
         df["STT"] = df.index + 1
     return df
 
-def auto_fit_columns(workbook):
-    for sheetname in workbook.sheetnames:
-        worksheet = workbook[sheetname]
-        for col in worksheet.columns:
-            max_len = 0
-            col_letter = openpyxl.utils.get_column_letter(col[0].column)
-            for cell in col:
-                if cell.value is not None:
-                    val_str = str(cell.value)
-                    if val_str.startswith('=HYPERLINK'):
-                        max_len = max(max_len, 20)
-                    else:
-                        max_len = max(max_len, len(val_str))
-            adjusted_width = max(max_len + 4, 15)
-            worksheet.column_dimensions[col_letter].width = min(adjusted_width, 60)
-
-# ---------------------------------------------------------
-# 4. KHO DỮ LIỆU SESSION STATE
-# ---------------------------------------------------------
+# Khởi tạo dữ liệu
 if "active_tab" not in st.session_state:
-    st.session_state.active_tab = "3 📊 DS BCdinhky_CV"
+    st.session_state.active_tab = "1 🌐 DS WEBsites_CV"
 
 if "web_tools_df" not in st.session_state:
     if os.path.exists(EXCEL_PATH_WEB):
@@ -246,7 +236,7 @@ if "gsheet_df" not in st.session_state:
             {"STT": 2, "Mô tả Google Sheet": "Theo Dõi Kiến Nghị Kiểm Tra", "Link Google Sheet": "https://docs.google.com/spreadsheets", "Ghi chú": "Cập nhật trực tuyến"}
         ])
 
-# HEADER CỦA HỆ THỐNG
+# HEADER HỆ THỐNG
 st.markdown("""
     <div class="header-card">
         <h1>🛡️ Hệ Thống Quản Lý An Toàn & Công Tác Chuyên Môn TMT</h1>
@@ -255,7 +245,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 5. SIDEBAR MỚI (TỐI ƯU CÁC NÚT CHỌN & TIẾT KIỆM DIỆN TÍCH)
+# 4. SIDEBAR ĐAN TRANG MỚI GỌN GÀNG
 # ---------------------------------------------------------
 st.sidebar.markdown(f"👤 **User:** `{st.session_state.username}`")
 
@@ -274,7 +264,6 @@ with col_btn2:
 st.sidebar.markdown("<hr style='margin: 8px 0;'>", unsafe_allow_html=True)
 st.sidebar.markdown("**📁 MỤC LÀM VIỆC**")
 
-# Danh sách menu các mục
 menu_options = [
     ("1 🌐 DS WEBsites_CV", "1 🌐 DS WEBsites_CV"),
     ("2 📋 DM QL Files", "2 📋 DM QL Files"),
@@ -282,257 +271,129 @@ menu_options = [
     ("4 🟢 DS Gsheet_CV", "4 🟢 DS Gsheet_CV")
 ]
 
-# Tạo danh sách Nút Bấm thay thế Radio Button
 for label, key_val in menu_options:
     is_active = (st.session_state.active_tab == key_val)
     btn_type = "primary" if is_active else "secondary"
-    
-    st.sidebar.markdown('<div class="sidebar-menu-btn">', unsafe_allow_html=True)
     if st.sidebar.button(label, key=f"menu_{key_val}", type=btn_type, use_container_width=True):
         st.session_state.active_tab = key_val
         st.rerun()
-    st.sidebar.markdown('</div>', unsafe_allow_html=True)
 
 main_menu = st.session_state.active_tab
 
 st.sidebar.markdown("<hr style='margin: 10px 0;'>", unsafe_allow_html=True)
-st.sidebar.markdown("**📌 Lưu trữ Excel:**")
+st.sidebar.markdown("**📌 Thư mục Excel:**")
 st.sidebar.markdown(f'<div class="path-box">{EXCEL_DIR}</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 6. GIAO DIỆN HIỂN THỊ CHÍNH (ĐÃ CĂN CHỈNH ĐỘ RỘNG BẢNG)
+# 5. HÀM HIỂN THỊ BẢNG AG-GRID TỐI ƯU KÍCH THƯỚC CỘT CHUẨN
 # ---------------------------------------------------------
-# MỤC 1: DS WEBsites_CV
+def render_custom_aggrid(df, text_col, link_col, btn_text="🔗 Truy cập Web"):
+    gb = GridOptionsBuilder.from_dataframe(df)
+    
+    # Cấu hình Cột STT: Thu gọn tuyệt đối (60px)
+    gb.configure_column("STT", headerName="STT", width=60, pinned="left", type=["numericColumn"], cellStyle={'textAlign': 'center'})
+    
+    # Cấu hình Cột Nội Dung/Mô Tả: Vừa vặn (260px)
+    gb.configure_column(text_col, headerName=text_col, width=260, editable=True)
+    
+    # Cấu hình Cột Link: Thu gọn vừa nút bấm (140px)
+    link_renderer = JsCode(f"""
+        function(params) {{
+            if (!params.value) return '';
+            return `<a class="ag-link-btn" href="${{params.value}}" target="_blank">{btn_text}</a>`;
+        }}
+    """)
+    gb.configure_column(link_col, headerName=link_col, width=140, cellRenderer=link_renderer, editable=True)
+    
+    # Cấu hình Cột Ghi Chú: Mở rộng chiếm hết toàn bộ màn hình còn lại (Flex = 1)
+    gb.configure_column("Ghi chú", headerName="Ghi chú", flex=1, minWidth=300, editable=True)
+    
+    # Bật tính năng chỉnh sửa
+    gb.configure_default_column(resizable=True, filter=True)
+    grid_options = gb.build()
+    
+    grid_response = AgGrid(
+        df,
+        gridOptions=grid_options,
+        allow_unsafe_jscode=True,
+        update_mode=GridUpdateMode.MODEL_CHANGED,
+        data_return_mode=DataReturnMode.FILTERED_AND_SORTED,
+        theme="alpine",
+        height=450,
+        fit_columns_on_grid_load=False
+    )
+    return grid_response['data']
+
+# ---------------------------------------------------------
+# 6. HIỂN THỊ CÁC MỤC VỚI AG-GRID
+# ---------------------------------------------------------
 if main_menu == "1 🌐 DS WEBsites_CV":
     st.subheader("🌐 Bảng Danh Sách WEBsites_CV")
+    st.caption("💡 *Mẹo: Anh có thể nhấp đôi trực tiếp vào ô để sửa dữ liệu.*")
 
-    edited_web_df = st.data_editor(
-        st.session_state.web_tools_df,
-        num_rows="dynamic",
-        use_container_width=True,
-        column_order=["STT", "Mô tả WEB", "Link truy cập", "Ghi chú"],
-        column_config={
-            "STT": st.column_config.NumberColumn("STT", format="%d", width="small"),
-            "Mô tả WEB": st.column_config.TextColumn("Mô tả WEB", width="medium"),
-            "Link truy cập": st.column_config.LinkColumn("Link truy cập", display_text="🔗 Truy cập Web", width="small"),
-            "Ghi chú": st.column_config.TextColumn("Ghi chú", width="large")
-        },
-        key="editor_web"
+    updated_df = render_custom_aggrid(
+        st.session_state.web_tools_df, 
+        text_col="Mô tả WEB", 
+        link_col="Link truy cập",
+        btn_text="🔗 Truy cập Web"
     )
 
     col_save, col_reset = st.columns([2, 1])
     with col_save:
         if st.button("💾 Lưu Cập Nhật DS WEBsites_CV", type="primary", use_container_width=True):
-            st.session_state.web_tools_df = reindex_df(edited_web_df)
-            st.success("Đã lưu cập nhật danh sách WEBsites thành công!")
+            st.session_state.web_tools_df = reindex_df(pd.DataFrame(updated_df))
+            st.success("Đã lưu cập nhật thành công!")
             st.rerun()
     with col_reset:
         if st.button("🔄 Khôi Phục Mặc Định", type="secondary", use_container_width=True):
             st.session_state.web_tools_df = reindex_df(pd.DataFrame(DEFAULT_WEBSITES))
-            st.success("Đã khôi phục danh sách Web mặc định!")
+            st.success("Đã khôi phục danh sách mặc định!")
             st.rerun()
 
-    st.markdown("---")
-    st.subheader("📊 Xuất / Nhập Dữ Liệu Excel")
-    col_w1, col_w2 = st.columns(2)
-    with col_w1:
-        if st.button("📥 Xuất Toàn Bộ Excel WEBsites_CV", type="primary", use_container_width=True):
-            try:
-                with pd.ExcelWriter(EXCEL_PATH_WEB, engine='openpyxl') as writer:
-                    st.session_state.web_tools_df.to_excel(writer, sheet_name="WEBSITES", index=False)
-                    auto_fit_columns(writer.book)
-                st.success(f"Đã xuất thành công tại: `{EXCEL_PATH_WEB}`")
-            except Exception as e:
-                st.error(f"Lỗi xuất file: {e}")
-
-    with col_w2:
-        up_w = st.file_uploader("Nhập file Excel WEBsites để cập nhật:", type=["xlsx", "xls"], key="up_w")
-        if up_w:
-            try:
-                df_u = pd.read_excel(up_w)
-                st.session_state.web_tools_df = reindex_df(df_u)
-                st.success("Đã đồng bộ dữ liệu WEBsites thành công!")
-                st.rerun()
-            except Exception as e:
-                st.error(f"Lỗi nhập file: {e}")
-
-# MỤC 2: DM QL Files
 elif main_menu == "2 📋 DM QL Files":
     selected_cat = st.sidebar.selectbox("📂 Chọn mảng công việc:", CATEGORIES)
-
     if selected_cat:
         st.subheader(f"📂 Quản Lý Hồ Sơ: {selected_cat}")
-
         current_df = st.session_state.data_store[selected_cat]
 
-        edited_df = st.data_editor(
-            current_df,
-            num_rows="dynamic",
-            use_container_width=True,
-            column_order=["STT", "Thư mục / Hồ sơ", "Link xem", "Ghi chú"],
-            column_config={
-                "STT": st.column_config.NumberColumn("STT", format="%d", width="small"),
-                "Thư mục / Hồ sơ": st.column_config.TextColumn("Thư mục / Hồ sơ", width="medium"),
-                "Link xem": st.column_config.LinkColumn("Link xem", display_text="🔗 Mở xem", width="small"),
-                "Ghi chú": st.column_config.TextColumn("Ghi chú", width="large")
-            },
-            key=f"editor_{selected_cat}"
+        updated_df = render_custom_aggrid(
+            current_df, 
+            text_col="Thư mục / Hồ sơ", 
+            link_col="Link xem",
+            btn_text="🔗 Mở xem"
         )
 
         if st.button("💾 Lưu Cập Nhật Mảng Công Việc", type="primary"):
-            st.session_state.data_store[selected_cat] = reindex_df(edited_df)
+            st.session_state.data_store[selected_cat] = reindex_df(pd.DataFrame(updated_df))
             st.success(f"Đã lưu cập nhật cho **{selected_cat}**!")
             st.rerun()
 
-    st.markdown("---")
-    st.subheader("📊 Xuất / Nhập Dữ Liệu Excel")
-
-    col_q1, col_q2 = st.columns(2)
-    with col_q1:
-        if st.button("📥 Xuất Toàn Bộ Excel DM QL Files", type="primary", use_container_width=True):
-            try:
-                with pd.ExcelWriter(EXCEL_PATH_QUAN_LY, engine='openpyxl') as writer:
-                    summary_list = []
-                    for idx, cat in enumerate(CATEGORIES):
-                        sheet_code = f"MKT_{idx+1}"
-                        summary_list.append({
-                            "STT": idx + 1,
-                            "Mảng công việc": cat,
-                            "Số lượng hồ sơ": len(st.session_state.data_store[cat]),
-                            "Liên kết Sheet": f'=HYPERLINK("#\'{sheet_code}\'!A1", "👉 Đến Sheet {sheet_code}")'
-                        })
-                    pd.DataFrame(summary_list).to_excel(writer, sheet_name="SHEET_TONG", index=False)
-
-                    for idx, cat in enumerate(CATEGORIES):
-                        sheet_code = f"MKT_{idx+1}"
-                        df_s = reindex_df(st.session_state.data_store[cat])
-                        df_s.to_excel(writer, sheet_name=sheet_code, index=False, startrow=2)
-
-                    wb = writer.book
-                    for idx, cat in enumerate(CATEGORIES):
-                        sheet_code = f"MKT_{idx+1}"
-                        ws = wb[sheet_code]
-                        c = ws['A1']
-                        c.value = "🏠 Bấm vào đây để về SHEET_TONG"
-                        c.hyperlink = "#'SHEET_TONG'!A1"
-                        c.style = "Hyperlink"
-
-                    auto_fit_columns(wb)
-
-                st.balloons()
-                st.success(f"Đã xuất thành công tại: `{EXCEL_PATH_QUAN_LY}`")
-            except Exception as e:
-                st.error(f"Lỗi xuất file Excel: {e}")
-
-    with col_q2:
-        up_q = st.file_uploader("Nhập file Excel Quản Lý để cập nhật:", type=["xlsx", "xls"], key="up_q")
-        if up_q:
-            try:
-                excel_u = pd.ExcelFile(up_q)
-                for idx, cat in enumerate(CATEGORIES):
-                    sheet_code = f"MKT_{idx+1}"
-                    if sheet_code in excel_u.sheet_names:
-                        df_r = pd.read_excel(excel_u, sheet_name=sheet_code, skiprows=lambda x: x == 0)
-                        st.session_state.data_store[cat] = reindex_df(df_r.dropna(how="all"))
-                st.success("Đã đồng bộ dữ liệu Quản Lý Hồ Sơ thành công!")
-                st.rerun()
-            except Exception as e:
-                st.error(f"Lỗi nhập file Excel: {e}")
-
-# MỤC 3: DS BCdinhky_CV
 elif main_menu == "3 📊 DS BCdinhky_CV":
     st.subheader("📊 Bảng Danh Sách Báo Cáo Định Kỳ & Công Việc")
 
-    edited_bc_df = st.data_editor(
-        st.session_state.bc_dinhky_df,
-        num_rows="dynamic",
-        use_container_width=True,
-        column_order=["STT", "Tên Báo Cáo / Công Việc", "Tần suất", "Đơn vị nhận", "Link biểu mẫu", "Ghi chú"],
-        column_config={
-            "STT": st.column_config.NumberColumn("STT", format="%d", width="small"),
-            "Tên Báo Cáo / Công Việc": st.column_config.TextColumn("Tên Báo Cáo / Công Việc", width="large"),
-            "Tần suất": st.column_config.SelectboxColumn("Tần suất", options=["Hàng Tuần", "Hàng Tháng", "Hàng Quý", "Hàng Năm", "Đột xuất"], width="small"),
-            "Đơn vị nhận": st.column_config.TextColumn("Đơn vị nhận", width="medium"),
-            "Link biểu mẫu": st.column_config.LinkColumn("Link biểu mẫu", display_text="🔗 Tải / Xem Biểu Mẫu", width="small"),
-            "Ghi chú": st.column_config.TextColumn("Ghi chú", width="large")
-        },
-        key="editor_bc_dinhky"
+    updated_df = render_custom_aggrid(
+        st.session_state.bc_dinhky_df, 
+        text_col="Tên Báo Cáo / Công Việc", 
+        link_col="Link biểu mẫu",
+        btn_text="🔗 Tải Biểu Mẫu"
     )
 
     if st.button("💾 Lưu Cập Nhật DS Báo Cáo Định Kỳ", type="primary"):
-        st.session_state.bc_dinhky_df = reindex_df(edited_bc_df)
-        st.success("Đã lưu cập nhật danh sách Báo Cáo Định Kỳ thành công!")
+        st.session_state.bc_dinhky_df = reindex_df(pd.DataFrame(updated_df))
+        st.success("Đã lưu cập nhật Báo Cáo Định Kỳ thành công!")
         st.rerun()
 
-    st.markdown("---")
-    st.subheader("📊 Xuất / Nhập Dữ Liệu Excel")
-
-    col_bc1, col_bc2 = st.columns(2)
-    with col_bc1:
-        if st.button("📥 Xuất Toàn Bộ Excel Báo Cáo Định Kỳ", type="primary", use_container_width=True):
-            try:
-                with pd.ExcelWriter(EXCEL_PATH_BC_DINH_KY, engine='openpyxl') as writer:
-                    st.session_state.bc_dinhky_df.to_excel(writer, sheet_name="BAO_CAO_DINH_KY", index=False)
-                    auto_fit_columns(writer.book)
-                st.success(f"Đã xuất file thành công tại:\n`{EXCEL_PATH_BC_DINH_KY}`")
-            except Exception as e:
-                st.error(f"Lỗi xuất file: {e}")
-
-    with col_bc2:
-        up_bc = st.file_uploader("Nhập file Excel Báo Cáo Định Kỳ để cập nhật:", type=["xlsx", "xls"], key="up_bc")
-        if up_bc:
-            try:
-                df_bc_up = pd.read_excel(up_bc)
-                st.session_state.bc_dinhky_df = reindex_df(df_bc_up)
-                st.success("Đã cập nhật danh sách Báo Cáo Định Kỳ mới thành công!")
-                st.rerun()
-            except Exception as e:
-                st.error(f"Lỗi đọc file Excel: {e}")
-
-# MỤC 4: DS Gsheet_CV
 elif main_menu == "4 🟢 DS Gsheet_CV":
     st.subheader("🟢 Bảng Danh Sách Google Sheets_CV")
 
-    edited_gsheet_df = st.data_editor(
-        st.session_state.gsheet_df,
-        num_rows="dynamic",
-        use_container_width=True,
-        column_order=["STT", "Mô tả Google Sheet", "Link Google Sheet", "Ghi chú"],
-        column_config={
-            "STT": st.column_config.NumberColumn("STT", format="%d", width="small"),
-            "Mô tả Google Sheet": st.column_config.TextColumn("Mô tả Google Sheet", width="medium"),
-            "Link Google Sheet": st.column_config.LinkColumn("Link Google Sheet", display_text="🔗 Mở Google Sheet", width="small"),
-            "Ghi chú": st.column_config.TextColumn("Ghi chú", width="large")
-        },
-        key="editor_gsheet"
+    updated_df = render_custom_aggrid(
+        st.session_state.gsheet_df, 
+        text_col="Mô tả Google Sheet", 
+        link_col="Link Google Sheet",
+        btn_text="🔗 Mở GSheet"
     )
 
     if st.button("💾 Lưu Cập Nhật DS Google Sheets", type="primary"):
-        st.session_state.gsheet_df = reindex_df(edited_gsheet_df)
-        st.success("Đã lưu cập nhật danh sách Google Sheets thành công!")
+        st.session_state.gsheet_df = reindex_df(pd.DataFrame(updated_df))
+        st.success("Đã lưu cập nhật Google Sheets thành công!")
         st.rerun()
-
-    st.markdown("---")
-    st.subheader("📊 Xuất / Nhập Dữ Liệu Excel")
-
-    col_g1, col_g2 = st.columns(2)
-    with col_g1:
-        if st.button("📥 Xuất Toàn Bộ Excel Google Sheets_CV", type="primary", use_container_width=True):
-            try:
-                with pd.ExcelWriter(EXCEL_PATH_GSHEET, engine='openpyxl') as writer:
-                    st.session_state.gsheet_df.to_excel(writer, sheet_name="GSHEETS", index=False)
-                    auto_fit_columns(writer.book)
-                st.success(f"Đã xuất file thành công tại:\n`{EXCEL_PATH_GSHEET}`")
-            except Exception as e:
-                st.error(f"Lỗi xuất file: {e}")
-
-    with col_g2:
-        up_g = st.file_uploader("Nhập file Excel Google Sheets để cập nhật:", type=["xlsx", "xls"], key="up_g")
-        if up_g:
-            try:
-                df_g_up = pd.read_excel(up_g)
-                st.session_state.gsheet_df = reindex_df(df_g_up)
-                st.success("Đã cập nhật danh sách Google Sheets mới thành công!")
-                st.rerun()
-            except Exception as e:
-                st.error(f"Lỗi đọc file Excel: {e}")
