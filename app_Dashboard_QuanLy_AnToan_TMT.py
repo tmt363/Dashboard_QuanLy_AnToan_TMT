@@ -15,7 +15,7 @@ st.set_page_config(
 # Custom CSS ép giao diện hiển thị tràn viền và thu nhỏ Sidebar
 st.markdown("""
     <style>
-    /* 1. Ép vùng nội dung chính chiếm 100% độ rộng màn hình */
+    /* 1. Ép vùng nội dung chính chiếm 98% độ rộng màn hình */
     .main .block-container {
         max-width: 98% !important;
         padding-left: 1.5rem !important;
@@ -42,7 +42,7 @@ st.markdown("""
         margin-top: 10px !important;
     }
 
-    /* 4. Tối ưu Card tiêu đề chính (Header) cho gọn gàng */
+    /* 4. Card tiêu đề chính (Header) */
     .header-card {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         color: white;
@@ -70,7 +70,7 @@ st.markdown("""
         white-space: nowrap;
     }
 
-    /* 5. Style lại nút bấm Streamlit (Buttons) cho chuẩn kích thước */
+    /* 5. Nút bấm Streamlit */
     div.stButton > button {
         border-radius: 6px !important;
         font-weight: 600 !important;
@@ -117,7 +117,7 @@ st.markdown("""
 # 2. BẢO MẬT ĐĂNG NHẬP
 # ---------------------------------------------------------
 USER_CREDENTIALS = {
-    "ttm": "123456",
+    "tmt": "123456",
     "admin": "123456"
 }
 
@@ -126,7 +126,6 @@ if "logged_in" not in st.session_state:
 if "username" not in st.session_state:
     st.session_state.username = ""
 
-# MÀN HÌNH ĐĂNG NHẬP
 if not st.session_state.logged_in:
     col1, col2, col3 = st.columns([1.2, 1.6, 1.2])
     with col2:
@@ -156,7 +155,7 @@ if not st.session_state.logged_in:
     st.stop()
 
 # ---------------------------------------------------------
-# 3. KHỞI TẠO ĐƯỜNG DẪN & DỮ LIỆU
+# 3. KHỞI TẠO ĐƯỜNG DẪN & DỮ LIỆU MẶC ĐỊNH
 # ---------------------------------------------------------
 EXCEL_DIR = r"D:\0 2025 0 LUU OFFICE drive\0000 chua luu\0 0 0 app\000TmT_VBA_source\Dashboard_AnToan"
 if not os.path.exists(EXCEL_DIR):
@@ -178,6 +177,25 @@ CATEGORIES = [
     "DTTU_khac 03 XEM DE BIET dia phuong", "Quy dinh 0000 Discussion",
     "Quy dinh GOV", "Quy dinh PCTN", "Quy dinh PCTN file tham khao cac Doi",
     "Quy dinh SPC va EVN", "Quy dinh trao doi EVN-SPC-PCTN"
+]
+
+DEFAULT_WEBSITES = [
+    {'STT': 1, 'Mô tả WEB': 'D-Office', 'Link truy cập': 'https://doffice.evn.com.vn', 'Ghi chú': 'Công văn / văn bản EVN'},
+    {'STT': 2, 'Mô tả WEB': 'Công cụ web trực tuyến', 'Link truy cập': 'https://www.congcuweb.net/', 'Ghi chú': 'Hiệu chỉnh tên công văn / văn bản'},
+    {'STT': 3, 'Mô tả WEB': 'QLAT SPC', 'Link truy cập': 'https://giamsatantoan.evnspc.vn/Home/Index', 'Ghi chú': 'Quản lý giám sát an toàn SPC'},
+    {'STT': 4, 'Mô tả WEB': 'Lịch tuần', 'Link truy cập': 'https://lichtuan.evnspc.vn', 'Ghi chú': 'Công ty Điện lực Tây Ninh'},
+    {'STT': 5, 'Mô tả WEB': 'Hệ thống PMIS', 'Link truy cập': 'https://pmis.evn.com.vn', 'Ghi chú': 'Quản lý vận hành thiết bị & lưới điện'},
+    {'STT': 6, 'Mô tả WEB': 'Tritm.la Dashboard 2026 DTTU ', 'Link truy cập': 'https://docs.google.com/spreadsheets/d/1gVAroFIytWwrBMCScYuXWbzlS1ZNXrPY4Pcgb__Dv-c/edit?gid=964445540#gid=964445540', 'Ghi chú': 'Google sheet CV'},
+    {'STT': 7, 'Mô tả WEB': 'Hệ thống Giám sát Thiên tai Việt Nam', 'Link truy cập': 'https://vndms.gov.vn/', 'Ghi chú': 'Cảnh báo và phòng chống thiên tai'},
+    {'STT': 8, 'Mô tả WEB': 'Hệ thống HRMS', 'Link truy cập': 'https://hrms.evn.com.vn', 'Ghi chú': 'Quản lý lao động tiền lương'},
+    {'STT': 9, 'Mô tả WEB': 'Hệ thống E-Learning', 'Link truy cập': 'https://elearning.evn.com.vn', 'Ghi chú': 'Huấn luyện an toàn & thi trực tuyến'},
+    {'STT': 10, 'Mô tả WEB': 'Cổng Dịch vụ công Quốc gia', 'Link truy cập': 'https://dichvucong.gov.vn', 'Ghi chú': 'Thực hiện thủ tục hành chính PCCC/ĐTXD'},
+    {'STT': 11, 'Mô tả WEB': 'Cổng Thông tin Bộ Công Thương', 'Link truy cập': 'https://moit.gov.vn', 'Ghi chú': 'Theo dõi văn bản quy phạm kỹ thuật'},
+    {'STT': 12, 'Mô tả WEB': 'Cổng Báo cáo Phòng chống thiên tai', 'Link truy cập': 'https://pctt.evn.com.vn', 'Ghi chú': 'Cập nhật tình hình PCTT & TKCN'},
+    {'STT': 13, 'Mô tả WEB': 'Hệ thống Quản lý Đầu tư Xây dựng (IMIS)', 'Link truy cập': 'https://imis.evn.com.vn', 'Ghi chú': 'Theo dõi an toàn dự án ĐTXD'},
+    {'STT': 14, 'Mô tả WEB': 'Hệ thống Thông tin Báo cáo EVN', 'Link truy cập': 'https://baocao.evn.com.vn', 'Ghi chú': 'Tổng hợp chỉ tiêu an toàn - kỹ thuật'},
+    {'STT': 15, 'Mô tả WEB': 'Lưu trữ Hồ sơ / Biểu mẫu TMT', 'Link truy cập': 'https://drive.google.com', 'Ghi chú': 'Kho lưu trữ dữ liệu dùng chung TMT'},
+    {'STT': 16, 'Mô tả WEB': 'Thư viện Quy chuẩn - Quy định An toàn', 'Link truy cập': 'https://drive.google.com', 'Ghi chú': 'Tra cứu tài liệu an toàn PCCC & ĐT'}
 ]
 
 def reindex_df(df):
@@ -211,7 +229,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 4. SIDEBAR (THANH ĐIỀU HƯỚNG GỌN GÀNG)
+# 4. SIDEBAR
 # ---------------------------------------------------------
 st.sidebar.markdown(f"👤 **Tài khoản:** `{st.session_state.username}`")
 
@@ -250,12 +268,9 @@ if "web_tools_df" not in st.session_state:
         try:
             st.session_state.web_tools_df = reindex_df(pd.read_excel(EXCEL_PATH_WEB))
         except Exception:
-            pass
-    if "web_tools_df" not in st.session_state:
-        st.session_state.web_tools_df = pd.DataFrame([
-            {"STT": 1, "Mô tả WEB": "Hệ thống D-Office", "Link truy cập": "https://doffice.evn.com.vn", "Ghi chú": "Quản lý văn bản điều hành"},
-            {"STT": 2, "Mô tả WEB": "Cổng thông tin Điện lực", "Link truy cập": "https://evnspc.vn", "Ghi chú": "Tra cứu quy định & chỉ đạo"}
-        ])
+            st.session_state.web_tools_df = reindex_df(pd.DataFrame(DEFAULT_WEBSITES))
+    else:
+        st.session_state.web_tools_df = reindex_df(pd.DataFrame(DEFAULT_WEBSITES))
 
 if "data_store" not in st.session_state:
     st.session_state.data_store = {}
@@ -324,10 +339,17 @@ if main_menu == "1 🌐 DS WEBsites_CV":
         key="editor_web"
     )
 
-    if st.button("💾 Lưu Cập Nhật DS WEBsites_CV", type="primary"):
-        st.session_state.web_tools_df = reindex_df(edited_web_df)
-        st.success("Đã lưu cập nhật danh sách WEBsites thành công!")
-        st.rerun()
+    col_save, col_reset = st.columns([2, 1])
+    with col_save:
+        if st.button("💾 Lưu Cập Nhật DS WEBsites_CV", type="primary", use_container_width=True):
+            st.session_state.web_tools_df = reindex_df(edited_web_df)
+            st.success("Đã lưu cập nhật danh sách WEBsites thành công!")
+            st.rerun()
+    with col_reset:
+        if st.button("🔄 Khôi Phục Danh Sách Mặc Định", type="secondary", use_container_width=True):
+            st.session_state.web_tools_df = reindex_df(pd.DataFrame(DEFAULT_WEBSITES))
+            st.success("Đã khôi phục danh sách Web mặc định!")
+            st.rerun()
 
     st.markdown("---")
     st.subheader("📊 Xuất / Nhập Dữ Liệu Excel")
