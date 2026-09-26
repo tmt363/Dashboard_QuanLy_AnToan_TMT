@@ -138,7 +138,7 @@ st.markdown("""
 # ---------------------------------------------------------
 # 2. BẢO MẬT ĐĂNG NHẬP
 # ---------------------------------------------------------
-USER_CREDENTIALS = {"tmt": "123456", "admin": "123456"}
+USER_CREDENTIALS = {"ttm": "123456", "admin": "123456"}
 
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
