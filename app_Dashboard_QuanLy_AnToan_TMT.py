@@ -4,7 +4,7 @@ import os
 import openpyxl
 
 # ---------------------------------------------------------
-# 1. CẤU HÌNH TRANG & CUSTOM CSS (GIAO DIỆN HIỆN ĐẠI & ĐẸP MẮT)
+# 1. CẤU HÌNH TRANG & CUSTOM CSS (TỐI ƯU KHUNG HÌNH VÀ RỘNG MÀN HÌNH)
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="Hệ Thống Quản Lý An Toàn TMT - Version 1.0 20260925",
@@ -12,59 +12,85 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS nâng cấp giao diện
+# Custom CSS ép giao diện hiển thị tràn viền và thu nhỏ Sidebar
 st.markdown("""
     <style>
-    /* Tổng thể nền và font chữ */
-    .main {
-        background-color: #f8f9fa;
+    /* 1. Ép vùng nội dung chính chiếm 100% độ rộng màn hình */
+    .main .block-container {
+        max-width: 98% !important;
+        padding-left: 1.5rem !important;
+        padding-right: 1.5rem !important;
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
     }
-    
-    /* Style cho Card tiêu đề chính */
+
+    /* 2. Thu nhỏ độ rộng của Sidebar bên trái */
+    [data-testid="stSidebar"] {
+        min-width: 230px !important;
+        max-width: 250px !important;
+        background-color: #f1f3f5;
+        border-right: 1px solid #dee2e6;
+    }
+
+    /* 3. Thu gọn Font chữ & lề trong Sidebar */
+    [data-testid="stSidebar"] * {
+        font-size: 13px !important;
+    }
+    [data-testid="stSidebar"] h3 {
+        font-size: 15px !important;
+        font-weight: 700 !important;
+        margin-top: 10px !important;
+    }
+
+    /* 4. Tối ưu Card tiêu đề chính (Header) cho gọn gàng */
     .header-card {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         color: white;
-        padding: 20px 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        margin-bottom: 25px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
     .header-card h1 {
         color: #ffffff !important;
-        font-size: 26px !important;
+        font-size: 20px !important;
         font-weight: 700 !important;
-        margin-bottom: 5px !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     .version-badge {
         background-color: rgba(255,255,255,0.2);
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 13px;
+        padding: 3px 10px;
+        border-radius: 15px;
+        font-size: 12px;
         font-weight: 600;
-        display: inline-block;
+        white-space: nowrap;
     }
 
-    /* Style lại nút bấm Streamlit (Buttons) */
+    /* 5. Style lại nút bấm Streamlit (Buttons) cho chuẩn kích thước */
     div.stButton > button {
-        border-radius: 8px !important;
+        border-radius: 6px !important;
         font-weight: 600 !important;
+        font-size: 13px !important;
         border: none !important;
-        transition: all 0.3s ease !important;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.08) !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.08) !important;
+        padding: 0.35rem 0.8rem !important;
     }
     
-    /* Nút Primary (Lưu / Xuất Excel) */
     div.stButton > button[kind="primary"] {
         background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%) !important;
         color: white !important;
     }
     div.stButton > button[kind="primary"]:hover {
         background: linear-gradient(135deg, #0a58ca 0%, #084298 100%) !important;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(13,110,253,0.3) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(13,110,253,0.3) !important;
     }
 
-    /* Nút Secondary (Đăng xuất / Xóa cache) */
     div.stButton > button[kind="secondary"] {
         background-color: #ffffff !important;
         color: #495057 !important;
@@ -73,22 +99,16 @@ st.markdown("""
     div.stButton > button[kind="secondary"]:hover {
         background-color: #e9ecef !important;
         color: #212529 !important;
-        transform: translateY(-1px);
     }
 
-    /* Sidebar làm sạch và đẹp hơn */
-    [data-testid="stSidebar"] {
-        background-color: #f1f3f5;
-        border-right: 1px solid #dee2e6;
-    }
-
-    /* Tiêu đề subheader */
+    /* Tiêu đề subheader gọn gàng */
     .stMarkdown h3 {
         color: #1e3c72;
         font-weight: 700;
         border-left: 4px solid #0d6efd;
-        padding-left: 10px;
-        margin-top: 15px;
+        padding-left: 8px;
+        margin-top: 10px;
+        font-size: 18px !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -97,7 +117,7 @@ st.markdown("""
 # 2. BẢO MẬT ĐĂNG NHẬP
 # ---------------------------------------------------------
 USER_CREDENTIALS = {
-    "tmt": "123456",
+    "ttm": "123456",
     "admin": "123456"
 }
 
@@ -106,16 +126,16 @@ if "logged_in" not in st.session_state:
 if "username" not in st.session_state:
     st.session_state.username = ""
 
-# MÀN HÌNH ĐĂNG NHẬP SANG TRỌNG
+# MÀN HÌNH ĐĂNG NHẬP
 if not st.session_state.logged_in:
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1.2, 1.6, 1.2])
     with col2:
         st.markdown("<br><br>", unsafe_allow_html=True)
         st.markdown("""
-            <div style="background: white; padding: 35px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center;">
-                <h2 style="color: #1e3c72; margin-bottom: 5px;">🛡️ HỆ THỐNG QUẢN LÝ AN TOÀN</h2>
-                <span style="background: #e7f1ff; color: #0d6efd; padding: 5px 15px; border-radius: 20px; font-weight: 600; font-size: 13px;">Version 1.0 20260925</span>
-                <hr style="margin: 20px 0;">
+            <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); text-align: center;">
+                <h3 style="color: #1e3c72; margin-bottom: 5px;">🛡️ HỆ THỐNG QUẢN LÝ AN TOÀN</h3>
+                <span style="background: #e7f1ff; color: #0d6efd; padding: 4px 12px; border-radius: 15px; font-weight: 600; font-size: 12px;">Version 1.0 20260925</span>
+                <hr style="margin: 15px 0;">
             </div>
         """, unsafe_allow_html=True)
         
@@ -182,7 +202,7 @@ def auto_fit_columns(workbook):
             adjusted_width = max(max_len + 4, 15)
             worksheet.column_dimensions[col_letter].width = min(adjusted_width, 60)
 
-# HEADER CỦA HỆ THỐNG
+# HEADER CỦA HỆ THỐNG GỌN GÀNG
 st.markdown("""
     <div class="header-card">
         <h1>🛡️ Hệ Thống Quản Lý An Toàn & Công Tác Chuyên Môn TMT</h1>
@@ -191,7 +211,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 4. SIDEBAR (THANH ĐIỀU HƯỚNG & ĐĂNG XUẤT)
+# 4. SIDEBAR (THANH ĐIỀU HƯỚNG GỌN GÀNG)
 # ---------------------------------------------------------
 st.sidebar.markdown(f"👤 **Tài khoản:** `{st.session_state.username}`")
 
@@ -283,7 +303,7 @@ if "gsheet_df" not in st.session_state:
         ])
 
 # ---------------------------------------------------------
-# 6. GIAO DIỆN CÁC MỤC LÀM VIỆC
+# 6. GIAO DIỆN CÁC MỤC LÀM VIỆC (KHUNG RỘNG BÊN PHẢI)
 # ---------------------------------------------------------
 # MỤC 1: DS WEBsites_CV
 if main_menu == "1 🌐 DS WEBsites_CV":
