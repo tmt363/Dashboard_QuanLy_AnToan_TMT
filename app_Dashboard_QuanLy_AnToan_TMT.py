@@ -2,10 +2,9 @@ import streamlit as st
 import pandas as pd
 import os
 import openpyxl
-from streamlit_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode, JsCode
 
 # ---------------------------------------------------------
-# 1. CẤU HÌNH TRANG & CUSTOM CSS (TỐI ƯU TOÀN MÀN HÌNH)
+# 1. CẤU HÌNH TRANG & CUSTOM CSS (TỐI ƯU GIAO DIỆN CHUYÊN NGHIỆP)
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="Hệ Thống Quản Lý An Toàn TMT",
@@ -15,16 +14,16 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-    /* Ép giao diện chính chiếm 99% độ rộng màn hình */
+    /* 1. Ép giao diện chính tràn viền (chiếm 99% màn hình) */
     .main .block-container {
         max-width: 99% !important;
         padding: 0.5rem 0.8rem !important;
     }
 
-    /* Thu gọn Sidebar tối đa */
+    /* 2. Thu gọn Sidebar vừa khít */
     [data-testid="stSidebar"] {
         min-width: 200px !important;
-        max-width: 210px !important;
+        max-width: 215px !important;
         background-color: #f8f9fa;
         border-right: 1px solid #e9ecef;
     }
@@ -33,14 +32,14 @@ st.markdown("""
         padding: 0.8rem 0.5rem !important;
     }
 
-    /* Header Card sang trọng */
+    /* 3. Header Card tiêu đề */
     .header-card {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         color: white;
         padding: 8px 15px;
         border-radius: 6px;
         box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        margin-bottom: 10px;
+        margin-bottom: 12px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -59,25 +58,66 @@ st.markdown("""
         font-weight: 600;
     }
 
-    /* CSS cho Nút Bấm trong AG-Grid */
-    .ag-link-btn {
+    /* 4. Định dạng Bảng dữ liệu HTML Responsive chuyên nghiệp */
+    .custom-table-container {
+        width: 100%;
+        overflow-x: auto;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        margin-bottom: 15px;
+    }
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 13px;
+        background-color: #ffffff;
+    }
+    .custom-table th {
+        background-color: #f1f5f9;
+        color: #334155;
+        font-weight: 700;
+        text-align: left;
+        padding: 10px 12px;
+        border-bottom: 2px solid #cbd5e1;
+        white-space: nowrap;
+    }
+    .custom-table td {
+        padding: 8px 12px;
+        border-bottom: 1px solid #e2e8f0;
+        color: #1e293b;
+        vertical-align: middle;
+    }
+    .custom-table tr:hover {
+        background-color: #f8fafc;
+    }
+
+    /* Căn chỉnh tỷ lệ cột cực chuẩn */
+    .col-stt { width: 50px !important; text-align: center; font-weight: 600; color: #64748b; }
+    .col-title { width: 25% !important; font-weight: 600; }
+    .col-link { width: 120px !important; text-align: center; }
+    .col-note { width: auto !important; }
+
+    /* Nút bấm Liên kết đẹp mắt */
+    .btn-link-action {
+        display: inline-block;
         background-color: #0d6efd;
-        color: white !important;
-        padding: 3px 10px;
+        color: #ffffff !important;
+        padding: 4px 10px;
         border-radius: 4px;
         text-decoration: none !important;
         font-size: 12px;
         font-weight: 600;
-        display: inline-block;
+        transition: background-color 0.2s;
         text-align: center;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        white-space: nowrap;
     }
-    .ag-link-btn:hover {
+    .btn-link-action:hover {
         background-color: #0b5ed7;
-        color: white !important;
     }
 
-    /* Path Box trong Sidebar */
+    /* Khung đường dẫn lưu trữ Sidebar */
     .path-box {
         background-color: #eef2f7;
         border: 1px dashed #cbd5e1;
@@ -125,7 +165,7 @@ if not st.session_state.logged_in:
                     st.success("Đăng nhập thành công!")
                     st.rerun()
                 else:
-                    st.error("❌ Mật khẩu hoặc Tên đăng nhập không đúng!")
+                    st.error("❌ Mật khẩu hoặc Tên đăng nhập không chính xác!")
     st.stop()
 
 # ---------------------------------------------------------
@@ -160,16 +200,7 @@ DEFAULT_WEBSITES = [
     {'STT': 4, 'Mô tả WEB': 'Lịch tuần', 'Link truy cập': 'https://lichtuan.evnspc.vn', 'Ghi chú': 'Công ty Điện lực Tây Ninh'},
     {'STT': 5, 'Mô tả WEB': 'Hệ thống PMIS', 'Link truy cập': 'https://pmis.evn.com.vn', 'Ghi chú': 'Quản lý vận hành thiết bị & lưới điện'},
     {'STT': 6, 'Mô tả WEB': 'Tritm.la Dashboard 2026 DTTU ', 'Link truy cập': 'https://docs.google.com/spreadsheets/d/1gVAroFIytWwrBMCScYuXWbzlS1ZNXrPY4Pcgb__Dv-c/edit?gid=964445540#gid=964445540', 'Ghi chú': 'Google sheet CV'},
-    {'STT': 7, 'Mô tả WEB': 'Hệ thống Giám sát Thiên tai Việt Nam', 'Link truy cập': 'https://vndms.gov.vn/', 'Ghi chú': 'Cảnh báo và phòng chống thiên tai'},
-    {'STT': 8, 'Mô tả WEB': 'Hệ thống HRMS', 'Link truy cập': 'https://hrms.evn.com.vn', 'Ghi chú': 'Quản lý lao động tiền lương'},
-    {'STT': 9, 'Mô tả WEB': 'Hệ thống E-Learning', 'Link truy cập': 'https://elearning.evn.com.vn', 'Ghi chú': 'Huấn luyện an toàn & thi trực tuyến'},
-    {'STT': 10, 'Mô tả WEB': 'Cổng Dịch vụ công Quốc gia', 'Link truy cập': 'https://dichvucong.gov.vn', 'Ghi chú': 'Thực hiện thủ tục hành chính PCCC/ĐTXD'},
-    {'STT': 11, 'Mô tả WEB': 'Cổng Thông tin Bộ Công Thương', 'Link truy cập': 'https://moit.gov.vn', 'Ghi chú': 'Theo dõi văn bản quy phạm kỹ thuật'},
-    {'STT': 12, 'Mô tả WEB': 'Cổng Báo cáo Phòng chống thiên tai', 'Link truy cập': 'https://pctt.evn.com.vn', 'Ghi chú': 'Cập nhật tình hình PCTT & TKCN'},
-    {'STT': 13, 'Mô tả WEB': 'Hệ thống Quản lý Đầu tư Xây dựng (IMIS)', 'Link truy cập': 'https://imis.evn.com.vn', 'Ghi chú': 'Theo dõi an toàn dự án ĐTXD'},
-    {'STT': 14, 'Mô tả WEB': 'Hệ thống Thông tin Báo cáo EVN', 'Link truy cập': 'https://baocao.evn.com.vn', 'Ghi chú': 'Tổng hợp chỉ tiêu an toàn - kỹ thuật'},
-    {'STT': 15, 'Mô tả WEB': 'Lưu trữ Hồ sơ / Biểu mẫu TMT', 'Link truy cập': 'https://drive.google.com', 'Ghi chú': 'Kho lưu trữ dữ liệu dùng chung TMT'},
-    {'STT': 16, 'Mô tả WEB': 'Thư viện Quy chuẩn - Quy định An toàn', 'Link truy cập': 'https://drive.google.com', 'Ghi chú': 'Tra cứu tài liệu an toàn PCCC & ĐT'}
+    {'STT': 7, 'Mô tả WEB': 'Hệ thống Giám sát Thiên tai Việt Nam', 'Link truy cập': 'https://vndms.gov.vn/', 'Ghi chú': 'Cảnh báo và phòng chống thiên tai'}
 ]
 
 def reindex_df(df):
@@ -178,7 +209,6 @@ def reindex_df(df):
         df["STT"] = df.index + 1
     return df
 
-# Khởi tạo dữ liệu
 if "active_tab" not in st.session_state:
     st.session_state.active_tab = "1 🌐 DS WEBsites_CV"
 
@@ -245,7 +275,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 4. SIDEBAR ĐAN TRANG MỚI GỌN GÀNG
+# 4. SIDEBAR ĐAN TRANG GỌN GÀNG
 # ---------------------------------------------------------
 st.sidebar.markdown(f"👤 **User:** `{st.session_state.username}`")
 
@@ -285,69 +315,70 @@ st.sidebar.markdown("**📌 Thư mục Excel:**")
 st.sidebar.markdown(f'<div class="path-box">{EXCEL_DIR}</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 5. HÀM HIỂN THỊ BẢNG AG-GRID TỐI ƯU KÍCH THƯỚC CỘT CHUẨN
+# 5. HÀM HIỂN THỊ BẢNG HTML RESPONSIVE CHUẨN TỶ LỆ CỘT
 # ---------------------------------------------------------
-def render_custom_aggrid(df, text_col, link_col, btn_text="🔗 Truy cập Web"):
-    gb = GridOptionsBuilder.from_dataframe(df)
-    
-    # Cấu hình Cột STT: Thu gọn tuyệt đối (60px)
-    gb.configure_column("STT", headerName="STT", width=60, pinned="left", type=["numericColumn"], cellStyle={'textAlign': 'center'})
-    
-    # Cấu hình Cột Nội Dung/Mô Tả: Vừa vặn (260px)
-    gb.configure_column(text_col, headerName=text_col, width=260, editable=True)
-    
-    # Cấu hình Cột Link: Thu gọn vừa nút bấm (140px)
-    link_renderer = JsCode(f"""
-        function(params) {{
-            if (!params.value) return '';
-            return `<a class="ag-link-btn" href="${{params.value}}" target="_blank">{btn_text}</a>`;
-        }}
-    """)
-    gb.configure_column(link_col, headerName=link_col, width=140, cellRenderer=link_renderer, editable=True)
-    
-    # Cấu hình Cột Ghi Chú: Mở rộng chiếm hết toàn bộ màn hình còn lại (Flex = 1)
-    gb.configure_column("Ghi chú", headerName="Ghi chú", flex=1, minWidth=300, editable=True)
-    
-    # Bật tính năng chỉnh sửa
-    gb.configure_default_column(resizable=True, filter=True)
-    grid_options = gb.build()
-    
-    grid_response = AgGrid(
-        df,
-        gridOptions=grid_options,
-        allow_unsafe_jscode=True,
-        update_mode=GridUpdateMode.MODEL_CHANGED,
-        data_return_mode=DataReturnMode.FILTERED_AND_SORTED,
-        theme="alpine",
-        height=450,
-        fit_columns_on_grid_load=False
-    )
-    return grid_response['data']
+def render_perfect_table(df, title_col, link_col, btn_label="🔗 Mở Web"):
+    html_code = f"""
+    <div class="custom-table-container">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th class="col-stt">STT</th>
+                    <th class="col-title">{title_col}</th>
+                    <th class="col-link">Liên kết</th>
+                    <th class="col-note">Ghi chú</th>
+                </tr>
+            </thead>
+            <tbody>
+    """
+    for _, row in df.iterrows():
+        stt = row.get("STT", "")
+        title = row.get(title_col, "")
+        link = row.get(link_col, "#")
+        note = row.get("Ghi chú", "")
+        
+        btn_html = f'<a class="btn-link-action" href="{link}" target="_blank">{btn_label}</a>' if link and str(link) != 'nan' else '-'
+        
+        html_code += f"""
+            <tr>
+                <td class="col-stt">{stt}</td>
+                <td class="col-title">{title}</td>
+                <td class="col-link">{btn_html}</td>
+                <td class="col-note">{note}</td>
+            </tr>
+        """
+    html_code += """
+            </tbody>
+        </table>
+    </div>
+    """
+    st.markdown(html_code, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 6. HIỂN THỊ CÁC MỤC VỚI AG-GRID
+# 6. HIỂN THỊ CÁC MỤC GIAO DIỆN CHÍNH
 # ---------------------------------------------------------
 if main_menu == "1 🌐 DS WEBsites_CV":
     st.subheader("🌐 Bảng Danh Sách WEBsites_CV")
-    st.caption("💡 *Mẹo: Anh có thể nhấp đôi trực tiếp vào ô để sửa dữ liệu.*")
-
-    updated_df = render_custom_aggrid(
+    
+    # Hiển thị bảng Responsive mượt mà
+    render_perfect_table(
         st.session_state.web_tools_df, 
-        text_col="Mô tả WEB", 
-        link_col="Link truy cập",
-        btn_text="🔗 Truy cập Web"
+        title_col="Mô tả WEB", 
+        link_col="Link truy cập", 
+        btn_label="🔗 Truy cập Web"
     )
 
-    col_save, col_reset = st.columns([2, 1])
-    with col_save:
-        if st.button("💾 Lưu Cập Nhật DS WEBsites_CV", type="primary", use_container_width=True):
-            st.session_state.web_tools_df = reindex_df(pd.DataFrame(updated_df))
-            st.success("Đã lưu cập nhật thành công!")
-            st.rerun()
-    with col_reset:
-        if st.button("🔄 Khôi Phục Mặc Định", type="secondary", use_container_width=True):
-            st.session_state.web_tools_df = reindex_df(pd.DataFrame(DEFAULT_WEBSITES))
-            st.success("Đã khôi phục danh sách mặc định!")
+    with st.expander("✏️ Chỉnh sửa / Thêm bớt dữ liệu WEBsites"):
+        edited_df = st.data_editor(
+            st.session_state.web_tools_df,
+            num_rows="dynamic",
+            use_container_width=True,
+            column_order=["STT", "Mô tả WEB", "Link truy cập", "Ghi chú"],
+            key="edit_web_expander"
+        )
+        if st.button("💾 Lưu chỉnh sửa", type="primary"):
+            st.session_state.web_tools_df = reindex_df(edited_df)
+            st.success("Đã cập nhật dữ liệu thành công!")
             st.rerun()
 
 elif main_menu == "2 📋 DM QL Files":
@@ -356,44 +387,68 @@ elif main_menu == "2 📋 DM QL Files":
         st.subheader(f"📂 Quản Lý Hồ Sơ: {selected_cat}")
         current_df = st.session_state.data_store[selected_cat]
 
-        updated_df = render_custom_aggrid(
+        render_perfect_table(
             current_df, 
-            text_col="Thư mục / Hồ sơ", 
-            link_col="Link xem",
-            btn_text="🔗 Mở xem"
+            title_col="Thư mục / Hồ sơ", 
+            link_col="Link xem", 
+            btn_label="🔗 Mở hồ sơ"
         )
 
-        if st.button("💾 Lưu Cập Nhật Mảng Công Việc", type="primary"):
-            st.session_state.data_store[selected_cat] = reindex_df(pd.DataFrame(updated_df))
-            st.success(f"Đã lưu cập nhật cho **{selected_cat}**!")
-            st.rerun()
+        with st.expander(f"✏️ Chỉnh sửa dữ liệu mảng {selected_cat}"):
+            edited_df = st.data_editor(
+                current_df,
+                num_rows="dynamic",
+                use_container_width=True,
+                column_order=["STT", "Thư mục / Hồ sơ", "Link xem", "Ghi chú"],
+                key=f"edit_cat_{selected_cat}"
+            )
+            if st.button("💾 Lưu chỉnh sửa mảng này", type="primary"):
+                st.session_state.data_store[selected_cat] = reindex_df(edited_df)
+                st.success("Đã cập nhật dữ liệu!")
+                st.rerun()
 
 elif main_menu == "3 📊 DS BCdinhky_CV":
     st.subheader("📊 Bảng Danh Sách Báo Cáo Định Kỳ & Công Việc")
 
-    updated_df = render_custom_aggrid(
+    render_perfect_table(
         st.session_state.bc_dinhky_df, 
-        text_col="Tên Báo Cáo / Công Việc", 
-        link_col="Link biểu mẫu",
-        btn_text="🔗 Tải Biểu Mẫu"
+        title_col="Tên Báo Cáo / Công Việc", 
+        link_col="Link biểu mẫu", 
+        btn_label="🔗 Tải biểu mẫu"
     )
 
-    if st.button("💾 Lưu Cập Nhật DS Báo Cáo Định Kỳ", type="primary"):
-        st.session_state.bc_dinhky_df = reindex_df(pd.DataFrame(updated_df))
-        st.success("Đã lưu cập nhật Báo Cáo Định Kỳ thành công!")
-        st.rerun()
+    with st.expander("✏️ Chỉnh sửa Báo Cáo Định Kỳ"):
+        edited_df = st.data_editor(
+            st.session_state.bc_dinhky_df,
+            num_rows="dynamic",
+            use_container_width=True,
+            column_order=["STT", "Tên Báo Cáo / Công Việc", "Tần suất", "Đơn vị nhận", "Link biểu mẫu", "Ghi chú"],
+            key="edit_bc_expander"
+        )
+        if st.button("💾 Lưu Báo Cáo Định Kỳ", type="primary"):
+            st.session_state.bc_dinhky_df = reindex_df(edited_df)
+            st.success("Đã cập nhật Báo cáo định kỳ!")
+            st.rerun()
 
 elif main_menu == "4 🟢 DS Gsheet_CV":
     st.subheader("🟢 Bảng Danh Sách Google Sheets_CV")
 
-    updated_df = render_custom_aggrid(
+    render_perfect_table(
         st.session_state.gsheet_df, 
-        text_col="Mô tả Google Sheet", 
-        link_col="Link Google Sheet",
-        btn_text="🔗 Mở GSheet"
+        title_col="Mô tả Google Sheet", 
+        link_col="Link Google Sheet", 
+        btn_label="🔗 Mở GSheet"
     )
 
-    if st.button("💾 Lưu Cập Nhật DS Google Sheets", type="primary"):
-        st.session_state.gsheet_df = reindex_df(pd.DataFrame(updated_df))
-        st.success("Đã lưu cập nhật Google Sheets thành công!")
-        st.rerun()
+    with st.expander("✏️ Chỉnh sửa danh sách Google Sheets"):
+        edited_df = st.data_editor(
+            st.session_state.gsheet_df,
+            num_rows="dynamic",
+            use_container_width=True,
+            column_order=["STT", "Mô tả Google Sheet", "Link Google Sheet", "Ghi chú"],
+            key="edit_gsheet_expander"
+        )
+        if st.button("💾 Lưu Google Sheets", type="primary"):
+            st.session_state.gsheet_df = reindex_df(edited_df)
+            st.success("Đã cập nhật danh sách Google Sheets!")
+            st.rerun()
