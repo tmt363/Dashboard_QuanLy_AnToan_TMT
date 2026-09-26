@@ -4,7 +4,7 @@ import os
 import openpyxl
 
 # ---------------------------------------------------------
-# 1. CẤU HÌNH TRANG & CUSTOM CSS (TỐI ƯU GIAO DIỆN CHUYÊN NGHIỆP)
+# 1. CẤU HÌNH TRANG & CUSTOM CSS TỐI ƯU GIAO DIỆN CHUẨN
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="Hệ Thống Quản Lý An Toàn TMT",
@@ -14,13 +14,13 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-    /* 1. Ép giao diện chính tràn viền (chiếm 99% màn hình) */
+    /* 1. Ép giao diện tràn viền tối đa (99% màn hình) */
     .main .block-container {
         max-width: 99% !important;
         padding: 0.5rem 0.8rem !important;
     }
 
-    /* 2. Thu gọn Sidebar vừa khít */
+    /* 2. Thu gọn Sidebar vừa vặn */
     [data-testid="stSidebar"] {
         min-width: 200px !important;
         max-width: 215px !important;
@@ -58,11 +58,11 @@ st.markdown("""
         font-weight: 600;
     }
 
-    /* 4. Định dạng Bảng dữ liệu HTML Responsive chuyên nghiệp */
+    /* 4. Định dạng Bảng HTML Responsive phân chia tỷ lệ chuẩn */
     .custom-table-container {
         width: 100%;
         overflow-x: auto;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #cbd5e1;
         border-radius: 6px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         margin-bottom: 15px;
@@ -93,13 +93,13 @@ st.markdown("""
         background-color: #f8fafc;
     }
 
-    /* Căn chỉnh tỷ lệ cột cực chuẩn */
+    /* Phân chia kích thước từng cột chuẩn xác */
     .col-stt { width: 50px !important; text-align: center; font-weight: 600; color: #64748b; }
     .col-title { width: 25% !important; font-weight: 600; }
-    .col-link { width: 120px !important; text-align: center; }
+    .col-link { width: 130px !important; text-align: center; }
     .col-note { width: auto !important; }
 
-    /* Nút bấm Liên kết đẹp mắt */
+    /* Nút bấm liên kết */
     .btn-link-action {
         display: inline-block;
         background-color: #0d6efd;
@@ -109,7 +109,6 @@ st.markdown("""
         text-decoration: none !important;
         font-size: 12px;
         font-weight: 600;
-        transition: background-color 0.2s;
         text-align: center;
         white-space: nowrap;
     }
@@ -117,7 +116,6 @@ st.markdown("""
         background-color: #0b5ed7;
     }
 
-    /* Khung đường dẫn lưu trữ Sidebar */
     .path-box {
         background-color: #eef2f7;
         border: 1px dashed #cbd5e1;
@@ -275,7 +273,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 4. SIDEBAR ĐAN TRANG GỌN GÀNG
+# 4. SIDEBAR CHUYÊN NGHIỆP
 # ---------------------------------------------------------
 st.sidebar.markdown(f"👤 **User:** `{st.session_state.username}`")
 
@@ -315,10 +313,20 @@ st.sidebar.markdown("**📌 Thư mục Excel:**")
 st.sidebar.markdown(f'<div class="path-box">{EXCEL_DIR}</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 5. HÀM HIỂN THỊ BẢNG HTML RESPONSIVE CHUẨN TỶ LỆ CỘT
+# 5. HÀM DỰNG BẢNG HTML CHUẨN CÚ PHÁP LỖI HIỂN THỊ
 # ---------------------------------------------------------
 def render_perfect_table(df, title_col, link_col, btn_label="🔗 Mở Web"):
-    html_code = f"""
+    rows_html = ""
+    for _, row in df.iterrows():
+        stt = row.get("STT", "")
+        title = row.get(title_col, "")
+        link = row.get(link_col, "#")
+        note = row.get("Ghi chú", "")
+        
+        btn_html = f'<a class="btn-link-action" href="{link}" target="_blank">{btn_label}</a>' if link and str(link) != 'nan' else '-'
+        rows_html += f'<tr><td class="col-stt">{stt}</td><td class="col-title">{title}</td><td class="col-link">{btn_html}</td><td class="col-note">{note}</td></tr>'
+
+    full_table_html = f'''
     <div class="custom-table-container">
         <table class="custom-table">
             <thead>
@@ -330,37 +338,19 @@ def render_perfect_table(df, title_col, link_col, btn_label="🔗 Mở Web"):
                 </tr>
             </thead>
             <tbody>
-    """
-    for _, row in df.iterrows():
-        stt = row.get("STT", "")
-        title = row.get(title_col, "")
-        link = row.get(link_col, "#")
-        note = row.get("Ghi chú", "")
-        
-        btn_html = f'<a class="btn-link-action" href="{link}" target="_blank">{btn_label}</a>' if link and str(link) != 'nan' else '-'
-        
-        html_code += f"""
-            <tr>
-                <td class="col-stt">{stt}</td>
-                <td class="col-title">{title}</td>
-                <td class="col-link">{btn_html}</td>
-                <td class="col-note">{note}</td>
-            </tr>
-        """
-    html_code += """
+                {rows_html}
             </tbody>
         </table>
     </div>
-    """
-    st.markdown(html_code, unsafe_allow_html=True)
+    '''
+    st.markdown(full_table_html, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 6. HIỂN THỊ CÁC MỤC GIAO DIỆN CHÍNH
+# 6. HIỂN THỊ DỮ LIỆU
 # ---------------------------------------------------------
 if main_menu == "1 🌐 DS WEBsites_CV":
     st.subheader("🌐 Bảng Danh Sách WEBsites_CV")
     
-    # Hiển thị bảng Responsive mượt mà
     render_perfect_table(
         st.session_state.web_tools_df, 
         title_col="Mô tả WEB", 
