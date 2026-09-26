@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
-import openpyxl
+import io
 
 # ---------------------------------------------------------
 # 1. CẤU HÌNH TRANG & CUSTOM CSS TỐI ƯU GIAO DIỆN CHUẨN
@@ -14,22 +14,22 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-    /* 1. Ép giao diện tràn viền tối đa (99% màn hình) */
+    /* 1. Ép giao diện tràn viền tối đa */
     .main .block-container {
         max-width: 99% !important;
         padding: 0.5rem 0.8rem !important;
     }
 
-    /* 2. Thu gọn Sidebar vừa vặn */
+    /* 2. Mở rộng Sidebar đủ rộng để không bị che mất chữ nút Thoát/Cache */
     [data-testid="stSidebar"] {
-        min-width: 200px !important;
-        max-width: 215px !important;
+        min-width: 250px !important;
+        max-width: 270px !important;
         background-color: #f8f9fa;
         border-right: 1px solid #e9ecef;
     }
 
     [data-testid="stSidebar"] > div:first-child {
-        padding: 0.8rem 0.5rem !important;
+        padding: 0.8rem 0.6rem !important;
     }
 
     /* 3. Header Card tiêu đề */
@@ -58,7 +58,7 @@ st.markdown("""
         font-weight: 600;
     }
 
-    /* 4. Định dạng Bảng HTML Responsive phân chia tỷ lệ chuẩn */
+    /* 4. Định dạng Bảng HTML Responsive */
     .custom-table-container {
         width: 100%;
         overflow-x: auto;
@@ -93,7 +93,7 @@ st.markdown("""
         background-color: #f8fafc;
     }
 
-    /* Phân chia kích thước từng cột chuẩn xác */
+    /* Tỷ lệ cột */
     .col-stt { width: 50px !important; text-align: center; font-weight: 600; color: #64748b; }
     .col-title { width: 25% !important; font-weight: 600; }
     .col-link { width: 130px !important; text-align: center; }
@@ -207,6 +207,13 @@ def reindex_df(df):
         df["STT"] = df.index + 1
     return df
 
+# Hàm xuất DataFrame ra file Excel chuẩn ByteStream
+def to_excel_bytes(df):
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Data')
+    return output.getvalue()
+
 if "active_tab" not in st.session_state:
     st.session_state.active_tab = "1 🌐 DS WEBsites_CV"
 
@@ -313,7 +320,7 @@ st.sidebar.markdown("**📌 Thư mục Excel:**")
 st.sidebar.markdown(f'<div class="path-box">{EXCEL_DIR}</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 5. HÀM DỰNG BẢNG HTML CHUẨN CÚ PHÁP LỖI HIỂN THỊ
+# 5. HÀM DỰNG BẢNG HTML CHUẨN CÚ PHÁP
 # ---------------------------------------------------------
 def render_perfect_table(df, title_col, link_col, btn_label="🔗 Mở Web"):
     rows_html = ""
@@ -346,8 +353,45 @@ def render_perfect_table(df, title_col, link_col, btn_label="🔗 Mở Web"):
     st.markdown(full_table_html, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 6. HIỂN THỊ DỮ LIỆU
+# 6. HIỂN THỊ DỮ LIỆU & BỘ CÔNG CỤ NHẬP / XUẤT EXCEL
 # ---------------------------------------------------------
+def render_io_excel_tools(df, current_key, file_prefix):
+    st.markdown("---")
+    col_up, col_down = st.columns([1.2, 1])
+    
+    with col_up:
+        st.markdown("##### 📥 Tải lên / Thay thế dữ liệu từ file Excel (.xlsx)")
+        uploaded_file = st.file_uploader(f"Chọn file Excel để cập nhật [{file_prefix}]", type=["xlsx", "xls"], key=f"uploader_{current_key}")
+        if uploaded_file is not None:
+            try:
+                new_df = pd.read_excel(uploaded_file)
+                new_df = reindex_df(new_df)
+                if st.button("🔥 Xác nhận đè dữ liệu mới", type="primary", key=f"btn_confirm_{current_key}"):
+                    if current_key == "web":
+                        st.session_state.web_tools_df = new_df
+                    elif current_key == "bc":
+                        st.session_state.bc_dinhky_df = new_df
+                    elif current_key == "gsheet":
+                        st.session_state.gsheet_df = new_df
+                    else:
+                        st.session_state.data_store[current_key] = new_df
+                    st.success("Tải dữ liệu từ Excel thành công!")
+                    st.rerun()
+            except Exception as e:
+                st.error(f"Lỗi đọc file Excel: {e}")
+
+    with col_down:
+        st.markdown("##### 📤 Xuất dữ liệu ra file Excel")
+        excel_bytes = to_excel_bytes(df)
+        st.download_button(
+            label="💾 Tải file Excel về máy",
+            data=excel_bytes,
+            file_name=f"{file_prefix}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
+
+# Main Logic
 if main_menu == "1 🌐 DS WEBsites_CV":
     st.subheader("🌐 Bảng Danh Sách WEBsites_CV")
     
@@ -358,7 +402,7 @@ if main_menu == "1 🌐 DS WEBsites_CV":
         btn_label="🔗 Truy cập Web"
     )
 
-    with st.expander("✏️ Chỉnh sửa / Thêm bớt dữ liệu WEBsites"):
+    with st.expander("✏️ Chỉnh sửa / Thêm bớt dữ liệu trực tiếp"):
         edited_df = st.data_editor(
             st.session_state.web_tools_df,
             num_rows="dynamic",
@@ -370,6 +414,8 @@ if main_menu == "1 🌐 DS WEBsites_CV":
             st.session_state.web_tools_df = reindex_df(edited_df)
             st.success("Đã cập nhật dữ liệu thành công!")
             st.rerun()
+
+    render_io_excel_tools(st.session_state.web_tools_df, "web", "DanhMuc_CongCu_WEB_TMT")
 
 elif main_menu == "2 📋 DM QL Files":
     selected_cat = st.sidebar.selectbox("📂 Chọn mảng công việc:", CATEGORIES)
@@ -397,6 +443,8 @@ elif main_menu == "2 📋 DM QL Files":
                 st.success("Đã cập nhật dữ liệu!")
                 st.rerun()
 
+        render_io_excel_tools(current_df, selected_cat, f"HoSo_{selected_cat}")
+
 elif main_menu == "3 📊 DS BCdinhky_CV":
     st.subheader("📊 Bảng Danh Sách Báo Cáo Định Kỳ & Công Việc")
 
@@ -420,6 +468,8 @@ elif main_menu == "3 📊 DS BCdinhky_CV":
             st.success("Đã cập nhật Báo cáo định kỳ!")
             st.rerun()
 
+    render_io_excel_tools(st.session_state.bc_dinhky_df, "bc", "DanhSach_BaoCao_DinhKy_TMT")
+
 elif main_menu == "4 🟢 DS Gsheet_CV":
     st.subheader("🟢 Bảng Danh Sách Google Sheets_CV")
 
@@ -442,3 +492,5 @@ elif main_menu == "4 🟢 DS Gsheet_CV":
             st.session_state.gsheet_df = reindex_df(edited_df)
             st.success("Đã cập nhật danh sách Google Sheets!")
             st.rerun()
+
+    render_io_excel_tools(st.session_state.gsheet_df, "gsheet", "DanhSach_Gsheet_TMT")
