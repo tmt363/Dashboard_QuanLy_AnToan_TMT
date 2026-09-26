@@ -4,7 +4,7 @@ import os
 import openpyxl
 
 # ---------------------------------------------------------
-# 1. CẤU HÌNH TRANG & CUSTOM CSS (TỐI ƯU KHUNG HÌNH VÀ RỘNG MÀN HÌNH)
+# 1. CẤU HÌNH TRANG & CUSTOM CSS
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="Hệ Thống Quản Lý An Toàn TMT - Version 1.0 20260925",
@@ -12,22 +12,21 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS ép giao diện hiển thị tràn viền và thu nhỏ Sidebar
 st.markdown("""
     <style>
     /* 1. Ép vùng nội dung chính chiếm 98% độ rộng màn hình */
     .main .block-container {
         max-width: 98% !important;
-        padding-left: 1.5rem !important;
-        padding-right: 1.5rem !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
         padding-top: 1rem !important;
         padding-bottom: 1rem !important;
     }
 
     /* 2. Thu nhỏ độ rộng của Sidebar bên trái */
     [data-testid="stSidebar"] {
-        min-width: 230px !important;
-        max-width: 250px !important;
+        min-width: 220px !important;
+        max-width: 240px !important;
         background-color: #f1f3f5;
         border-right: 1px solid #dee2e6;
     }
@@ -185,7 +184,7 @@ DEFAULT_WEBSITES = [
     {'STT': 3, 'Mô tả WEB': 'QLAT SPC', 'Link truy cập': 'https://giamsatantoan.evnspc.vn/Home/Index', 'Ghi chú': 'Quản lý giám sát an toàn SPC'},
     {'STT': 4, 'Mô tả WEB': 'Lịch tuần', 'Link truy cập': 'https://lichtuan.evnspc.vn', 'Ghi chú': 'Công ty Điện lực Tây Ninh'},
     {'STT': 5, 'Mô tả WEB': 'Hệ thống PMIS', 'Link truy cập': 'https://pmis.evn.com.vn', 'Ghi chú': 'Quản lý vận hành thiết bị & lưới điện'},
-    {'STT': 6, 'Mô tả WEB': 'Tritm.la Dashboard 2026 DTTU ', 'Link truy cập': 'https://docs.google.com/spreadsheets/d/1gVAroFIytWwrBMCScYuXWbzlS1ZNXrPY4Pcgb__Dv-c/edit?gid=964445540#gid=964445540', 'Ghi chú': 'Google sheet CV'},
+    {'STT': 6, 'Mô tả WEB': 'Tritm.la Dashboard 2026 DTTU', 'Link truy cập': 'https://docs.google.com/spreadsheets/d/1gVAroFIytWwrBMCScYuXWbzlS1ZNXrPY4Pcgb__Dv-c/edit?gid=964445540#gid=964445540', 'Ghi chú': 'Google sheet CV'},
     {'STT': 7, 'Mô tả WEB': 'Hệ thống Giám sát Thiên tai Việt Nam', 'Link truy cập': 'https://vndms.gov.vn/', 'Ghi chú': 'Cảnh báo và phòng chống thiên tai'},
     {'STT': 8, 'Mô tả WEB': 'Hệ thống HRMS', 'Link truy cập': 'https://hrms.evn.com.vn', 'Ghi chú': 'Quản lý lao động tiền lương'},
     {'STT': 9, 'Mô tả WEB': 'Hệ thống E-Learning', 'Link truy cập': 'https://elearning.evn.com.vn', 'Ghi chú': 'Huấn luyện an toàn & thi trực tuyến'},
@@ -318,7 +317,7 @@ if "gsheet_df" not in st.session_state:
         ])
 
 # ---------------------------------------------------------
-# 6. GIAO DIỆN CÁC MỤC LÀM VIỆC (KHUNG RỘNG BÊN PHẢI)
+# 6. GIAO DIỆN CÁC MỤC LÀM VIỆC (CẤU HÌNH ĐỘ RỘNG CỘT CHUẨN)
 # ---------------------------------------------------------
 # MỤC 1: DS WEBsites_CV
 if main_menu == "1 🌐 DS WEBsites_CV":
@@ -331,10 +330,10 @@ if main_menu == "1 🌐 DS WEBsites_CV":
         use_container_width=True,
         column_order=["STT", "Mô tả WEB", "Link truy cập", "Ghi chú"],
         column_config={
-            "STT": st.column_config.NumberColumn("STT", format="%d", width="small"),
-            "Mô tả WEB": st.column_config.TextColumn("Mô tả WEB", width="large"),
-            "Link truy cập": st.column_config.LinkColumn("Link truy cập", display_text="🔗 Truy cập Web", width="medium"),
-            "Ghi chú": st.column_config.TextColumn("Ghi chú", width="medium")
+            "STT": st.column_config.NumberColumn("STT", format="%d", width=60),
+            "Mô tả WEB": st.column_config.TextColumn("Mô tả WEB", width=260),
+            "Link truy cập": st.column_config.LinkColumn("Link truy cập", display_text="🔗 Truy cập Web", width=150),
+            "Ghi chú": st.column_config.TextColumn("Ghi chú", width="large")
         },
         key="editor_web"
     )
@@ -393,10 +392,10 @@ elif main_menu == "2 📋 DM QL Files":
             use_container_width=True,
             column_order=["STT", "Thư mục / Hồ sơ", "Link xem", "Ghi chú"],
             column_config={
-                "STT": st.column_config.NumberColumn("STT", format="%d", width="small"),
-                "Thư mục / Hồ sơ": st.column_config.TextColumn("Thư mục / Hồ sơ", width="large"),
-                "Link xem": st.column_config.LinkColumn("Link xem", display_text="🔗 Mở xem", width="medium"),
-                "Ghi chú": st.column_config.TextColumn("Ghi chú", width="medium")
+                "STT": st.column_config.NumberColumn("STT", format="%d", width=60),
+                "Thư mục / Hồ sơ": st.column_config.TextColumn("Thư mục / Hồ sơ", width=300),
+                "Link xem": st.column_config.LinkColumn("Link xem", display_text="🔗 Mở xem", width=140),
+                "Ghi chú": st.column_config.TextColumn("Ghi chú", width="large")
             },
             key=f"editor_{selected_cat}"
         )
@@ -472,12 +471,12 @@ elif main_menu == "3 📊 DS BCdinhky_CV":
         use_container_width=True,
         column_order=["STT", "Tên Báo Cáo / Công Việc", "Tần suất", "Đơn vị nhận", "Link biểu mẫu", "Ghi chú"],
         column_config={
-            "STT": st.column_config.NumberColumn("STT", format="%d", width="small"),
-            "Tên Báo Cáo / Công Việc": st.column_config.TextColumn("Tên Báo Cáo / Công Việc", width="large"),
-            "Tần suất": st.column_config.SelectboxColumn("Tần suất", options=["Hàng Tuần", "Hàng Tháng", "Hàng Quý", "Hàng Năm", "Đột xuất"], width="medium"),
-            "Đơn vị nhận": st.column_config.TextColumn("Đơn vị nhận", width="medium"),
-            "Link biểu mẫu": st.column_config.LinkColumn("Link biểu mẫu", display_text="🔗 Tải / Xem Biểu Mẫu", width="medium"),
-            "Ghi chú": st.column_config.TextColumn("Ghi chú", width="medium")
+            "STT": st.column_config.NumberColumn("STT", format="%d", width=60),
+            "Tên Báo Cáo / Công Việc": st.column_config.TextColumn("Tên Báo Cáo / Công Việc", width=280),
+            "Tần suất": st.column_config.SelectboxColumn("Tần suất", options=["Hàng Tuần", "Hàng Tháng", "Hàng Quý", "Hàng Năm", "Đột xuất"], width=120),
+            "Đơn vị nhận": st.column_config.TextColumn("Đơn vị nhận", width=160),
+            "Link biểu mẫu": st.column_config.LinkColumn("Link biểu mẫu", display_text="🔗 Tải / Xem Biểu Mẫu", width=160),
+            "Ghi chú": st.column_config.TextColumn("Ghi chú", width="large")
         },
         key="editor_bc_dinhky"
     )
@@ -523,10 +522,10 @@ elif main_menu == "4 🟢 DS Gsheet_CV":
         use_container_width=True,
         column_order=["STT", "Mô tả Google Sheet", "Link Google Sheet", "Ghi chú"],
         column_config={
-            "STT": st.column_config.NumberColumn("STT", format="%d", width="small"),
-            "Mô tả Google Sheet": st.column_config.TextColumn("Mô tả Google Sheet", width="large"),
-            "Link Google Sheet": st.column_config.LinkColumn("Link Google Sheet", display_text="🔗 Mở Google Sheet", width="medium"),
-            "Ghi chú": st.column_config.TextColumn("Ghi chú", width="medium")
+            "STT": st.column_config.NumberColumn("STT", format="%d", width=60),
+            "Mô tả Google Sheet": st.column_config.TextColumn("Mô tả Google Sheet", width=280),
+            "Link Google Sheet": st.column_config.LinkColumn("Link Google Sheet", display_text="🔗 Mở Google Sheet", width=160),
+            "Ghi chú": st.column_config.TextColumn("Ghi chú", width="large")
         },
         key="editor_gsheet"
     )
