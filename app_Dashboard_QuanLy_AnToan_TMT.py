@@ -14,7 +14,7 @@ st.set_page_config(
 
 # Cấu hình tài khoản đăng nhập
 USER_CREDENTIALS = {
-    "ttm": "123456",     # Username: ttm | Pass: 123456
+    "tmt": "123456",     # Username: tmt | Pass: 123456
     "admin": "123456"
 }
 
@@ -46,7 +46,7 @@ if not st.session_state.logged_in:
                     st.rerun()
                 else:
                     st.error("❌ Tên đăng nhập hoặc mật khẩu không chính xác!")
-    st.stop()  # Dừng chương trình nếu chưa đăng nhập
+    st.stop()
 
 # ---------------------------------------------------------
 # 2. KHỞI TẠO ĐƯỜNG DẪN & DỮ LIỆU
@@ -58,6 +58,7 @@ if not os.path.exists(EXCEL_DIR):
 EXCEL_PATH_WEB = os.path.join(EXCEL_DIR, "DanhMuc_CongCu_WEB_TMT.xlsx")
 EXCEL_PATH_QUAN_LY = os.path.join(EXCEL_DIR, "QuanLy_AnToan_TMT.xlsx")
 EXCEL_PATH_BC_DINH_KY = os.path.join(EXCEL_DIR, "DanhSach_BaoCao_DinhKy_TMT.xlsx")
+EXCEL_PATH_GSHEET = os.path.join(EXCEL_DIR, "DanhSach_Gsheet_TMT.xlsx")
 
 CATEGORIES = [
     "DTTU_01 AT", "DTTU_01 AT 01 Bao cao", "DTTU_01 AT 01 Bao cao 2026",
@@ -123,7 +124,8 @@ main_menu = st.sidebar.radio(
     [
         "1 🌐 DS WEBsites_CV", 
         "2 📋 DM QL Files", 
-        "3 📊 DS BCdinhky_CV"
+        "3 📊 DS BCdinhky_CV",
+        "4 🟢 DS Gsheet_CV"
     ]
 )
 
@@ -176,6 +178,18 @@ if "bc_dinhky_df" not in st.session_state:
         st.session_state.bc_dinhky_df = pd.DataFrame([
             {"STT": 1, "Tên Báo Cáo / Công Việc": "Báo cáo công tác An toàn định kỳ Quý", "Tần suất": "Hàng Quý", "Đơn vị nhận": "Công ty Điện lực", "Link biểu mẫu": "https://drive.google.com", "Ghi chú": "Nộp trước ngày 20 cuối quý"},
             {"STT": 2, "Tên Báo Cáo / Công Việc": "Báo cáo công tác PCCC & CNCH", "Tần suất": "Hàng Tháng", "Đơn vị nhận": "Phòng An toàn", "Link biểu mẫu": "https://drive.google.com", "Ghi chú": "Nộp trước ngày 25 hàng tháng"}
+        ])
+
+if "gsheet_df" not in st.session_state:
+    if os.path.exists(EXCEL_PATH_GSHEET):
+        try:
+            st.session_state.gsheet_df = reindex_df(pd.read_excel(EXCEL_PATH_GSHEET))
+        except Exception:
+            pass
+    if "gsheet_df" not in st.session_state:
+        st.session_state.gsheet_df = pd.DataFrame([
+            {"STT": 1, "Mô tả Google Sheet": "Bảng Theo Dõi Công Việc Theo Tuần", "Link Google Sheet": "https://docs.google.com/spreadsheets", "Ghi chú": "Dùng chung phòng An Toàn"},
+            {"STT": 2, "Mô tả Google Sheet": "Theo Dõi Kiến Nghị Kiểm Tra", "Link Google Sheet": "https://docs.google.com/spreadsheets", "Ghi chú": "Cập nhật trực tuyến"}
         ])
 
 # ---------------------------------------------------------
@@ -362,6 +376,55 @@ elif main_menu == "3 📊 DS BCdinhky_CV":
                 df_bc_up = pd.read_excel(up_bc)
                 st.session_state.bc_dinhky_df = reindex_df(df_bc_up)
                 st.success("Đã cập nhật danh sách Báo Cáo Định Kỳ mới thành công!")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Lỗi đọc file Excel: {e}")
+
+# MỤC 4: DS Gsheet_CV
+elif main_menu == "4 🟢 DS Gsheet_CV":
+    st.subheader("🟢 Bảng Danh Sách Google Sheets_CV")
+    st.markdown("*(Sửa dữ liệu trực tiếp trong bảng -> Bấm **💾 Lưu cập nhật** bên dưới)*")
+
+    edited_gsheet_df = st.data_editor(
+        st.session_state.gsheet_df,
+        num_rows="dynamic",
+        use_container_width=True,
+        column_order=["STT", "Mô tả Google Sheet", "Link Google Sheet", "Ghi chú"],
+        column_config={
+            "STT": st.column_config.NumberColumn("STT", format="%d", width="small"),
+            "Mô tả Google Sheet": st.column_config.TextColumn("Mô tả Google Sheet", width="large"),
+            "Link Google Sheet": st.column_config.LinkColumn("Link Google Sheet", display_text="🔗 Mở Google Sheet", width="medium"),
+            "Ghi chú": st.column_config.TextColumn("Ghi chú", width="medium")
+        },
+        key="editor_gsheet"
+    )
+
+    if st.button("💾 Lưu cập nhật DS Google Sheets", type="primary"):
+        st.session_state.gsheet_df = reindex_df(edited_gsheet_df)
+        st.success("Đã lưu cập nhật danh sách Google Sheets thành công!")
+        st.rerun()
+
+    st.markdown("---")
+    st.subheader("📊 Xuất / Nhập Excel Google Sheets_CV")
+
+    col_g1, col_g2 = st.columns(2)
+    with col_g1:
+        if st.button("📥 Xuất toàn bộ Excel Google Sheets_CV", type="primary", use_container_width=True):
+            try:
+                with pd.ExcelWriter(EXCEL_PATH_GSHEET, engine='openpyxl') as writer:
+                    st.session_state.gsheet_df.to_excel(writer, sheet_name="GSHEETS", index=False)
+                    auto_fit_columns(writer.book)
+                st.success(f"Đã xuất file thành công tại:\n`{EXCEL_PATH_GSHEET}`")
+            except Exception as e:
+                st.error(f"Lỗi xuất file: {e}")
+
+    with col_g2:
+        up_g = st.file_uploader("Nhập file Excel Google Sheets để cập nhật:", type=["xlsx", "xls"], key="up_g")
+        if up_g:
+            try:
+                df_g_up = pd.read_excel(up_g)
+                st.session_state.gsheet_df = reindex_df(df_g_up)
+                st.success("Đã cập nhật danh sách Google Sheets mới thành công!")
                 st.rerun()
             except Exception as e:
                 st.error(f"Lỗi đọc file Excel: {e}")
