@@ -102,7 +102,7 @@ st.markdown("""
 
     /* Tỷ lệ cột */
     .col-stt { width: 50px !important; text-align: center; font-weight: 600; color: #64748b; }
-    .col-title { width: 25% !important; font-weight: 600; }
+    .col-title { width: 28% !important; font-weight: 600; }
     .col-link { width: 130px !important; text-align: center; }
     .col-note { width: auto !important; }
 
@@ -138,7 +138,7 @@ st.markdown("""
 # ---------------------------------------------------------
 # 2. BẢO MẬT ĐĂNG NHẬP
 # ---------------------------------------------------------
-USER_CREDENTIALS = {"ttm": "123456", "admin": "123456"}
+USER_CREDENTIALS = {"tmt": "123456", "admin": "123456"}
 
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -174,7 +174,7 @@ if not st.session_state.logged_in:
     st.stop()
 
 # ---------------------------------------------------------
-# 3. KHỞI TẠO ĐƯỜNG DẪN & DỮ LIỆU
+# 3. KHỞI TẠO ĐƯỜNG DẪN & DỮ LIỆU MẶC ĐỊNH CHUẨN TỪ FILE ANH TRÍ
 # ---------------------------------------------------------
 EXCEL_DIR = r"D:\0 2025 0 LUU OFFICE drive\0000 chua luu\0 0 0 app\000TmT_VBA_source\Dashboard_AnToan"
 if not os.path.exists(EXCEL_DIR):
@@ -198,6 +198,7 @@ CATEGORIES = [
     "Quy dinh SPC va EVN", "Quy dinh trao doi EVN-SPC-PCTN"
 ]
 
+# DỮ LIỆU MẶC ĐỊNH TRÍCH XUẤT CHÍNH XÁC TỪ FILE EXCEL ANH TRÍ GỬI
 DEFAULT_WEBSITES = [
     {'STT': 1, 'Mô tả WEB': 'D-Office', 'Link truy cập': 'https://doffice.evn.com.vn', 'Ghi chú': 'Công văn / văn bản EVN'},
     {'STT': 2, 'Mô tả WEB': 'Công cụ web trực tuyến', 'Link truy cập': 'https://www.congcuweb.net/', 'Ghi chú': 'Hiệu chỉnh tên công văn / văn bản'},
@@ -205,7 +206,16 @@ DEFAULT_WEBSITES = [
     {'STT': 4, 'Mô tả WEB': 'Lịch tuần', 'Link truy cập': 'https://lichtuan.evnspc.vn', 'Ghi chú': 'Công ty Điện lực Tây Ninh'},
     {'STT': 5, 'Mô tả WEB': 'Hệ thống PMIS', 'Link truy cập': 'https://pmis.evn.com.vn', 'Ghi chú': 'Quản lý vận hành thiết bị & lưới điện'},
     {'STT': 6, 'Mô tả WEB': 'Tritm.la Dashboard 2026 DTTU ', 'Link truy cập': 'https://docs.google.com/spreadsheets/d/1gVAroFIytWwrBMCScYuXWbzlS1ZNXrPY4Pcgb__Dv-c/edit?gid=964445540#gid=964445540', 'Ghi chú': 'Google sheet CV'},
-    {'STT': 7, 'Mô tả WEB': 'Hệ thống Giám sát Thiên tai Việt Nam', 'Link truy cập': 'https://vndms.gov.vn/', 'Ghi chú': 'Cảnh báo và phòng chống thiên tai'}
+    {'STT': 7, 'Mô tả WEB': 'Hệ thống Giám sát Thiên tai Việt Nam', 'Link truy cập': 'https://vndms.gov.vn/', 'Ghi chú': 'Cảnh báo và phòng chống thiên tai'},
+    {'STT': 8, 'Mô tả WEB': 'Hệ thống HRMS', 'Link truy cập': 'https://hrms.evn.com.vn', 'Ghi chú': 'Quản lý lao động tiền lương'},
+    {'STT': 9, 'Mô tả WEB': 'Hệ thống E-Learning', 'Link truy cập': 'https://elearning.evn.com.vn', 'Ghi chú': 'Huấn luyện an toàn & thi trực tuyến'},
+    {'STT': 10, 'Mô tả WEB': 'Cổng Dịch vụ công Quốc gia', 'Link truy cập': 'https://dichvucong.gov.vn', 'Ghi chú': 'Thực hiện thủ tục hành chính PCCC/ĐTXD'},
+    {'STT': 11, 'Mô tả WEB': 'Cổng Thông tin Bộ Công Thương', 'Link truy cập': 'https://moit.gov.vn', 'Ghi chú': 'Theo dõi văn bản quy phạm kỹ thuật'},
+    {'STT': 12, 'Mô tả WEB': 'Cổng Báo cáo Phòng chống thiên tai', 'Link truy cập': 'https://pctt.evn.com.vn', 'Ghi chú': 'Cập nhật tình hình PCTT & TKCN'},
+    {'STT': 13, 'Mô tả WEB': 'Hệ thống Quản lý Đầu tư Xây dựng (IMIS)', 'Link truy cập': 'https://imis.evn.com.vn', 'Ghi chú': 'Theo dõi an toàn dự án ĐTXD'},
+    {'STT': 14, 'Mô tả WEB': 'Hệ thống Thông tin Báo cáo EVN', 'Link truy cập': 'https://baocao.evn.com.vn', 'Ghi chú': 'Tổng hợp chỉ tiêu an toàn - kỹ thuật'},
+    {'STT': 15, 'Mô tả WEB': 'Lưu trữ Hồ sơ / Biểu mẫu TMT', 'Link truy cập': 'https://drive.google.com', 'Ghi chú': 'Kho lưu trữ dữ liệu dùng chung TMT'},
+    {'STT': 16, 'Mô tả WEB': 'Thư viện Quy chuẩn - Quy định An toàn', 'Link truy cập': 'https://drive.google.com', 'Ghi chú': 'Tra cứu tài liệu an toàn PCCC & ĐT'}
 ]
 
 def reindex_df(df):
@@ -217,7 +227,7 @@ def reindex_df(df):
 def to_excel_bytes(df):
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False, sheet_name='Data')
+        df.to_excel(writer, index=False, sheet_name='WEBSITES')
     return output.getvalue()
 
 if "active_tab" not in st.session_state:
@@ -305,7 +315,6 @@ with col_btn2:
 st.sidebar.markdown("<hr style='margin: 8px 0;'>", unsafe_allow_html=True)
 st.sidebar.markdown("**📁 MỤC LÀM VIỆC**")
 
-# Đã bổ sung _CV cho mục số 2 và đồng bộ định dạng
 menu_options = [
     ("1 🌐 DS WEBsites_CV", "1 🌐 DS WEBsites_CV"),
     ("2 📋 DM QL Files_CV", "2 📋 DM QL Files_CV"),
@@ -382,6 +391,7 @@ def render_io_excel_tools(df, current_key, file_prefix):
                         st.session_state.gsheet_df = new_df
                     else:
                         st.session_state.data_store[current_key] = new_df
+                    st.balloons()
                     st.success("Tải dữ liệu từ Excel thành công!")
                     st.rerun()
             except Exception as e:
@@ -409,6 +419,13 @@ if main_menu == "1 🌐 DS WEBsites_CV":
         btn_label="🔗 Truy cập Web"
     )
 
+    col_rst1, col_rst2 = st.columns([3, 1])
+    with col_rst2:
+        if st.button("🔄 Khôi phục 16 Web mặc định", type="secondary"):
+            st.session_state.web_tools_df = reindex_df(pd.DataFrame(DEFAULT_WEBSITES))
+            st.toast("Đã khôi phục 16 Web mặc định!", icon="🎉")
+            st.rerun()
+
     with st.expander("✏️ Chỉnh sửa / Thêm bớt dữ liệu trực tiếp"):
         edited_df = st.data_editor(
             st.session_state.web_tools_df,
@@ -422,7 +439,7 @@ if main_menu == "1 🌐 DS WEBsites_CV":
             st.success("Đã cập nhật dữ liệu thành công!")
             st.rerun()
 
-    render_io_excel_tools(st.session_state.web_tools_df, "web", "DanhMuc_CongCu_WEB_TMT")
+    render_io_excel_tools(st.session_state.web_tools_df, "web", "1 DS WEBsites_CV out_20260926 macdinh")
 
 elif main_menu == "2 📋 DM QL Files_CV":
     selected_cat = st.sidebar.selectbox("📂 Chọn mảng công việc:", CATEGORIES)
