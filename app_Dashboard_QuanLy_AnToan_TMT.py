@@ -14,7 +14,7 @@ st.set_page_config(
 
 # Cấu hình tài khoản đăng nhập
 USER_CREDENTIALS = {
-    "tmt": "123456",     # Username: tmt | Pass: 123456
+    "ttm": "123456",     # Username: ttm | Pass: 123456
     "admin": "123456"
 }
 
