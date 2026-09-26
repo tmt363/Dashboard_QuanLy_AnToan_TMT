@@ -4,7 +4,7 @@ import os
 import openpyxl
 
 # ---------------------------------------------------------
-# 1. CẤU HÌNH TRANG & BẢO MẬT ĐĂNG NHẬP
+# 1. CẤU HÌNH TRANG & CUSTOM CSS (GIAO DIỆN HIỆN ĐẠI & ĐẸP MẮT)
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="Hệ Thống Quản Lý An Toàn TMT - Version 1.0 20260925",
@@ -12,31 +12,118 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Cấu hình tài khoản đăng nhập
+# Custom CSS nâng cấp giao diện
+st.markdown("""
+    <style>
+    /* Tổng thể nền và font chữ */
+    .main {
+        background-color: #f8f9fa;
+    }
+    
+    /* Style cho Card tiêu đề chính */
+    .header-card {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: white;
+        padding: 20px 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-bottom: 25px;
+    }
+    .header-card h1 {
+        color: #ffffff !important;
+        font-size: 26px !important;
+        font-weight: 700 !important;
+        margin-bottom: 5px !important;
+    }
+    .version-badge {
+        background-color: rgba(255,255,255,0.2);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    /* Style lại nút bấm Streamlit (Buttons) */
+    div.stButton > button {
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        border: none !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.08) !important;
+    }
+    
+    /* Nút Primary (Lưu / Xuất Excel) */
+    div.stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%) !important;
+        color: white !important;
+    }
+    div.stButton > button[kind="primary"]:hover {
+        background: linear-gradient(135deg, #0a58ca 0%, #084298 100%) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(13,110,253,0.3) !important;
+    }
+
+    /* Nút Secondary (Đăng xuất / Xóa cache) */
+    div.stButton > button[kind="secondary"] {
+        background-color: #ffffff !important;
+        color: #495057 !important;
+        border: 1px solid #ced4da !important;
+    }
+    div.stButton > button[kind="secondary"]:hover {
+        background-color: #e9ecef !important;
+        color: #212529 !important;
+        transform: translateY(-1px);
+    }
+
+    /* Sidebar làm sạch và đẹp hơn */
+    [data-testid="stSidebar"] {
+        background-color: #f1f3f5;
+        border-right: 1px solid #dee2e6;
+    }
+
+    /* Tiêu đề subheader */
+    .stMarkdown h3 {
+        color: #1e3c72;
+        font-weight: 700;
+        border-left: 4px solid #0d6efd;
+        padding-left: 10px;
+        margin-top: 15px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# ---------------------------------------------------------
+# 2. BẢO MẬT ĐĂNG NHẬP
+# ---------------------------------------------------------
 USER_CREDENTIALS = {
-    "tmt": "123456",     # Username: tmt | Pass: 123456
+    "tmt": "123456",
     "admin": "123456"
 }
 
-# Quản lý Session State đăng nhập
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "username" not in st.session_state:
     st.session_state.username = ""
 
-# MÀN HÌNH ĐĂNG NHẬP
+# MÀN HÌNH ĐĂNG NHẬP SANG TRỌNG
 if not st.session_state.logged_in:
-    st.title("🛡️ HỆ THỐNG QUẢN LÝ AN TOÀN TMT")
-    st.caption("📌 Version 1.0 20260925")
-    st.markdown("---")
-    
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.subheader("🔐 Đăng Nhập Hệ Thống")
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown("""
+            <div style="background: white; padding: 35px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center;">
+                <h2 style="color: #1e3c72; margin-bottom: 5px;">🛡️ HỆ THỐNG QUẢN LÝ AN TOÀN</h2>
+                <span style="background: #e7f1ff; color: #0d6efd; padding: 5px 15px; border-radius: 20px; font-weight: 600; font-size: 13px;">Version 1.0 20260925</span>
+                <hr style="margin: 20px 0;">
+            </div>
+        """, unsafe_allow_html=True)
+        
         with st.form("login_form"):
+            st.markdown("##### 🔐 Đăng Nhập Tài Khoản")
             user_input = st.text_input("Tên đăng nhập:", value="tmt")
             pass_input = st.text_input("Mật khẩu:", type="password")
-            submit_login = st.form_submit_button("🔑 Đăng Nhập", type="primary", use_container_width=True)
+            submit_login = st.form_submit_button("🔑 ĐĂNG NHẬP", type="primary", use_container_width=True)
             
             if submit_login:
                 if user_input in USER_CREDENTIALS and USER_CREDENTIALS[user_input] == pass_input:
@@ -49,7 +136,7 @@ if not st.session_state.logged_in:
     st.stop()
 
 # ---------------------------------------------------------
-# 2. KHỞI TẠO ĐƯỜNG DẪN & DỮ LIỆU
+# 3. KHỞI TẠO ĐƯỜNG DẪN & DỮ LIỆU
 # ---------------------------------------------------------
 EXCEL_DIR = r"D:\0 2025 0 LUU OFFICE drive\0000 chua luu\0 0 0 app\000TmT_VBA_source\Dashboard_AnToan"
 if not os.path.exists(EXCEL_DIR):
@@ -96,29 +183,32 @@ def auto_fit_columns(workbook):
             worksheet.column_dimensions[col_letter].width = min(adjusted_width, 60)
 
 # HEADER CỦA HỆ THỐNG
-st.title("🛡️ Hệ Thống Quản Lý An Toàn & Công Tác Chuyên Môn TMT")
-st.markdown("##### 🏷️ **Version 1.0 20260925**")
-st.markdown("---")
+st.markdown("""
+    <div class="header-card">
+        <h1>🛡️ Hệ Thống Quản Lý An Toàn & Công Tác Chuyên Môn TMT</h1>
+        <span class="version-badge">🏷️ Version 1.0 20260925</span>
+    </div>
+""", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 3. SIDEBAR (THANH ĐIỀU HƯỚNG & ĐĂNG XUẤT)
+# 4. SIDEBAR (THANH ĐIỀU HƯỚNG & ĐĂNG XUẤT)
 # ---------------------------------------------------------
-st.sidebar.markdown(f"👤 **Xin chào:** `{st.session_state.username}`")
+st.sidebar.markdown(f"👤 **Tài khoản:** `{st.session_state.username}`")
 
 col_btn1, col_btn2 = st.sidebar.columns(2)
 with col_btn1:
-    if st.button("🚪 Đăng xuất", use_container_width=True):
+    if st.button("🚪 Đăng xuất", use_container_width=True, type="secondary"):
         st.session_state.logged_in = False
         st.session_state.username = ""
         st.rerun()
 
 with col_btn2:
-    if st.button("🧹 Xóa Cache", use_container_width=True):
+    if st.button("🧹 Xóa Cache", use_container_width=True, type="secondary"):
         st.cache_data.clear()
         st.toast("Đã xóa cache thành công!", icon="🎉")
 
 st.sidebar.markdown("---")
-st.sidebar.header("📂 PHÂN MỤC CHÍNH")
+st.sidebar.markdown("### 📂 PHÂN MỤC CHÍNH")
 main_menu = st.sidebar.radio(
     "Chọn phân mục làm việc:",
     [
@@ -130,10 +220,10 @@ main_menu = st.sidebar.radio(
 )
 
 st.sidebar.markdown("---")
-st.sidebar.caption(f"📌 Thư mục lưu trữ Excel:\n`{EXCEL_DIR}`")
+st.sidebar.caption(f"📌 **Thư mục lưu trữ Excel:**\n`{EXCEL_DIR}`")
 
 # ---------------------------------------------------------
-# 4. KHO DỮ LIỆU SESSION STATE
+# 5. KHO DỮ LIỆU SESSION STATE
 # ---------------------------------------------------------
 if "web_tools_df" not in st.session_state:
     if os.path.exists(EXCEL_PATH_WEB):
@@ -193,12 +283,12 @@ if "gsheet_df" not in st.session_state:
         ])
 
 # ---------------------------------------------------------
-# 5. GIAO DIỆN CÁC MỤC LÀM VIỆC
+# 6. GIAO DIỆN CÁC MỤC LÀM VIỆC
 # ---------------------------------------------------------
 # MỤC 1: DS WEBsites_CV
 if main_menu == "1 🌐 DS WEBsites_CV":
     st.subheader("🌐 Bảng Danh Sách WEBsites_CV")
-    st.markdown("*(Sửa dữ liệu trực tiếp trong bảng -> Bấm **💾 Lưu cập nhật** bên dưới)*")
+    st.caption("💡 *Mẹo: Anh có thể sửa trực tiếp trong bảng rồi bấm **Lưu cập nhật** bên dưới.*")
 
     edited_web_df = st.data_editor(
         st.session_state.web_tools_df,
@@ -214,17 +304,17 @@ if main_menu == "1 🌐 DS WEBsites_CV":
         key="editor_web"
     )
 
-    if st.button("💾 Lưu cập nhật DS WEBsites_CV", type="primary"):
+    if st.button("💾 Lưu Cập Nhật DS WEBsites_CV", type="primary"):
         st.session_state.web_tools_df = reindex_df(edited_web_df)
         st.success("Đã lưu cập nhật danh sách WEBsites thành công!")
         st.rerun()
 
     st.markdown("---")
-    st.subheader("📊 Xuất / Nhập Excel WEBsites_CV")
+    st.subheader("📊 Xuất / Nhập Dữ Liệu Excel")
     
     col_w1, col_w2 = st.columns(2)
     with col_w1:
-        if st.button("📥 Xuất toàn bộ Excel WEBsites_CV", type="primary", use_container_width=True):
+        if st.button("📥 Xuất Toàn Bộ Excel WEBsites_CV", type="primary", use_container_width=True):
             try:
                 with pd.ExcelWriter(EXCEL_PATH_WEB, engine='openpyxl') as writer:
                     st.session_state.web_tools_df.to_excel(writer, sheet_name="WEBSITES", index=False)
@@ -246,12 +336,12 @@ if main_menu == "1 🌐 DS WEBsites_CV":
 
 # MỤC 2: DM QL Files
 elif main_menu == "2 📋 DM QL Files":
-    st.sidebar.subheader("📋 Danh Mục Quản Lý")
+    st.sidebar.markdown("### 📋 Danh Mục Quản Lý")
     selected_cat = st.sidebar.radio("Chọn mảng công việc:", CATEGORIES)
 
     if selected_cat:
         st.subheader(f"📂 Quản Lý Hồ Sơ: {selected_cat}")
-        st.markdown("*(Sửa dữ liệu trực tiếp trong bảng -> Bấm **💾 Lưu cập nhật** bên dưới)*")
+        st.caption("💡 *Mẹo: Anh có thể sửa trực tiếp trong bảng rồi bấm **Lưu cập nhật** bên dưới.*")
 
         current_df = st.session_state.data_store[selected_cat]
 
@@ -269,17 +359,17 @@ elif main_menu == "2 📋 DM QL Files":
             key=f"editor_{selected_cat}"
         )
 
-        if st.button("💾 Lưu cập nhật Mảng Công Việc", type="primary"):
+        if st.button("💾 Lưu Cập Nhật Mảng Công Việc", type="primary"):
             st.session_state.data_store[selected_cat] = reindex_df(edited_df)
             st.success(f"Đã lưu cập nhật cho **{selected_cat}**!")
             st.rerun()
 
     st.markdown("---")
-    st.subheader("📊 Xuất / Nhập Excel Quản Lý Hồ Sơ")
+    st.subheader("📊 Xuất / Nhập Dữ Liệu Excel")
 
     col_q1, col_q2 = st.columns(2)
     with col_q1:
-        if st.button("📥 Xuất toàn bộ Excel DM QL Files", type="primary", use_container_width=True):
+        if st.button("📥 Xuất Toàn Bộ Excel DM QL Files", type="primary", use_container_width=True):
             try:
                 with pd.ExcelWriter(EXCEL_PATH_QUAN_LY, engine='openpyxl') as writer:
                     summary_list = []
@@ -332,7 +422,7 @@ elif main_menu == "2 📋 DM QL Files":
 # MỤC 3: DS BCdinhky_CV
 elif main_menu == "3 📊 DS BCdinhky_CV":
     st.subheader("📊 Bảng Danh Sách Báo Cáo Định Kỳ & Công Việc")
-    st.markdown("*(Sửa dữ liệu trực tiếp trong bảng -> Bấm **💾 Lưu cập nhật** bên dưới)*")
+    st.caption("💡 *Mẹo: Anh có thể sửa trực tiếp trong bảng rồi bấm **Lưu cập nhật** bên dưới.*")
 
     edited_bc_df = st.data_editor(
         st.session_state.bc_dinhky_df,
@@ -350,17 +440,17 @@ elif main_menu == "3 📊 DS BCdinhky_CV":
         key="editor_bc_dinhky"
     )
 
-    if st.button("💾 Lưu cập nhật DS Báo Cáo Định Kỳ", type="primary"):
+    if st.button("💾 Lưu Cập Nhật DS Báo Cáo Định Kỳ", type="primary"):
         st.session_state.bc_dinhky_df = reindex_df(edited_bc_df)
         st.success("Đã lưu cập nhật danh sách Báo Cáo Định Kỳ thành công!")
         st.rerun()
 
     st.markdown("---")
-    st.subheader("📊 Xuất / Nhập Excel Báo Cáo Định Kỳ")
+    st.subheader("📊 Xuất / Nhập Dữ Liệu Excel")
 
     col_bc1, col_bc2 = st.columns(2)
     with col_bc1:
-        if st.button("📥 Xuất toàn bộ Excel Báo Cáo Định Kỳ", type="primary", use_container_width=True):
+        if st.button("📥 Xuất Toàn Bộ Excel Báo Cáo Định Kỳ", type="primary", use_container_width=True):
             try:
                 with pd.ExcelWriter(EXCEL_PATH_BC_DINH_KY, engine='openpyxl') as writer:
                     st.session_state.bc_dinhky_df.to_excel(writer, sheet_name="BAO_CAO_DINH_KY", index=False)
@@ -383,7 +473,7 @@ elif main_menu == "3 📊 DS BCdinhky_CV":
 # MỤC 4: DS Gsheet_CV
 elif main_menu == "4 🟢 DS Gsheet_CV":
     st.subheader("🟢 Bảng Danh Sách Google Sheets_CV")
-    st.markdown("*(Sửa dữ liệu trực tiếp trong bảng -> Bấm **💾 Lưu cập nhật** bên dưới)*")
+    st.caption("💡 *Mẹo: Anh có thể sửa trực tiếp trong bảng rồi bấm **Lưu cập nhật** bên dưới.*")
 
     edited_gsheet_df = st.data_editor(
         st.session_state.gsheet_df,
@@ -399,17 +489,17 @@ elif main_menu == "4 🟢 DS Gsheet_CV":
         key="editor_gsheet"
     )
 
-    if st.button("💾 Lưu cập nhật DS Google Sheets", type="primary"):
+    if st.button("💾 Lưu Cập Nhật DS Google Sheets", type="primary"):
         st.session_state.gsheet_df = reindex_df(edited_gsheet_df)
         st.success("Đã lưu cập nhật danh sách Google Sheets thành công!")
         st.rerun()
 
     st.markdown("---")
-    st.subheader("📊 Xuất / Nhập Excel Google Sheets_CV")
+    st.subheader("📊 Xuất / Nhập Dữ Liệu Excel")
 
     col_g1, col_g2 = st.columns(2)
     with col_g1:
-        if st.button("📥 Xuất toàn bộ Excel Google Sheets_CV", type="primary", use_container_width=True):
+        if st.button("📥 Xuất Toàn Bộ Excel Google Sheets_CV", type="primary", use_container_width=True):
             try:
                 with pd.ExcelWriter(EXCEL_PATH_GSHEET, engine='openpyxl') as writer:
                     st.session_state.gsheet_df.to_excel(writer, sheet_name="GSHEETS", index=False)
