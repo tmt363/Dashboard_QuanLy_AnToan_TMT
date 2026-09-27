@@ -4,7 +4,7 @@ import os
 import io
 
 # ---------------------------------------------------------
-# 1. CẤU HÌNH TRANG & CUSTOM CSS TỐI ƯU GIAO DIỆN CHUẨN
+# 1. CẤU HÌNH TRANG & CUSTOM CSS TỐI ƯU DARK/LIGHT MODE
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="Hệ Thống Quản Lý An Toàn TMT",
@@ -20,19 +20,23 @@ st.markdown("""
         padding: 0.5rem 0.8rem !important;
     }
 
-    /* 2. Mở rộng Sidebar & căn chỉnh lề đều đẹp */
+    /* 2. Ép Cố Định Màu Cho Sidebar (Chống Lỗi Dark Mode) */
     [data-testid="stSidebar"] {
         min-width: 250px !important;
         max-width: 270px !important;
-        background-color: #f8f9fa;
-        border-right: 1px solid #e9ecef;
+        background-color: #f1f5f9 !important;
+        border-right: 1px solid #cbd5e1 !important;
+    }
+
+    [data-testid="stSidebar"] * {
+        color: #0f172a !important; /* Ép chữ Sidebar luôn màu tối rõ nét */
     }
 
     [data-testid="stSidebar"] > div:first-child {
         padding: 0.8rem 0.6rem !important;
     }
 
-    /* Đảm bảo tất cả nút bấm trong Sidebar căn lề trái thẳng hàng 1 dãy */
+    /* Đảm bảo tất cả nút bấm trong Sidebar căn lề trái thẳng hàng */
     [data-testid="stSidebar"] .stButton > button {
         text-align: left !important;
         justify-content: flex-start !important;
@@ -42,24 +46,26 @@ st.markdown("""
     /* 3. Header Card tiêu đề */
     .header-card {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-        color: white;
-        padding: 8px 15px;
+        color: #ffffff !important;
+        padding: 10px 18px;
         border-radius: 6px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
         margin-bottom: 12px;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        width: 100%;
     }
     .header-card h1 {
         color: #ffffff !important;
-        font-size: 16px !important;
+        font-size: 17px !important;
         font-weight: 700 !important;
         margin: 0 !important;
     }
     .version-badge {
-        background-color: rgba(255,255,255,0.2);
-        padding: 2px 8px;
+        background-color: rgba(255,255,255,0.25);
+        color: #ffffff !important;
+        padding: 3px 10px;
         border-radius: 12px;
         font-size: 11px;
         font-weight: 600;
@@ -79,11 +85,11 @@ st.markdown("""
         border-collapse: collapse;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         font-size: 13px;
-        background-color: #ffffff;
+        background-color: #ffffff !important;
     }
     .custom-table th {
-        background-color: #f1f5f9;
-        color: #334155;
+        background-color: #e2e8f0 !important;
+        color: #0f172a !important;
         font-weight: 700;
         text-align: left;
         padding: 10px 12px;
@@ -93,15 +99,15 @@ st.markdown("""
     .custom-table td {
         padding: 8px 12px;
         border-bottom: 1px solid #e2e8f0;
-        color: #1e293b;
+        color: #0f172a !important;
         vertical-align: middle;
     }
     .custom-table tr:hover {
-        background-color: #f8fafc;
+        background-color: #f1f5f9 !important;
     }
 
     /* Tỷ lệ cột */
-    .col-stt { width: 50px !important; text-align: center; font-weight: 600; color: #64748b; }
+    .col-stt { width: 50px !important; text-align: center; font-weight: 600; color: #475569 !important; }
     .col-title { width: 28% !important; font-weight: 600; }
     .col-link { width: 130px !important; text-align: center; }
     .col-note { width: auto !important; }
@@ -109,9 +115,9 @@ st.markdown("""
     /* Nút bấm liên kết */
     .btn-link-action {
         display: inline-block;
-        background-color: #0d6efd;
+        background-color: #0d6efd !important;
         color: #ffffff !important;
-        padding: 4px 10px;
+        padding: 5px 12px;
         border-radius: 4px;
         text-decoration: none !important;
         font-size: 12px;
@@ -120,17 +126,17 @@ st.markdown("""
         white-space: nowrap;
     }
     .btn-link-action:hover {
-        background-color: #0b5ed7;
+        background-color: #0b5ed7 !important;
     }
 
     .path-box {
-        background-color: #eef2f7;
-        border: 1px dashed #cbd5e1;
+        background-color: #e2e8f0;
+        border: 1px dashed #94a3b8;
         padding: 6px;
         border-radius: 5px;
         font-size: 10px;
         word-break: break-all;
-        color: #475569;
+        color: #334155 !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -198,7 +204,6 @@ CATEGORIES = [
     "Quy dinh SPC va EVN", "Quy dinh trao doi EVN-SPC-PCTN"
 ]
 
-# DỮ LIỆU MẶC ĐỊNH TRÍCH XUẤT CHÍNH XÁC TỪ FILE EXCEL ANH TRÍ GỬI
 DEFAULT_WEBSITES = [
     {'STT': 1, 'Mô tả WEB': 'D-Office', 'Link truy cập': 'https://doffice.evn.com.vn', 'Ghi chú': 'Công văn / văn bản EVN'},
     {'STT': 2, 'Mô tả WEB': 'Công cụ web trực tuyến', 'Link truy cập': 'https://www.congcuweb.net/', 'Ghi chú': 'Hiệu chỉnh tên công văn / văn bản'},
