@@ -4,7 +4,7 @@ import os
 import io
 
 # ---------------------------------------------------------
-# 1. CẤU HÌNH TRANG & CUSTOM CSS TỐI ƯU GIAO DIỆN CHUẨN
+# 1. CẤU HÌNH TRANG & CUSTOM CSS
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="Hệ Thống Quản Lý An Toàn TMT",
@@ -14,13 +14,13 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-    /* 1. Ép giao diện tràn viền tối đa */
+    /* Ép giao diện tràn viền tối đa */
     .main .block-container {
         max-width: 99% !important;
         padding: 0.5rem 0.8rem !important;
     }
 
-    /* 2. Mở rộng Sidebar đủ rộng để không bị mất chữ nút Thoát/Cache */
+    /* Mở rộng Sidebar đủ rộng */
     [data-testid="stSidebar"] {
         min-width: 260px !important;
         max-width: 280px !important;
@@ -28,11 +28,7 @@ st.markdown("""
         border-right: 1px solid #e9ecef;
     }
 
-    [data-testid="stSidebar"] > div:first-child {
-        padding: 0.8rem 0.6rem !important;
-    }
-
-    /* 3. Header Card tiêu đề */
+    /* Header Card tiêu đề */
     .header-card {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         color: white;
@@ -56,64 +52,6 @@ st.markdown("""
         border-radius: 12px;
         font-size: 11px;
         font-weight: 600;
-    }
-
-    /* 4. Định dạng Bảng HTML Responsive */
-    .custom-table-container {
-        width: 100%;
-        overflow-x: auto;
-        border: 1px solid #cbd5e1;
-        border-radius: 6px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        margin-bottom: 15px;
-    }
-    .custom-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        font-size: 13px;
-        background-color: #ffffff;
-    }
-    .custom-table th {
-        background-color: #f1f5f9;
-        color: #334155;
-        font-weight: 700;
-        text-align: left;
-        padding: 10px 12px;
-        border-bottom: 2px solid #cbd5e1;
-        white-space: nowrap;
-    }
-    .custom-table td {
-        padding: 8px 12px;
-        border-bottom: 1px solid #e2e8f0;
-        color: #1e293b;
-        vertical-align: middle;
-    }
-    .custom-table tr:hover {
-        background-color: #f8fafc;
-    }
-
-    /* Tỷ lệ cột */
-    .col-stt { width: 50px !important; text-align: center; font-weight: 600; color: #64748b; }
-    .col-title { width: 25% !important; font-weight: 600; }
-    .col-link { width: 130px !important; text-align: center; }
-    .col-note { width: auto !important; }
-
-    /* Nút bấm liên kết */
-    .btn-link-action {
-        display: inline-block;
-        background-color: #0d6efd;
-        color: #ffffff !important;
-        padding: 4px 10px;
-        border-radius: 4px;
-        text-decoration: none !important;
-        font-size: 12px;
-        font-weight: 600;
-        text-align: center;
-        white-space: nowrap;
-    }
-    .btn-link-action:hover {
-        background-color: #0b5ed7;
     }
 
     .path-box {
@@ -172,11 +110,6 @@ if not st.session_state.logged_in:
 EXCEL_DIR = r"D:\0 2025 0 LUU OFFICE drive\0000 chua luu\0 0 0 app\000TmT_VBA_source\Dashboard_AnToan"
 if not os.path.exists(EXCEL_DIR):
     EXCEL_DIR = os.path.dirname(os.path.abspath(__file__))
-
-EXCEL_PATH_WEB = os.path.join(EXCEL_DIR, "DanhMuc_CongCu_WEB_TMT.xlsx")
-EXCEL_PATH_QUAN_LY = os.path.join(EXCEL_DIR, "QuanLy_AnToan_TMT.xlsx")
-EXCEL_PATH_BC_DINH_KY = os.path.join(EXCEL_DIR, "DanhSach_BaoCao_DinhKy_TMT.xlsx")
-EXCEL_PATH_GSHEET = os.path.join(EXCEL_DIR, "DanhSach_Gsheet_TMT.xlsx")
 
 CATEGORIES = [
     "DTTU_01 AT", "DTTU_01 AT 01 Bao cao", "DTTU_01 AT 01 Bao cao 2026",
@@ -242,12 +175,12 @@ if "gsheet_df" not in st.session_state:
 st.markdown("""
     <div class="header-card">
         <h1>🛡️ Quản lý an toàn TTM</h1>
-        <span class="version-badge">Version 1.0</span>
+        <span class="version-badge">Version 1.0 20260928</span>
     </div>
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 4. SIDEBAR CHUYÊN NGHIỆP
+# 4. SIDEBAR
 # ---------------------------------------------------------
 st.sidebar.markdown(f"👤 **User:** `{st.session_state.username}`")
 
@@ -287,15 +220,15 @@ st.sidebar.markdown("**📌 Thư mục Excel:**")
 st.sidebar.markdown(f'<div class="path-box">{EXCEL_DIR}</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 5. DIALOG NÚT CHỈNH SỬA & THÊM LINK ĐỘNG (DYNAMIC POPUP)
+# 5. DIALOG POP-UP CÓ NÚT "➕ Thêm link"
 # ---------------------------------------------------------
 @st.dialog("✏️ Chỉnh sửa mục")
-def edit_item_dialog(df, idx, item_type="gsheet", category_name=None):
-    row = df.loc[idx]
+def edit_item_dialog(df_ref, idx, item_type="gsheet", category_name=None):
+    row = df_ref.loc[idx]
     
-    # 1. Thu thập tất cả các Link hiện có
+    # Lấy danh sách link hiện có
     existing_links = []
-    for col in df.columns:
+    for col in df_ref.columns:
         if "Link" in col and str(row[col]) != "nan" and str(row[col]).strip() != "":
             existing_links.append(str(row[col]))
             
@@ -305,7 +238,7 @@ def edit_item_dialog(df, idx, item_type="gsheet", category_name=None):
     if f"link_count_{item_type}_{idx}" not in st.session_state:
         st.session_state[f"link_count_{item_type}_{idx}"] = len(existing_links)
 
-    # 2. Các ô nhập liệu theo tiêu đề
+    # Các ô nhập nội dung
     if item_type == "web":
         title_val = st.text_input("Mô tả WEB:", value=str(row.get("Mô tả WEB", "")))
     elif item_type == "hoso":
@@ -317,37 +250,37 @@ def edit_item_dialog(df, idx, item_type="gsheet", category_name=None):
     else:
         title_val = st.text_input("Mô tả Google Sheet:", value=str(row.get("Mô tả Google Sheet", "")))
 
-    # 3. Hiển thị động danh sách Link
+    # Ô nhập link linh hoạt
     new_links = []
     curr_count = st.session_state[f"link_count_{item_type}_{idx}"]
     for i in range(curr_count):
         init_val = existing_links[i] if i < len(existing_links) else ""
-        link_val = st.text_input(f"Link {i+1} (nếu có):" if i > 0 else "Link 1:", value=init_val, key=f"inp_link_{item_type}_{idx}_{i}")
+        link_label = f"Link {i+1}:" if i == 0 else f"Link {i+1} (nếu có):"
+        link_val = st.text_input(link_label, value=init_val, key=f"inp_link_{item_type}_{idx}_{i}")
         new_links.append(link_val)
 
-    # 4. NÚT TỰ ĐỘNG CHÈN THÊM Ô LINK
+    # Nút bấm Thêm link
     if st.button("➕ Thêm link", type="secondary"):
         st.session_state[f"link_count_{item_type}_{idx}"] += 1
         st.rerun()
 
     ghichu_val = st.text_input("Ghi chú:", value=str(row.get("Ghi chú", "")))
 
-    # 5. Lưu lại
     if st.button("💾 Cập nhật", type="primary", use_container_width=True):
         if item_type == "web":
-            st.session_state.web_tools_df.at[idx, "Mô tả WEB"] = title_val
             target_df = st.session_state.web_tools_df
+            target_df.at[idx, "Mô tả WEB"] = title_val
         elif item_type == "hoso":
-            st.session_state.data_store[category_name].at[idx, "Thư mục / Hồ sơ"] = title_val
             target_df = st.session_state.data_store[category_name]
+            target_df.at[idx, "Thư mục / Hồ sơ"] = title_val
         elif item_type == "bc":
-            st.session_state.bc_dinhky_df.at[idx, "Tên Báo Cáo / Công Việc"] = title_val
-            st.session_state.bc_dinhky_df.at[idx, "Tần suất"] = tan_suat
-            st.session_state.bc_dinhky_df.at[idx, "Đơn vị nhận"] = don_vi
             target_df = st.session_state.bc_dinhky_df
+            target_df.at[idx, "Tên Báo Cáo / Công Việc"] = title_val
+            target_df.at[idx, "Tần suất"] = tan_suat
+            target_df.at[idx, "Đơn vị nhận"] = don_vi
         else:
-            st.session_state.gsheet_df.at[idx, "Mô tả Google Sheet"] = title_val
             target_df = st.session_state.gsheet_df
+            target_df.at[idx, "Mô tả Google Sheet"] = title_val
 
         for i, l_val in enumerate(new_links):
             target_df.at[idx, f"Link {i+1}"] = l_val
@@ -357,49 +290,34 @@ def edit_item_dialog(df, idx, item_type="gsheet", category_name=None):
         st.rerun()
 
 # ---------------------------------------------------------
-# 6. HIỂN THỊ BẢNG TRUY CẬP TRỰC TIẾP
+# 6. BẢNG HIỂN THỊ STREAMLIT GỐC
 # ---------------------------------------------------------
-def render_perfect_table(df, title_col, item_type="gsheet", category_name=None):
-    rows_html = ""
-    for idx, row in df.iterrows():
-        stt = row.get("STT", idx + 1)
-        title = row.get(title_col, "")
-        note = row.get("Ghi chú", "")
-        
-        # Gom các nút bấm link
-        link_btns = []
-        for col in df.columns:
-            if "Link" in col and str(row[col]) != "nan" and str(row[col]).strip() != "":
-                l_url = str(row[col])
-                l_num = col.replace("Link ", "Link ")
-                link_btns.append(f'<a class="btn-link-action" href="{l_url}" target="_blank">{l_num}</a>')
-        
-        btn_html = " ".join(link_btns) if link_btns else "-"
-        rows_html += f'<tr><td class="col-stt">{stt}</td><td class="col-title">{title}</td><td class="col-link">{btn_html}</td><td class="col-note">{note}</td></tr>'
+def render_data_table(df, title_col, item_type="gsheet", category_name=None):
+    # Cấu hình các cột hiển thị
+    column_config = {
+        "STT": st.column_config.NumberColumn("STT", width="small"),
+        title_col: st.column_config.TextColumn(title_col, width="large"),
+        "Ghi chú": st.column_config.TextColumn("Ghi chú", width="medium"),
+    }
+    
+    # Cấu hình các cột Link thành dạng Link bấm được
+    for col in df.columns:
+        if "Link" in col:
+            column_config[col] = st.column_config.LinkColumn(col, display_text="Link", width="small")
 
-    full_table_html = f'''
-    <div class="custom-table-container">
-        <table class="custom-table">
-            <thead>
-                <tr>
-                    <th class="col-stt">STT</th>
-                    <th class="col-title">{title_col}</th>
-                    <th class="col-link">Links truy cập</th>
-                    <th class="col-note">Ghi chú</th>
-                </tr>
-            </thead>
-            <tbody>
-                {rows_html}
-            </tbody>
-        </table>
-    </div>
-    '''
-    st.markdown(full_table_html, unsafe_allow_html=True)
+    # Hiển thị bảng dữ liệu với nút sửa ✏️ và xóa 🗑️ trực tiếp từng dòng
+    edited_df = st.data_editor(
+        df,
+        column_config=column_config,
+        use_container_width=True,
+        hide_index=True,
+        num_rows="dynamic",
+        key=f"editor_{item_type}_{category_name}"
+    )
 
-    # Dòng nút Thao tác Chỉnh sửa / Xóa bên dưới bảng
-    col_act1, col_act2 = st.columns([1, 4])
-    with col_act1:
-        if st.button("➕ Thêm mới", type="primary", key=f"add_new_{item_type}_{category_name}"):
+    col_a, col_b = st.columns([1, 4])
+    with col_a:
+        if st.button("➕ Thêm mới", type="primary", key=f"btn_add_{item_type}_{category_name}"):
             new_idx = len(df)
             if item_type == "web":
                 st.session_state.web_tools_df.loc[new_idx] = {"STT": new_idx+1, "Mô tả WEB": "Mô tả mới", "Link 1": "", "Ghi chú": ""}
@@ -410,14 +328,6 @@ def render_perfect_table(df, title_col, item_type="gsheet", category_name=None):
             else:
                 st.session_state.gsheet_df.loc[new_idx] = {"STT": new_idx+1, "Mô tả Google Sheet": "Sheet mới", "Link 1": "", "Ghi chú": ""}
             st.rerun()
-
-    # Bảng danh sách nút Sửa từng dòng
-    st.markdown("##### ⚙️ Thao tác chỉnh sửa từng dòng:")
-    cols_edit = st.columns(min(len(df), 10) if len(df) > 0 else 1)
-    for i, _ in df.iterrows():
-        col_target = cols_edit[i % len(cols_edit)]
-        if col_target.button(f"✏️ Sửa dòng {i+1}", key=f"edit_btn_{item_type}_{i}"):
-            edit_item_dialog(df, i, item_type, category_name)
 
 # ---------------------------------------------------------
 # 7. BỘ CÔNG CỤ NHẬP / XUẤT EXCEL
@@ -463,7 +373,7 @@ def render_io_excel_tools(df, current_key, file_prefix):
 # ---------------------------------------------------------
 if main_menu == "1 🌐 DS WEBsites_CV":
     st.subheader("🌐 Bảng Danh Sách WEBsites_CV")
-    render_perfect_table(st.session_state.web_tools_df, title_col="Mô tả WEB", item_type="web")
+    render_data_table(st.session_state.web_tools_df, title_col="Mô tả WEB", item_type="web")
     render_io_excel_tools(st.session_state.web_tools_df, "web", "DanhMuc_CongCu_WEB_TMT")
 
 elif main_menu == "2 📋 DM QL Files_CV":
@@ -471,15 +381,15 @@ elif main_menu == "2 📋 DM QL Files_CV":
     if selected_cat:
         st.subheader(f"📂 Quản Lý Hồ Sơ: {selected_cat}")
         current_df = st.session_state.data_store[selected_cat]
-        render_perfect_table(current_df, title_col="Thư mục / Hồ sơ", item_type="hoso", category_name=selected_cat)
+        render_data_table(current_df, title_col="Thư mục / Hồ sơ", item_type="hoso", category_name=selected_cat)
         render_io_excel_tools(current_df, selected_cat, f"HoSo_{selected_cat}")
 
 elif main_menu == "3 📊 DS BCdinhky_CV":
     st.subheader("📊 Bảng Danh Sách Báo Cáo Định Kỳ & Công Việc")
-    render_perfect_table(st.session_state.bc_dinhky_df, title_col="Tên Báo Cáo / Công Việc", item_type="bc")
+    render_data_table(st.session_state.bc_dinhky_df, title_col="Tên Báo Cáo / Công Việc", item_type="bc")
     render_io_excel_tools(st.session_state.bc_dinhky_df, "bc", "DanhSach_BaoCao_DinhKy_TMT")
 
 elif main_menu == "4 🟢 DS Gsheet_CV":
     st.subheader("🟢 Bảng Danh Sách Google Sheets_CV")
-    render_perfect_table(st.session_state.gsheet_df, title_col="Mô tả Google Sheet", item_type="gsheet")
+    render_data_table(st.session_state.gsheet_df, title_col="Mô tả Google Sheet", item_type="gsheet")
     render_io_excel_tools(st.session_state.gsheet_df, "gsheet", "DanhSach_Gsheet_TMT")
