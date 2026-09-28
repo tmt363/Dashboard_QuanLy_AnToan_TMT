@@ -2,220 +2,132 @@ import streamlit as st
 import pandas as pd
 import os
 import io
-import base64
 
 # ---------------------------------------------------------
-# 1. CẤU HÌNH TRANG & SESSION STATE BAN ĐẦU
+# 1. CẤU HÌNH TRANG & CUSTOM CSS CĂN CHỈNH BẰNG HÀNG NGANG
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="Hệ Thống Quản Lý An Toàn TTM",
+    page_title="Hệ Thống Quản Lý An Toàn TMT",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Quản lý chế độ Giao diện (Light / Dark Mode)
-if "theme_mode" not in st.session_state:
-    st.session_state.theme_mode = "Light"
-
-# Xác thực đăng nhập & Phân quyền Admin
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-if "username" not in st.session_state:
-    st.session_state.username = ""
-if "is_admin_mode" not in st.session_state:
-    st.session_state.is_admin_mode = False
-
-if "user_profile" not in st.session_state:
-    st.session_state.user_profile = {
-        "display_name": "Trần Minh Trí (tmt)",
-        "role": "🟢 Quản trị viên TTM",
-        "avatar_bytes": None
+# CSS triệt tiêu lề thụt trên cùng để Khối 1 và Khối 2 thẳng hàng ngang
+st.markdown("""
+    <style>
+    /* 1. Ép phần lề trên cùng của Main và Sidebar bằng nhau tuyệt đối */
+    .main .block-container {
+        max-width: 99% !important;
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+        padding-left: 1.5rem !important;
+        padding-right: 1.5rem !important;
     }
 
-USER_CREDENTIALS = {"tmt": "123456", "admin": "123456"}
-ADMIN_PIN_CODE = "123456"
-
-# ---------------------------------------------------------
-# 2. CUSTOM CSS - ĐÃ FIX KHUNG 1 CỐ ĐỊNH 100% TRÊN CÙNG
-# ---------------------------------------------------------
-is_dark = (st.session_state.theme_mode == "Dark")
-
-bg_main = "#0e1117" if is_dark else "#ffffff"
-text_main = "#ffffff" if is_dark else "#0f172a"
-bg_sidebar = "#161b22" if is_dark else "#f8fafc"
-border_color = "#30363d" if is_dark else "#e2e8f0"
-path_box_bg = "#21262d" if is_dark else "#f1f5f9"
-path_box_text = "#c9d1d9" if is_dark else "#475569"
-
-st.markdown(f"""
-    <style>
-    /* NỀN TOÀN TRANG */
-    .stApp {{
-        background-color: {bg_main} !important;
-        color: {text_main} !important;
-    }}
-
-    .main .block-container {{
-        max-width: 99% !important;
-        padding-top: 0.2rem !important;
-        padding-bottom: 0.5rem !important;
+    [data-testid="stSidebar"] > div:first-child {
+        padding-top: 1rem !important;
         padding-left: 0.8rem !important;
         padding-right: 0.8rem !important;
-    }}
+    }
 
-    [data-testid="stSidebar"] {{
-        min-width: 300px !important;
-        max-width: 320px !important;
-        background-color: {bg_sidebar} !important;
-        border-right: 1px solid {border_color} !important;
-    }}
+    /* 2. Cấu hình độ rộng Sidebar */
+    [data-testid="stSidebar"] {
+        min-width: 260px !important;
+        max-width: 280px !important;
+        background-color: #f8f9fa;
+        border-right: 1px solid #e9ecef;
+    }
 
-    [data-testid="stSidebar"] > div:first-child {{
-        padding-top: 1.0rem !important;
-        padding-left: 0.8rem !important;
-        padding-right: 0.8rem !important;
-    }}
-
-    /* CARD USER PROFILE */
-    .user-profile-card {{
+    /* 3. Thẻ Card tài khoản góc Sidebar (Khối 1) */
+    .user-card {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-        border-radius: 10px;
-        padding: 8px 12px;
         color: white;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        padding: 10px 12px;
+        border-radius: 8px;
         margin-bottom: 10px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        height: 52px;
-        box-sizing: border-box;
-    }}
-    .user-avatar-img {{
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid #ffffff;
-    }}
-    .user-avatar-default {{
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background-color: #ffffff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-    }}
-    .user-info {{
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }}
-    .user-name {{
-        font-weight: 700;
-        font-size: 13px;
-        color: #ffffff;
-        margin: 0;
-        line-height: 1.2;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-    }}
-    .user-status {{
-        font-size: 11px;
-        color: #e0e7ff;
-        margin-top: 2px;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-    }}
+    }
+    .user-card h4 {
+        color: #ffffff !important;
+        margin: 0 !important;
+        font-size: 14px !important;
+        font-weight: 700 !important;
+    }
+    .user-card p {
+        color: #e0e7ff !important;
+        margin: 2px 0 0 0 !important;
+        font-size: 11px !important;
+    }
 
-    /* HEADER BANNER */
-    .header-card {{
+    /* 4. Header Banner chính (Khối 2) */
+    .header-card {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         color: white;
-        padding: 8px 18px;
-        border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        padding: 10px 18px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        margin-bottom: 15px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         height: 48px;
-        box-sizing: border-box;
-        margin-bottom: 6px;
-    }}
-    .header-card h1 {{
+    }
+    .header-card h1 {
         color: #ffffff !important;
-        font-size: 15px !important;
+        font-size: 17px !important;
         font-weight: 700 !important;
         margin: 0 !important;
-    }}
-    .version-badge {{
+    }
+    .version-badge {
         background-color: rgba(255,255,255,0.2);
         padding: 3px 10px;
         border-radius: 12px;
         font-size: 11px;
         font-weight: 600;
-    }}
+    }
 
-    /* CSS ĐẠT CHUẨN CỐ ĐỊNH BANNER + HEADER BẢNG */
-    .sticky-header-container {{
-        position: -webkit-sticky;
-        position: sticky;
-        top: 0;
-        z-index: 99999;
-        background-color: {bg_main} !important;
-        padding-top: 5px;
-        padding-bottom: 5px;
-        border-bottom: 2px solid {border_color};
-    }}
-
-    .table-header-box {{
-        background-color: {path_box_bg};
-        border-radius: 6px;
-        padding: 8px 10px;
-        font-weight: bold;
-        color: {text_main};
-        border: 1px solid {border_color};
-        margin-top: 4px;
-    }}
-
-    .path-box {{
-        background-color: {path_box_bg};
-        border: 1px dashed {border_color};
-        padding: 8px 10px;
-        border-radius: 6px;
-        font-size: 11px;
-        word-break: break-all;
-        color: {path_box_text};
-        margin-top: 4px;
-        margin-bottom: 10px;
-    }}
-
-    .admin-mode-banner {{
-        background-color: #fff3cd;
-        border: 1px solid #ffe69c;
-        color: #664d03;
+    /* Nút bấm liên kết bảng */
+    .btn-link-action {
+        display: inline-block;
+        background-color: #0d6efd;
+        color: #ffffff !important;
         padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 11px;
+        border-radius: 4px;
+        text-decoration: none !important;
+        font-size: 12px;
         font-weight: 600;
-        margin-bottom: 4px;
-    }}
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .path-box {
+        background-color: #eef2f7;
+        border: 1px dashed #cbd5e1;
+        padding: 6px;
+        border-radius: 5px;
+        font-size: 10px;
+        word-break: break-all;
+        color: #475569;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 3. MÀN HÌNH ĐĂNG NHẬP
+# 2. BẢO MẬT ĐĂNG NHẬP
 # ---------------------------------------------------------
+USER_CREDENTIALS = {"tmt": "123456", "admin": "123456"}
+
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+if "username" not in st.session_state:
+    st.session_state.username = ""
+
 if not st.session_state.logged_in:
     col1, col2, col3 = st.columns([1.2, 1.6, 1.2])
     with col2:
         st.markdown("<br><br>", unsafe_allow_html=True)
         st.markdown("""
-            <div style="background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; color: #1e3c72;">
-                <h3 style="margin-bottom: 5px;">🛡️ HỆ THỐNG QUẢN LÝ AN TOÀN</h3>
+            <div style="background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;">
+                <h3 style="color: #1e3c72; margin-bottom: 5px;">🛡️ HỆ THỐNG QUẢN LÝ AN TOÀN</h3>
                 <span style="background: #e7f1ff; color: #0d6efd; padding: 3px 10px; border-radius: 12px; font-weight: 600; font-size: 11px;">Version 1.0</span>
                 <hr style="margin: 12px 0;">
             </div>
@@ -238,7 +150,7 @@ if not st.session_state.logged_in:
     st.stop()
 
 # ---------------------------------------------------------
-# 4. KHỞI TẠO DỮ LIỆU
+# 3. DỮ LIỆU & ĐƯỜNG DẪN
 # ---------------------------------------------------------
 EXCEL_DIR = r"D:\0 2025 0 LUU OFFICE drive\0000 chua luu\0 0 0 app\000TmT_VBA_source\Dashboard_AnToan"
 if not os.path.exists(EXCEL_DIR):
@@ -266,14 +178,7 @@ DEFAULT_WEBSITES = [
     {'STT': 6, 'Mô tả WEB': 'Tritm.la Dashboard 2026 DTTU', 'Link 1': 'https://docs.google.com/spreadsheets/d/1gVAroFIytWwrBMCScYuXWbzlS1ZNXrPY4Pcgb__Dv-c/edit?gid=964445540#gid=964445540', 'Ghi chú': 'Google sheet CV'},
     {'STT': 7, 'Mô tả WEB': 'Hệ thống Giám sát Thiên tai Việt Nam', 'Link 1': 'https://vndms.gov.vn/', 'Ghi chú': 'Cảnh báo và phòng chống thiên tai'},
     {'STT': 8, 'Mô tả WEB': 'Hệ thống HRMS', 'Link 1': 'https://hrms.evn.com.vn', 'Ghi chú': 'Quản lý lao động tiền lương'},
-    {'STT': 9, 'Mô tả WEB': 'Hệ thống E-Learning', 'Link 1': 'https://elearning.evn.com.vn', 'Ghi chú': 'Huấn luyện an toàn & thi trực tuyến'},
-    {'STT': 10, 'Mô tả WEB': 'Cổng Dịch vụ công Quốc gia', 'Link 1': 'https://dichvucong.gov.vn', 'Ghi chú': 'Thực hiện thủ tục hành chính PCCC/ĐTXD'},
-    {'STT': 11, 'Mô tả WEB': 'Cổng Thông tin Bộ Công Thương', 'Link 1': 'https://moit.gov.vn', 'Ghi chú': 'Theo dõi văn bản quy phạm kỹ thuật'},
-    {'STT': 12, 'Mô tả WEB': 'Cổng Báo cáo Phòng chống thiên tai', 'Link 1': 'https://pctt.evn.com.vn', 'Ghi chú': 'Cập nhật tình hình PCTT & TKCN'},
-    {'STT': 13, 'Mô tả WEB': 'Hệ thống Quản lý Đầu tư Xây dựng (IMIS)', 'Link 1': 'https://imis.evn.com.vn', 'Ghi chú': 'Theo dõi an toàn dự án ĐTXD'},
-    {'STT': 14, 'Mô tả WEB': 'Hệ thống Thông tin Báo cáo EVN', 'Link 1': 'https://baocao.evn.com.vn', 'Ghi chú': 'Tổng hợp chỉ tiêu an toàn - kỹ thuật'},
-    {'STT': 15, 'Mô tả WEB': 'Lưu trữ Hồ sơ / Biểu mẫu TMT', 'Link 1': 'https://drive.google.com', 'Ghi chú': 'Kho lưu trữ dữ liệu dùng chung TMT'},
-    {'STT': 16, 'Mô tả WEB': 'Thư viện Quy chuẩn - Quy định An toàn', 'Link 1': 'https://drive.google.com', 'Ghi chú': 'Tra cứu tài liệu an toàn PCCC & ĐT'}
+    {'STT': 9, 'Mô tả WEB': 'Hệ thống E-Learning', 'Link 1': 'https://elearning.evn.com.vn', 'Ghi chú': 'Huấn luyện an toàn & thi trực tuyến'}
 ]
 
 def reindex_df(df):
@@ -314,111 +219,28 @@ if "gsheet_df" not in st.session_state:
     ])
 
 # ---------------------------------------------------------
-# 5. DIALOG POP-UP: POP-UP QUẢN TRỊ
+# 4. SIDEBAR - KHỐI 1 (CĂN BẰNG ĐẦU VỚI KHỐI 2)
 # ---------------------------------------------------------
-@st.dialog("⚙️ Bảng Quản Trị & Cấu Hình")
-def manage_account_dialog():
-    st.markdown("##### 🔐 Mở khóa Quyền Quản Trị")
-    
-    if not st.session_state.is_admin_mode:
-        admin_pin = st.text_input("Vui lòng nhập Mã quản trị tài khoản:", type="password")
-        
-        col_act1, col_act2 = st.columns(2)
-        with col_act1:
-            if st.button("🔓 Xác nhận & Mở Admin Mode", type="primary", use_container_width=True):
-                if admin_pin == ADMIN_PIN_CODE:
-                    st.session_state.is_admin_mode = True
-                    st.toast("Đã kích hoạt Chế độ Quản trị!", icon="🎉")
-                    st.rerun()
-                else:
-                    st.error("❌ Mã quản trị không đúng!")
-        with col_act2:
-            if st.button("❌ Đóng", type="secondary", use_container_width=True):
-                st.rerun()
-    else:
-        st.success("✅ Bạn đang ở Chế độ Quản trị viên (Cho phép Thêm/Sửa/Xóa & Nhập/Xuất Excel).")
-        st.markdown("---")
-        
-        st.markdown("##### 📁 Cấu hình Thư mục Dữ liệu")
-        st.markdown("📌 **Thư mục Excel hiện tại:**")
-        st.markdown(f'<div class="path-box"><code>{EXCEL_DIR}</code></div>', unsafe_allow_html=True)
-        st.markdown("---")
-
-        st.markdown("##### 📝 Cập nhật thông tin Profile")
-        new_name = st.text_input("Tên hiển thị:", value=st.session_state.user_profile["display_name"])
-        new_role = st.text_input("Vai trò / Chức danh:", value=st.session_state.user_profile["role"])
-        
-        uploaded_file = st.file_uploader("Cập nhật Ảnh đại diện (Avatar):", type=["png", "jpg", "jpeg"])
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("💾 Lưu Thay Đổi", type="primary", use_container_width=True):
-                st.session_state.user_profile["display_name"] = new_name
-                st.session_state.user_profile["role"] = new_role
-                if uploaded_file is not None:
-                    bytes_data = uploaded_file.getvalue()
-                    b64_str = base64.b64encode(bytes_data).decode('utf-8')
-                    st.session_state.user_profile["avatar_bytes"] = f"data:{uploaded_file.type};base64,{b64_str}"
-                st.toast("Đã lưu thay đổi!", icon="🎉")
-                st.rerun()
-                
-        with col2:
-            if st.button("🔒 Tắt Chế độ Quản trị", type="secondary", use_container_width=True):
-                st.session_state.is_admin_mode = False
-                st.toast("Đã khóa chế độ quản trị!", icon="ℹ️")
-                st.rerun()
-
-# ---------------------------------------------------------
-# 6. SIDEBAR
-# ---------------------------------------------------------
-user_prof = st.session_state.user_profile
-avatar_html = (
-    f'<img src="{user_prof["avatar_bytes"]}" class="user-avatar-img">'
-    if user_prof["avatar_bytes"]
-    else '<div class="user-avatar-default">👤</div>'
-)
-
 st.sidebar.markdown(f"""
-    <div class="user-profile-card">
-        {avatar_html}
-        <div class="user-info">
-            <div class="user-name" title="{user_prof['display_name']}">{user_prof['display_name']}</div>
-            <div class="user-status" title="{user_prof['role']}">{user_prof['role']}</div>
-        </div>
+    <div class="user-card">
+        <h4>👤 Trần Minh Trí ({st.session_state.username})</h4>
+        <p>🟢 Quản trị viên TTM</p>
     </div>
 """, unsafe_allow_html=True)
-
-if st.sidebar.button("⚙️ Quản lý tài khoản", use_container_width=True, type="secondary"):
-    manage_account_dialog()
 
 col_btn1, col_btn2 = st.sidebar.columns(2)
 with col_btn1:
     if st.button("🚪 Thoát", use_container_width=True, type="secondary"):
         st.session_state.logged_in = False
         st.session_state.username = ""
-        st.session_state.is_admin_mode = False
         st.rerun()
 
 with col_btn2:
-    if st.button("🧹 Clear Cache", use_container_width=True, type="secondary"):
+    if st.button("🧹 Cache", use_container_width=True, type="secondary"):
         st.cache_data.clear()
-        st.toast("Đã làm sạch Cache!", icon="🎉")
+        st.toast("Đã xóa cache!", icon="🎉")
 
-st.sidebar.markdown("<hr style='margin: 10px 0;'>", unsafe_allow_html=True)
-st.sidebar.markdown("**🎨 CHỌN GIAO DIỆN (THEME)**")
-selected_theme = st.sidebar.radio(
-    "Giao diện:",
-    options=["☀️ Light Mode", "🌙 Dark Mode"],
-    index=0 if st.session_state.theme_mode == "Light" else 1,
-    label_visibility="collapsed"
-)
-
-new_mode = "Light" if "☀️" in selected_theme else "Dark"
-if new_mode != st.session_state.theme_mode:
-    st.session_state.theme_mode = new_mode
-    st.rerun()
-
-st.sidebar.markdown("<hr style='margin: 10px 0;'>", unsafe_allow_html=True)
+st.sidebar.markdown("<hr style='margin: 8px 0;'>", unsafe_allow_html=True)
 st.sidebar.markdown("**📁 MỤC LÀM VIỆC**")
 
 menu_options = [
@@ -437,10 +259,24 @@ for label, key_val in menu_options:
 
 main_menu = st.session_state.active_tab
 
+st.sidebar.markdown("<hr style='margin: 10px 0;'>", unsafe_allow_html=True)
+st.sidebar.markdown("**📌 Thư mục Excel:**")
+st.sidebar.markdown(f'<div class="path-box">{EXCEL_DIR}</div>', unsafe_allow_html=True)
+
 # ---------------------------------------------------------
-# 7. DIALOG EDIT CHI TIẾT
+# 5. HEADER CHÍNH - KHỐI 2 (BẰNG HÀNG VỚI KHỐI 1)
 # ---------------------------------------------------------
-@st.dialog("✏️ Chỉnh sửa thông tin")
+st.markdown("""
+    <div class="header-card">
+        <h1>🛡️ Quản lý an toàn TTM</h1>
+        <span class="version-badge">Version 1.0 20260928</span>
+    </div>
+""", unsafe_allow_html=True)
+
+# ---------------------------------------------------------
+# 6. DIALOG POP-UP & HÀM BẢNG
+# ---------------------------------------------------------
+@st.dialog("✏️ Chỉnh sửa mục")
 def edit_item_dialog(df_ref, idx, item_type="gsheet", category_name=None):
     row = df_ref.loc[idx]
     
@@ -474,13 +310,13 @@ def edit_item_dialog(df_ref, idx, item_type="gsheet", category_name=None):
         link_val = st.text_input(link_label, value=init_val, key=f"inp_link_{item_type}_{idx}_{i}")
         new_links.append(link_val)
 
-    if st.button("➕ Thêm ô Link", type="secondary"):
+    if st.button("➕ Thêm link", type="secondary"):
         st.session_state[f"link_count_{item_type}_{idx}"] += 1
         st.rerun()
 
     ghichu_val = st.text_input("Ghi chú:", value=str(row.get("Ghi chú", "")))
 
-    if st.button("💾 Cập nhật ngay", type="primary", use_container_width=True):
+    if st.button("💾 Cập nhật", type="primary", use_container_width=True):
         if item_type == "web":
             target_df = st.session_state.web_tools_df
             target_df.at[idx, "Mô tả WEB"] = title_val
@@ -503,71 +339,19 @@ def edit_item_dialog(df_ref, idx, item_type="gsheet", category_name=None):
         st.success("Đã cập nhật!")
         st.rerun()
 
-# ---------------------------------------------------------
-# 8. HIỂN THỊ BẢNG: FIX STICKY KHUNG 1 CỐ ĐỊNH TRÊN CÙNG
-# ---------------------------------------------------------
-page_titles = {
-    "1 🌐 DS WEBsites_CV": "🌐 Bảng Danh Sách WEBsites_CV",
-    "2 📋 DM QL Files_CV": "📋 Danh Mục Quản Lý Files_CV",
-    "3 📊 DS BCdinhky_CV": "📊 Bảng Danh Sách Báo Cáo Định Kỳ & Công Việc",
-    "4 🟢 DS Gsheet_CV": "🟢 Bảng Danh Sách Google Sheets_CV"
-}
-
-def render_layout_and_table(df, title_col, item_type="gsheet", category_name=None):
-    is_admin = st.session_state.is_admin_mode
-
-    # Cấu hình danh sách cột & Tỷ lệ chiều rộng
+def render_data_table_with_actions(df, title_col, item_type="gsheet", category_name=None):
     if item_type == "bc":
-        headers = ["STT", title_col, "Tần suất", "Đơn vị nhận", "Links truy cập", "Ghi chú"]
-        cols_width = [1, 3, 2, 2, 2, 3]
-        if is_admin:
-            headers.append("Thao tác")
-            cols_width = [1, 3, 2, 2, 2, 3, 2]
+        headers = ["STT", title_col, "Tần suất", "Đơn vị nhận", "Links truy cập", "Ghi chú", "Thao tác"]
+        cols_width = [1, 3, 2, 2, 2, 3, 2]
     else:
-        headers = ["STT", title_col, "Links truy cập", "Ghi chú"]
-        cols_width = [1, 4, 3, 4]
-        if is_admin:
-            headers.append("Thao tác")
-            cols_width = [1, 4, 2, 3, 2]
+        headers = ["STT", title_col, "Links truy cập", "Ghi chú", "Thao tác"]
+        cols_width = [1, 4, 2, 3, 2]
 
-    # =========================================================
-    # 📌 KHUNG 1: CỐ ĐỊNH CHẮC CHẮN (STICKY HEADER)
-    # =========================================================
-    st.markdown('<div class="sticky-header-container">', unsafe_allow_html=True)
-    
-    st.markdown(f"""
-        <div class="header-card">
-            <h1>🛡️ Quản lý an toàn TTM</h1>
-            <span class="version-badge">Version 1.0 20260928</span>
-        </div>
-        <h4 style="margin-top: 4px; margin-bottom: 4px; font-weight: 700; color: {text_main};">
-            {page_titles.get(main_menu, "")}
-        </h4>
-    """, unsafe_allow_html=True)
+    cols = st.columns(cols_width)
+    for i, h in enumerate(headers):
+        cols[i].markdown(f"**{h}**")
+    st.markdown("<hr style='margin: 4px 0 10px 0;'>", unsafe_allow_html=True)
 
-    if is_admin:
-        st.markdown("""
-            <div class="admin-mode-banner">
-                🔓 Chế Độ Quản Trị: Được phép Thêm / Sửa / Xóa & Nhập / Xuất Excel
-            </div>
-        """, unsafe_allow_html=True)
-
-    # BANNER HEADER CỘT (STT, MÔ TẢ, LINKS, GHI CHÚ)
-    st.markdown('<div class="table-header-box">', unsafe_allow_html=True)
-    h_cols = st.columns(cols_width)
-    for idx_h, h_text in enumerate(headers):
-        h_cols[idx_h].markdown(f"**{h_text}**")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('</div>', unsafe_allow_html=True) # Đóng sticky-header-container
-
-    # Selectbox cho mảng công việc nếu ở Tab 2
-    if main_menu == "2 📋 DM QL Files_CV":
-        st.markdown("<div style='margin-top: 6px;'></div>", unsafe_allow_html=True)
-
-    # =========================================================
-    # 📌 KHUNG 2: DANH SÁCH DỮ LIỆU BÊN DƯỚI
-    # =========================================================
     for idx, row in df.iterrows():
         c = st.columns(cols_width)
         c[0].write(f"**{row.get('STT', idx+1)}**")
@@ -588,104 +372,100 @@ def render_layout_and_table(df, title_col, item_type="gsheet", category_name=Non
         c[col_offset].markdown(" | ".join(link_markdowns) if link_markdowns else "-")
         c[col_offset+1].write(str(row.get("Ghi chú", "")))
 
-        if is_admin:
-            btn_e, btn_d = c[col_offset+2].columns(2)
-            if btn_e.button("✏️", key=f"btn_edit_{item_type}_{category_name}_{idx}"):
-                edit_item_dialog(df, idx, item_type, category_name)
-            if btn_d.button("🗑️", key=f"btn_del_{item_type}_{category_name}_{idx}"):
-                if item_type == "web":
-                    st.session_state.web_tools_df = reindex_df(df.drop(idx))
-                elif item_type == "hoso":
-                    st.session_state.data_store[category_name] = reindex_df(df.drop(idx))
-                elif item_type == "bc":
-                    st.session_state.bc_dinhky_df = reindex_df(df.drop(idx))
-                else:
-                    st.session_state.gsheet_df = reindex_df(df.drop(idx))
-                st.rerun()
+        btn_e, btn_d = c[col_offset+2].columns(2)
+        if btn_e.button("✏️", key=f"btn_edit_{item_type}_{category_name}_{idx}"):
+            edit_item_dialog(df, idx, item_type, category_name)
+        if btn_d.button("🗑️", key=f"btn_del_{item_type}_{category_name}_{idx}"):
+            if item_type == "web":
+                st.session_state.web_tools_df = reindex_df(df.drop(idx))
+            elif item_type == "hoso":
+                st.session_state.data_store[category_name] = reindex_df(df.drop(idx))
+            elif item_type == "bc":
+                st.session_state.bc_dinhky_df = reindex_df(df.drop(idx))
+            else:
+                st.session_state.gsheet_df = reindex_df(df.drop(idx))
+            st.rerun()
 
-        st.markdown("<hr style='margin: 4px 0; border-color: #f0f0f0;'>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    col_add1, col_add2 = st.columns([1, 4])
+    with col_add1:
+        if st.button("➕ Thêm mới dòng", type="primary", key=f"btn_add_new_{item_type}_{category_name}"):
+            new_idx = len(df)
+            if item_type == "web":
+                st.session_state.web_tools_df.loc[new_idx] = {"STT": new_idx+1, "Mô tả WEB": "Mô tả mới", "Link 1": "", "Ghi chú": ""}
+            elif item_type == "hoso":
+                st.session_state.data_store[category_name].loc[new_idx] = {"STT": new_idx+1, "Thư mục / Hồ sơ": "Hồ sơ mới", "Link 1": "", "Ghi chú": ""}
+            elif item_type == "bc":
+                st.session_state.bc_dinhky_df.loc[new_idx] = {"STT": new_idx+1, "Tên Báo Cáo / Công Việc": "Báo cáo mới", "Tần suất": "Hàng Tháng", "Đơn vị nhận": "", "Link 1": "", "Ghi chú": ""}
+            else:
+                st.session_state.gsheet_df.loc[new_idx] = {"STT": new_idx+1, "Mô tả Google Sheet": "Sheet mới", "Link 1": "", "Ghi chú": ""}
+            st.rerun()
 
-    # NÚT THÊM DÒNG (ADMIN ONLY)
-    if is_admin:
-        st.markdown("<hr style='margin: 10px 0;'>", unsafe_allow_html=True)
-        col_add1, col_add2 = st.columns([1, 4])
-        with col_add1:
-            if st.button("➕ Thêm mới dòng", type="primary", key=f"btn_add_new_{item_type}_{category_name}"):
-                new_idx = len(df)
-                if item_type == "web":
-                    st.session_state.web_tools_df.loc[new_idx] = {"STT": new_idx+1, "Mô tả WEB": "Mô tả mới", "Link 1": "", "Ghi chú": ""}
-                elif item_type == "hoso":
-                    st.session_state.data_store[category_name].loc[new_idx] = {"STT": new_idx+1, "Thư mục / Hồ sơ": "Hồ sơ mới", "Link 1": "", "Ghi chú": ""}
-                elif item_type == "bc":
-                    st.session_state.bc_dinhky_df.loc[new_idx] = {"STT": new_idx+1, "Tên Báo Cáo / Công Việc": "Báo cáo mới", "Tần suất": "Hàng Tháng", "Đơn vị nhận": "", "Link 1": "", "Ghi chú": ""}
-                else:
-                    st.session_state.gsheet_df.loc[new_idx] = {"STT": new_idx+1, "Mô tả Google Sheet": "Sheet mới", "Link 1": "", "Ghi chú": ""}
-                st.rerun()
-
-        if item_type == "web":
-            with col_add2:
-                if st.button("🔄 Khôi phục 16 Web mặc định", type="secondary"):
-                    st.session_state.web_tools_df = reindex_df(pd.DataFrame(DEFAULT_WEBSITES))
-                    st.toast("Đã khôi phục 16 Web mặc định!", icon="🎉")
-                    st.rerun()
-
-# ---------------------------------------------------------
-# 9. NHẬP / XUẤT EXCEL (ADMIN ONLY)
-# ---------------------------------------------------------
 def render_io_excel_tools(df, current_key, file_prefix):
-    if st.session_state.is_admin_mode:
-        st.markdown("---")
-        col_up, col_down = st.columns([1.2, 1])
-        
-        with col_up:
-            st.markdown("##### 📥 Tải lên / Thay thế dữ liệu từ file Excel (.xlsx)")
-            uploaded_file = st.file_uploader(f"Chọn file Excel [{file_prefix}]", type=["xlsx", "xls"], key=f"uploader_{current_key}")
-            if uploaded_file is not None:
-                try:
-                    new_df = pd.read_excel(uploaded_file)
-                    new_df = reindex_df(new_df)
-                    if st.button("🔥 Xác nhận đè dữ liệu mới", type="primary", key=f"btn_confirm_{current_key}"):
-                        if current_key == "web":
-                            st.session_state.web_tools_df = new_df
-                        elif current_key == "bc":
-                            st.session_state.bc_dinhky_df = new_df
-                        elif current_key == "gsheet":
-                            st.session_state.gsheet_df = new_df
-                        else:
-                            st.session_state.data_store[current_key] = new_df
-                        st.success("Tải dữ liệu từ Excel thành công!")
-                        st.rerun()
-                except Exception as e:
-                    st.error(f"Lỗi đọc file Excel: {e}")
+    st.markdown("---")
+    col_up, col_down = st.columns([1.2, 1])
+    
+    with col_up:
+        st.markdown("##### 📥 Tải lên / Thay thế dữ liệu từ file Excel (.xlsx)")
+        uploaded_file = st.file_uploader(f"Chọn file Excel [{file_prefix}]", type=["xlsx", "xls"], key=f"uploader_{current_key}")
+        if uploaded_file is not None:
+            try:
+                new_df = pd.read_excel(uploaded_file)
+                new_df = reindex_df(new_df)
+                if st.button("🔥 Xác nhận đè dữ liệu mới", type="primary", key=f"btn_confirm_{current_key}"):
+                    if current_key == "web":
+                        st.session_state.web_tools_df = new_df
+                    elif current_key == "bc":
+                        st.session_state.bc_dinhky_df = new_df
+                    elif current_key == "gsheet":
+                        st.session_state.gsheet_df = new_df
+                    else:
+                        st.session_state.data_store[current_key] = new_df
+                    st.success("Tải dữ liệu từ Excel thành công!")
+                    st.rerun()
+            except Exception as e:
+                st.error(f"Lỗi đọc file Excel: {e}")
 
-        with col_down:
-            st.markdown("##### 📤 Xuất dữ liệu ra file Excel")
-            excel_bytes = to_excel_bytes(df)
-            st.download_button(
-                label="💾 Tải file Excel về máy",
-                data=excel_bytes,
-                file_name=f"{file_prefix}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                use_container_width=True
-            )
+    with col_down:
+        st.markdown("##### 📤 Xuất dữ liệu ra file Excel")
+        excel_bytes = to_excel_bytes(df)
+        st.download_button(
+            label="💾 Tải file Excel về máy",
+            data=excel_bytes,
+            file_name=f"{file_prefix}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
 
 # ---------------------------------------------------------
-# 10. ĐIỀU HƯỚNG TRANG CHÍNH
+# 7. ĐIỀU HƯỚNG CÁC PHÂN MỤC
 # ---------------------------------------------------------
 if main_menu == "1 🌐 DS WEBsites_CV":
-    render_layout_and_table(st.session_state.web_tools_df, title_col="Mô tả WEB", item_type="web")
+    st.subheader("🌐 Bảng Danh Sách WEBsites_CV")
+    render_data_table_with_actions(st.session_state.web_tools_df, title_col="Mô tả WEB", item_type="web")
     render_io_excel_tools(st.session_state.web_tools_df, "web", "DanhMuc_CongCu_WEB_TMT")
 
 elif main_menu == "2 📋 DM QL Files_CV":
-    selected_cat = st.selectbox("Mảng công việc:", CATEGORIES, index=0, label_visibility="collapsed")
+    st.markdown("##### 📁 Chọn mảng công việc:")
+    selected_cat = st.selectbox(
+        "Mảng công việc:",
+        CATEGORIES,
+        index=0,
+        label_visibility="collapsed"
+    )
+    
+    st.subheader(f"📂 Quản Lý Hồ Sơ: {selected_cat}")
     current_df = st.session_state.data_store[selected_cat]
-    render_layout_and_table(current_df, title_col="Thư mục / Hồ sơ", item_type="hoso", category_name=selected_cat)
+    render_data_table_with_actions(current_df, title_col="Thư mục / Hồ sơ", item_type="hoso", category_name=selected_cat)
     render_io_excel_tools(current_df, selected_cat, f"HoSo_{selected_cat}")
 
 elif main_menu == "3 📊 DS BCdinhky_CV":
-    render_layout_and_table(st.session_state.bc_dinhky_df, title_col="Tên Báo Cáo / Công Việc", item_type="bc")
+    st.subheader("📊 Bảng Danh Sách Báo Cáo Định Kỳ & Công Việc")
+    render_data_table_with_actions(st.session_state.bc_dinhky_df, title_col="Tên Báo Cáo / Công Việc", item_type="bc")
     render_io_excel_tools(st.session_state.bc_dinhky_df, "bc", "DanhSach_BaoCao_DinhKy_TMT")
 
 elif main_menu == "4 🟢 DS Gsheet_CV":
-    render_layout_and_table(st.session_state.gsheet_df, title_col="Mô tả Google Sheet", item_type="gsheet")
+    st.subheader("🟢 Bảng Danh Sách Google Sheets_CV")
+    render_data_table_with_actions(st.session_state.gsheet_df, title_col="Mô tả Google Sheet", item_type="gsheet")
     render_io_excel_tools(st.session_state.gsheet_df, "gsheet", "DanhSach_Gsheet_TMT")
