@@ -105,7 +105,7 @@ if not st.session_state.logged_in:
     st.stop()
 
 # ---------------------------------------------------------
-# 3. KHỞI TẠO ĐƯỜNG DẪN & ĐẦY ĐỦ 16 LINK MẶC ĐỊNH
+# 3. KHỞI TẠO ĐƯỜNG DẪN & DỮ LIỆU
 # ---------------------------------------------------------
 EXCEL_DIR = r"D:\0 2025 0 LUU OFFICE drive\0000 chua luu\0 0 0 app\000TmT_VBA_source\Dashboard_AnToan"
 if not os.path.exists(EXCEL_DIR):
@@ -124,7 +124,6 @@ CATEGORIES = [
     "Quy dinh SPC va EVN", "Quy dinh trao doi EVN-SPC-PCTN"
 ]
 
-# ĐẦY ĐỦ 16 LINK WEBSITES MẶC ĐỊNH
 DEFAULT_WEBSITES = [
     {'STT': 1, 'Mô tả WEB': 'D-Office', 'Link 1': 'https://doffice.evn.com.vn', 'Ghi chú': 'Công văn / văn bản EVN'},
     {'STT': 2, 'Mô tả WEB': 'Công cụ web trực tuyến', 'Link 1': 'https://www.congcuweb.net/', 'Ghi chú': 'Hiệu chỉnh tên công văn / văn bản'},
@@ -236,7 +235,6 @@ st.sidebar.markdown(f'<div class="path-box">{EXCEL_DIR}</div>', unsafe_allow_htm
 def edit_item_dialog(df_ref, idx, item_type="gsheet", category_name=None):
     row = df_ref.loc[idx]
     
-    # Lấy danh sách link hiện có
     existing_links = []
     for col in df_ref.columns:
         if "Link" in col and str(row[col]) != "nan" and str(row[col]).strip() != "":
@@ -248,7 +246,6 @@ def edit_item_dialog(df_ref, idx, item_type="gsheet", category_name=None):
     if f"link_count_{item_type}_{idx}" not in st.session_state:
         st.session_state[f"link_count_{item_type}_{idx}"] = len(existing_links)
 
-    # Các ô nhập nội dung
     if item_type == "web":
         title_val = st.text_input("Mô tả WEB:", value=str(row.get("Mô tả WEB", "")))
     elif item_type == "hoso":
@@ -260,7 +257,6 @@ def edit_item_dialog(df_ref, idx, item_type="gsheet", category_name=None):
     else:
         title_val = st.text_input("Mô tả Google Sheet:", value=str(row.get("Mô tả Google Sheet", "")))
 
-    # Ô nhập link linh hoạt
     new_links = []
     curr_count = st.session_state[f"link_count_{item_type}_{idx}"]
     for i in range(curr_count):
@@ -269,7 +265,6 @@ def edit_item_dialog(df_ref, idx, item_type="gsheet", category_name=None):
         link_val = st.text_input(link_label, value=init_val, key=f"inp_link_{item_type}_{idx}_{i}")
         new_links.append(link_val)
 
-    # Nút bấm Thêm link
     if st.button("➕ Thêm link", type="secondary"):
         st.session_state[f"link_count_{item_type}_{idx}"] += 1
         st.rerun()
@@ -300,7 +295,7 @@ def edit_item_dialog(df_ref, idx, item_type="gsheet", category_name=None):
         st.rerun()
 
 # ---------------------------------------------------------
-# 6. HIỂN THỊ BẢNG VỚI CỘT THAO TÁC (CÂY BÚT ✏️ VÀ THÙNG RÁC 🗑️)
+# 6. HIỂN THỊ BẢNG DỮ LIỆU
 # ---------------------------------------------------------
 def render_data_table_with_actions(df, title_col, item_type="gsheet", category_name=None):
     if item_type == "bc":
@@ -310,13 +305,11 @@ def render_data_table_with_actions(df, title_col, item_type="gsheet", category_n
         headers = ["STT", title_col, "Links truy cập", "Ghi chú", "Thao tác"]
         cols_width = [1, 4, 2, 3, 2]
 
-    # Tiêu đề bảng
     cols = st.columns(cols_width)
     for i, h in enumerate(headers):
         cols[i].markdown(f"**{h}**")
     st.markdown("<hr style='margin: 4px 0 10px 0;'>", unsafe_allow_html=True)
 
-    # Hiển thị từng dòng dữ liệu + Nút Cây bút ✏️ và Thùng rác 🗑️
     for idx, row in df.iterrows():
         c = st.columns(cols_width)
         c[0].write(f"**{row.get('STT', idx+1)}**")
@@ -328,7 +321,6 @@ def render_data_table_with_actions(df, title_col, item_type="gsheet", category_n
             c[3].write(str(row.get("Đơn vị nhận", "")))
             col_offset = 4
 
-        # Hiển thị các nút Link
         link_markdowns = []
         for col_name in df.columns:
             if "Link" in col_name and str(row[col_name]) != "nan" and str(row[col_name]).strip() != "":
@@ -338,7 +330,6 @@ def render_data_table_with_actions(df, title_col, item_type="gsheet", category_n
         c[col_offset].markdown(" | ".join(link_markdowns) if link_markdowns else "-")
         c[col_offset+1].write(str(row.get("Ghi chú", "")))
 
-        # NÚT THAO TÁC CÂY BÚT ✏️ VÀ THÙNG RÁC 🗑️ TRỰC TIẾP TRÊN DÒNG
         btn_e, btn_d = c[col_offset+2].columns(2)
         if btn_e.button("✏️", key=f"btn_edit_{item_type}_{category_name}_{idx}"):
             edit_item_dialog(df, idx, item_type, category_name)
@@ -355,7 +346,6 @@ def render_data_table_with_actions(df, title_col, item_type="gsheet", category_n
 
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # NÚT THÊM MỚI & KHÔI PHỤC MẶC ĐỊNH
     col_add1, col_add2 = st.columns([1, 4])
     with col_add1:
         if st.button("➕ Thêm mới dòng", type="primary", key=f"btn_add_new_{item_type}_{category_name}"):
@@ -425,12 +415,19 @@ if main_menu == "1 🌐 DS WEBsites_CV":
     render_io_excel_tools(st.session_state.web_tools_df, "web", "DanhMuc_CongCu_WEB_TMT")
 
 elif main_menu == "2 📋 DM QL Files_CV":
-    selected_cat = st.sidebar.selectbox("📂 Chọn mảng công việc:", CATEGORIES)
-    if selected_cat:
-        st.subheader(f"📂 Quản Lý Hồ Sơ: {selected_cat}")
-        current_df = st.session_state.data_store[selected_cat]
-        render_data_table_with_actions(current_df, title_col="Thư mục / Hồ sơ", item_type="hoso", category_name=selected_cat)
-        render_io_excel_tools(current_df, selected_cat, f"HoSo_{selected_cat}")
+    # ĐẶT CHỌN MẢNG CÔNG VIỆC TRỰC TIẾP TRÊN TRANG CHÍNH (VÙNG TÔ 2)
+    st.markdown("##### 📁 Chọn mảng công việc:")
+    selected_cat = st.selectbox(
+        "Mảng công việc:",
+        CATEGORIES,
+        index=0,
+        label_visibility="collapsed"
+    )
+    
+    st.subheader(f"📂 Quản Lý Hồ Sơ: {selected_cat}")
+    current_df = st.session_state.data_store[selected_cat]
+    render_data_table_with_actions(current_df, title_col="Thư mục / Hồ sơ", item_type="hoso", category_name=selected_cat)
+    render_io_excel_tools(current_df, selected_cat, f"HoSo_{selected_cat}")
 
 elif main_menu == "3 📊 DS BCdinhky_CV":
     st.subheader("📊 Bảng Danh Sách Báo Cáo Định Kỳ & Công Việc")
