@@ -24,7 +24,7 @@ if "logged_in" not in st.session_state:
 if "username" not in st.session_state:
     st.session_state.username = ""
 if "is_admin_mode" not in st.session_state:
-    st.session_state.is_admin_mode = False  # Mặc định TẮT Chế độ Admin (Ẩn khu vực 2)
+    st.session_state.is_admin_mode = False  # Mặc định TẮT Chế độ Admin
 
 if "user_profile" not in st.session_state:
     st.session_state.user_profile = {
@@ -37,7 +37,7 @@ USER_CREDENTIALS = {"tmt": "123456", "admin": "123456"}
 ADMIN_PIN_CODE = "123456"  # Mã quản trị tài khoản
 
 # ---------------------------------------------------------
-# 2. CUSTOM CSS - XỬ LÝ CÂN BẰNG Ô 1 & 2 + STICKY HEADER + DARK/LIGHT MODE
+# 2. CUSTOM CSS - XỬ LÝ GIAO DIỆN LIGHT / DARK MODE
 # ---------------------------------------------------------
 is_dark = (st.session_state.theme_mode == "Dark")
 
@@ -57,7 +57,7 @@ st.markdown(f"""
         color: {text_main} !important;
     }}
 
-    /* 1. ĐỒNG BỘ ĐỈNH TRANG - CHO SIDEBAR VÀ HEADER NGANG HÀNG NHAU */
+    /* 1. ĐỒNG BỘ ĐỈNH TRANG */
     .main .block-container {{
         max-width: 99% !important;
         padding-top: 1.0rem !important;
@@ -172,17 +172,17 @@ st.markdown(f"""
         font-weight: 600;
     }}
 
-    /* Ô ĐƯỜNG DẪN THƯ MỤC EXCEL NẰM TRONG QUẢN TRỊ */
+    /* Ô ĐƯỜNG DẪN THƯ MỤC EXCEL NẰM TRONG POP-UP QUẢN TRỊ */
     .path-box {{
         background-color: {path_box_bg};
         border: 1px dashed {border_color};
-        padding: 6px;
-        border-radius: 5px;
-        font-size: 10px;
+        padding: 8px 10px;
+        border-radius: 6px;
+        font-size: 11px;
         word-break: break-all;
         color: {path_box_text};
         margin-top: 4px;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
     }}
 
     /* BẢNG THÔNG BÁO QUẢN TRỊ */
@@ -307,9 +307,9 @@ if "gsheet_df" not in st.session_state:
     ])
 
 # ---------------------------------------------------------
-# 5. DIALOG POP-UP: XÁC THỰC MÃ QUẢN TRỊ & SỬA PROFILE
+# 5. DIALOG POP-UP: XÁC THỰC QUẢN TRỊ, SỬA PROFILE & THƯ MỤC EXCEL
 # ---------------------------------------------------------
-@st.dialog("🔑 Quản Lý Tài Khoản & Chế Độ Quản Trị")
+@st.dialog("⚙️ Bảng Quản Trị & Cấu Hình")
 def manage_account_dialog():
     st.markdown("##### 🔐 Mở khóa Quyền Quản Trị")
     
@@ -329,8 +329,15 @@ def manage_account_dialog():
             if st.button("❌ Đóng", type="secondary", use_container_width=True):
                 st.rerun()
     else:
-        st.success("✅ Bạn đang mở Chế độ Quản trị viên (Cho phép Thêm/Sửa/Xóa & Nhập/Xuất Excel).")
+        st.success("✅ Bạn đang ở Chế độ Quản trị viên (Cho phép Thêm/Sửa/Xóa & Nhập/Xuất Excel).")
         st.markdown("---")
+        
+        # 🟢 [ĐÃ ĐƯA VÙNG SỐ 1 VÀO ĐÂY]: CHỈ HIỆN KHI NHẤN NÚT QUẢN TRỊ
+        st.markdown("##### 📁 Cấu hình Thư mục Dữ liệu")
+        st.markdown("📌 **Thư mục Excel hiện tại:**")
+        st.markdown(f'<div class="path-box"><code>{EXCEL_DIR}</code></div>', unsafe_allow_html=True)
+        st.markdown("---")
+
         st.markdown("##### 📝 Cập nhật thông tin Profile")
         new_name = st.text_input("Tên hiển thị:", value=st.session_state.user_profile["display_name"])
         new_role = st.text_input("Vai trò / Chức danh:", value=st.session_state.user_profile["role"])
@@ -339,7 +346,7 @@ def manage_account_dialog():
         
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("💾 Lưu Profile", type="primary", use_container_width=True):
+            if st.button("💾 Lưu Thay Đổi", type="primary", use_container_width=True):
                 st.session_state.user_profile["display_name"] = new_name
                 st.session_state.user_profile["role"] = new_role
                 if uploaded_file is not None:
@@ -350,13 +357,13 @@ def manage_account_dialog():
                 st.rerun()
                 
         with col2:
-            if st.button("🔒 Tắt Chế độ Quản trị (Ẩn khu vực 2)", type="secondary", use_container_width=True):
+            if st.button("🔒 Tắt Chế độ Quản trị", type="secondary", use_container_width=True):
                 st.session_state.is_admin_mode = False
                 st.toast("Đã khóa chế độ quản trị!", icon="ℹ️")
                 st.rerun()
 
 # ---------------------------------------------------------
-# 6. SIDEBAR: PROFILE & KHU VỰC QUẢN TRỊ (ĐÃ ĐƯA MỤC EXCEL LÊN ĐÂY)
+# 6. SIDEBAR: PROFILE & MENU NÚT BẤM (GỌN GÀNG)
 # ---------------------------------------------------------
 user_prof = st.session_state.user_profile
 avatar_html = (
@@ -376,7 +383,7 @@ st.sidebar.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# NÚT QUẢN LÝ TÀI KHOẢN
+# NÚT QUẢN LÝ TÀI KHOẢN (BẤM VÀO SẼ MỞ POP-UP CHỨA MỤC EXCEL)
 if st.sidebar.button("⚙️ Quản lý tài khoản", use_container_width=True, type="secondary"):
     manage_account_dialog()
 
@@ -393,10 +400,6 @@ with col_btn2:
     if st.button("🧹 Clear Cache", use_container_width=True, type="secondary"):
         st.cache_data.clear()
         st.toast("Đã làm sạch Cache!", icon="🎉")
-
-# 🟢 [ĐÃ ĐƯA VÙNG SỐ 1 VÀO ĐÂY]: MỤC THƯ MỤC EXCEL NẰM TRONG QUẢN TRỊ
-st.sidebar.markdown("<div style='margin-top: 8px;'><b>📌 Thư mục Excel:</b></div>", unsafe_allow_html=True)
-st.sidebar.markdown(f'<div class="path-box">{EXCEL_DIR}</div>', unsafe_allow_html=True)
 
 # THAY ĐỔI THEME
 st.sidebar.markdown("<hr style='margin: 10px 0;'>", unsafe_allow_html=True)
