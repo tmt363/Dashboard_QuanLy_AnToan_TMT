@@ -220,7 +220,7 @@ st.sidebar.markdown("**📌 Thư mục Excel:**")
 st.sidebar.markdown(f'<div class="path-box">{EXCEL_DIR}</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 5. DIALOG POP-UP CÓ NÚT "➕ Thêm link"
+# 5. DIALOG POP-UP CHỈNH SỬA & NÚT "➕ Thêm link"
 # ---------------------------------------------------------
 @st.dialog("✏️ Chỉnh sửa mục")
 def edit_item_dialog(df_ref, idx, item_type="gsheet", category_name=None):
@@ -290,44 +290,71 @@ def edit_item_dialog(df_ref, idx, item_type="gsheet", category_name=None):
         st.rerun()
 
 # ---------------------------------------------------------
-# 6. BẢNG HIỂN THỊ STREAMLIT GỐC
+# 6. KHÔI PHỤC BẢNG VỚI CỘT THAO TÁC (NÚT ✏️ VÀ 🗑️ ĐẦY ĐỦ)
 # ---------------------------------------------------------
-def render_data_table(df, title_col, item_type="gsheet", category_name=None):
-    # Cấu hình các cột hiển thị
-    column_config = {
-        "STT": st.column_config.NumberColumn("STT", width="small"),
-        title_col: st.column_config.TextColumn(title_col, width="large"),
-        "Ghi chú": st.column_config.TextColumn("Ghi chú", width="medium"),
-    }
-    
-    # Cấu hình các cột Link thành dạng Link bấm được
-    for col in df.columns:
-        if "Link" in col:
-            column_config[col] = st.column_config.LinkColumn(col, display_text="Link", width="small")
+def render_data_table_with_actions(df, title_col, item_type="gsheet", category_name=None):
+    if item_type == "bc":
+        headers = ["STT", title_col, "Tần suất", "Đơn vị nhận", "Links truy cập", "Ghi chú", "Thao tác"]
+        cols_width = [1, 3, 2, 2, 2, 3, 2]
+    else:
+        headers = ["STT", title_col, "Links truy cập", "Ghi chú", "Thao tác"]
+        cols_width = [1, 4, 2, 3, 2]
 
-    # Hiển thị bảng dữ liệu với nút sửa ✏️ và xóa 🗑️ trực tiếp từng dòng
-    edited_df = st.data_editor(
-        df,
-        column_config=column_config,
-        use_container_width=True,
-        hide_index=True,
-        num_rows="dynamic",
-        key=f"editor_{item_type}_{category_name}"
-    )
+    # Tiêu đề bảng
+    cols = st.columns(cols_width)
+    for i, h in enumerate(headers):
+        cols[i].markdown(f"**{h}**")
+    st.markdown("<hr style='margin: 4px 0 10px 0;'>", unsafe_allow_html=True)
 
-    col_a, col_b = st.columns([1, 4])
-    with col_a:
-        if st.button("➕ Thêm mới", type="primary", key=f"btn_add_{item_type}_{category_name}"):
-            new_idx = len(df)
+    # Hiển thị từng dòng dữ liệu + Nút Cây bút ✏️ và Thùng rác 🗑️
+    for idx, row in df.iterrows():
+        c = st.columns(cols_width)
+        c[0].write(f"**{row.get('STT', idx+1)}**")
+        c[1].write(str(row.get(title_col, "")))
+        
+        col_offset = 2
+        if item_type == "bc":
+            c[2].write(str(row.get("Tần suất", "")))
+            c[3].write(str(row.get("Đơn vị nhận", "")))
+            col_offset = 4
+
+        # Hiển thị các nút Link
+        link_markdowns = []
+        for col_name in df.columns:
+            if "Link" in col_name and str(row[col_name]) != "nan" and str(row[col_name]).strip() != "":
+                l_url = str(row[col_name])
+                link_markdowns.append(f"[{col_name}]({l_url})")
+        
+        c[col_offset].markdown(" | ".join(link_markdowns) if link_markdowns else "-")
+        c[col_offset+1].write(str(row.get("Ghi chú", "")))
+
+        # NÚT THAO TÁC CÂY BÚT ✏️ VÀ THÙNG RÁC 🗑️ TRỰC TIẾP TRÊN DÒNG
+        btn_e, btn_d = c[col_offset+2].columns(2)
+        if btn_e.button("✏️", key=f"btn_edit_{item_type}_{category_name}_{idx}"):
+            edit_item_dialog(df, idx, item_type, category_name)
+        if btn_d.button("🗑️", key=f"btn_del_{item_type}_{category_name}_{idx}"):
             if item_type == "web":
-                st.session_state.web_tools_df.loc[new_idx] = {"STT": new_idx+1, "Mô tả WEB": "Mô tả mới", "Link 1": "", "Ghi chú": ""}
+                st.session_state.web_tools_df = reindex_df(df.drop(idx))
             elif item_type == "hoso":
-                st.session_state.data_store[category_name].loc[new_idx] = {"STT": new_idx+1, "Thư mục / Hồ sơ": "Hồ sơ mới", "Link 1": "", "Ghi chú": ""}
+                st.session_state.data_store[category_name] = reindex_df(df.drop(idx))
             elif item_type == "bc":
-                st.session_state.bc_dinhky_df.loc[new_idx] = {"STT": new_idx+1, "Tên Báo Cáo / Công Việc": "Báo cáo mới", "Tần suất": "Hàng Tháng", "Đơn vị nhận": "", "Link 1": "", "Ghi chú": ""}
+                st.session_state.bc_dinhky_df = reindex_df(df.drop(idx))
             else:
-                st.session_state.gsheet_df.loc[new_idx] = {"STT": new_idx+1, "Mô tả Google Sheet": "Sheet mới", "Link 1": "", "Ghi chú": ""}
+                st.session_state.gsheet_df = reindex_df(df.drop(idx))
             st.rerun()
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("➕ Thêm mới dòng", type="primary", key=f"btn_add_new_{item_type}_{category_name}"):
+        new_idx = len(df)
+        if item_type == "web":
+            st.session_state.web_tools_df.loc[new_idx] = {"STT": new_idx+1, "Mô tả WEB": "Mô tả mới", "Link 1": "", "Ghi chú": ""}
+        elif item_type == "hoso":
+            st.session_state.data_store[category_name].loc[new_idx] = {"STT": new_idx+1, "Thư mục / Hồ sơ": "Hồ sơ mới", "Link 1": "", "Ghi chú": ""}
+        elif item_type == "bc":
+            st.session_state.bc_dinhky_df.loc[new_idx] = {"STT": new_idx+1, "Tên Báo Cáo / Công Việc": "Báo cáo mới", "Tần suất": "Hàng Tháng", "Đơn vị nhận": "", "Link 1": "", "Ghi chú": ""}
+        else:
+            st.session_state.gsheet_df.loc[new_idx] = {"STT": new_idx+1, "Mô tả Google Sheet": "Sheet mới", "Link 1": "", "Ghi chú": ""}
+        st.rerun()
 
 # ---------------------------------------------------------
 # 7. BỘ CÔNG CỤ NHẬP / XUẤT EXCEL
@@ -373,7 +400,7 @@ def render_io_excel_tools(df, current_key, file_prefix):
 # ---------------------------------------------------------
 if main_menu == "1 🌐 DS WEBsites_CV":
     st.subheader("🌐 Bảng Danh Sách WEBsites_CV")
-    render_data_table(st.session_state.web_tools_df, title_col="Mô tả WEB", item_type="web")
+    render_data_table_with_actions(st.session_state.web_tools_df, title_col="Mô tả WEB", item_type="web")
     render_io_excel_tools(st.session_state.web_tools_df, "web", "DanhMuc_CongCu_WEB_TMT")
 
 elif main_menu == "2 📋 DM QL Files_CV":
@@ -381,15 +408,15 @@ elif main_menu == "2 📋 DM QL Files_CV":
     if selected_cat:
         st.subheader(f"📂 Quản Lý Hồ Sơ: {selected_cat}")
         current_df = st.session_state.data_store[selected_cat]
-        render_data_table(current_df, title_col="Thư mục / Hồ sơ", item_type="hoso", category_name=selected_cat)
+        render_data_table_with_actions(current_df, title_col="Thư mục / Hồ sơ", item_type="hoso", category_name=selected_cat)
         render_io_excel_tools(current_df, selected_cat, f"HoSo_{selected_cat}")
 
 elif main_menu == "3 📊 DS BCdinhky_CV":
     st.subheader("📊 Bảng Danh Sách Báo Cáo Định Kỳ & Công Việc")
-    render_data_table(st.session_state.bc_dinhky_df, title_col="Tên Báo Cáo / Công Việc", item_type="bc")
+    render_data_table_with_actions(st.session_state.bc_dinhky_df, title_col="Tên Báo Cáo / Công Việc", item_type="bc")
     render_io_excel_tools(st.session_state.bc_dinhky_df, "bc", "DanhSach_BaoCao_DinhKy_TMT")
 
 elif main_menu == "4 🟢 DS Gsheet_CV":
     st.subheader("🟢 Bảng Danh Sách Google Sheets_CV")
-    render_data_table(st.session_state.gsheet_df, title_col="Mô tả Google Sheet", item_type="gsheet")
+    render_data_table_with_actions(st.session_state.gsheet_df, title_col="Mô tả Google Sheet", item_type="gsheet")
     render_io_excel_tools(st.session_state.gsheet_df, "gsheet", "DanhSach_Gsheet_TMT")
