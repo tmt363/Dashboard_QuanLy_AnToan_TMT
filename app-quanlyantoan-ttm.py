@@ -4,36 +4,82 @@ import os
 import io
 
 # ---------------------------------------------------------
-# 1. CẤU HÌNH TRANG & CUSTOM CSS
+# 1. CẤU HÌNH TRANG & CUSTOM CSS CẢI TIẾN GIAO DIỆN
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="Hệ Thống Quản Lý An Toàn TMT",
+    page_title="Hệ Thống Quản Lý An Toàn TTM",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 st.markdown("""
     <style>
-    /* Ép giao diện tràn viền tối đa */
+    /* THU HẸP KHOẢNG TRỐNG TỐI ĐA (VỊ TRÍ 2) */
     .main .block-container {
         max-width: 99% !important;
-        padding: 0.5rem 0.8rem !important;
+        padding-top: 0.3rem !important;
+        padding-bottom: 1rem !important;
+        padding-left: 0.8rem !important;
+        padding-right: 0.8rem !important;
     }
 
-    /* Mở rộng Sidebar đủ rộng */
+    /* TỐI ƯU SIDEBAR */
     [data-testid="stSidebar"] {
-        min-width: 260px !important;
-        max-width: 280px !important;
-        background-color: #f8f9fa;
-        border-right: 1px solid #e9ecef;
+        min-width: 270px !important;
+        max-width: 290px !important;
+        background-color: #f8fafc;
+        border-right: 1px solid #e2e8f0;
     }
 
-    /* Header Card tiêu đề */
+    /* CARD USER PROFILE ĐẸP MẮT & MÀU SẮC (VỊ TRÍ 1) */
+    .user-profile-card {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        border-radius: 10px;
+        padding: 12px;
+        color: white;
+        box-shadow: 0 4px 10px rgba(30, 60, 114, 0.2);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .user-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background-color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .user-info {
+        display: flex;
+        flex-direction: column;
+    }
+    .user-name {
+        font-weight: 700;
+        font-size: 14px;
+        color: #ffffff;
+        margin: 0;
+        line-height: 1.2;
+    }
+    .user-status {
+        font-size: 11px;
+        color: #e0e7ff;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 2px;
+    }
+
+    /* HEADER CARD TIÊU ĐỀ TRANG CHÍNH */
     .header-card {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         color: white;
         padding: 8px 15px;
-        border-radius: 6px;
+        border-radius: 8px;
         box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         margin-bottom: 12px;
         display: flex;
@@ -55,13 +101,19 @@ st.markdown("""
     }
 
     .path-box {
-        background-color: #eef2f7;
+        background-color: #f1f5f9;
         border: 1px dashed #cbd5e1;
         padding: 6px;
         border-radius: 5px;
         font-size: 10px;
         word-break: break-all;
         color: #475569;
+    }
+
+    /* NÚT BẤM SIDEBAR HIỆU ỨNG TỐT HƠN */
+    div[data-testid="stSidebar"] button {
+        border-radius: 6px !important;
+        transition: all 0.2s ease !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -189,9 +241,19 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 4. SIDEBAR
+# 4. SIDEBAR - VỊ TRÍ 1 ĐƯỢC LÀM MỚI
 # ---------------------------------------------------------
-st.sidebar.markdown(f"👤 **User:** `{st.session_state.username}`")
+# PROFILE CARD NỔI BẬT VÀ NỔI BẬT HƠN
+user_display = st.session_state.username.upper()
+st.sidebar.markdown(f"""
+    <div class="user-profile-card">
+        <div class="user-avatar">👤</div>
+        <div class="user-info">
+            <div class="user-name">Trần Minh Trí ({user_display})</div>
+            <div class="user-status">🟢 Quản trị viên TTM</div>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
 
 col_btn1, col_btn2 = st.sidebar.columns(2)
 with col_btn1:
@@ -415,7 +477,6 @@ if main_menu == "1 🌐 DS WEBsites_CV":
     render_io_excel_tools(st.session_state.web_tools_df, "web", "DanhMuc_CongCu_WEB_TMT")
 
 elif main_menu == "2 📋 DM QL Files_CV":
-    # ĐẶT CHỌN MẢNG CÔNG VIỆC TRỰC TIẾP TRÊN TRANG CHÍNH (VÙNG TÔ 2)
     st.markdown("##### 📁 Chọn mảng công việc:")
     selected_cat = st.selectbox(
         "Mảng công việc:",
