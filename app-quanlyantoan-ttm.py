@@ -4,7 +4,7 @@ import os
 import io
 
 # ---------------------------------------------------------
-# 1. CẤU HÌNH TRANG & CUSTOM CSS CỐ ĐỊNH TIÊU ĐỀ (STICKY HEADER)
+# 1. CẤU HÌNH TRANG & CUSTOM CSS CỐ ĐỊNH BANNER + BẢNG
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="Hệ Thống Quản Lý An Toàn TMT",
@@ -14,13 +14,13 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-    /* 1. Ép phần lề trên cùng của Main và Sidebar bằng nhau tuyệt đối */
+    /* Ép lề sát mép trên */
     .main .block-container {
         max-width: 99% !important;
-        padding-top: 0.8rem !important;
+        padding-top: 0.5rem !important;
         padding-bottom: 1rem !important;
-        padding-left: 1.5rem !important;
-        padding-right: 1.5rem !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
     }
 
     [data-testid="stSidebar"] > div:first-child {
@@ -29,7 +29,7 @@ st.markdown("""
         padding-right: 0.8rem !important;
     }
 
-    /* 2. Cấu hình độ rộng Sidebar */
+    /* ĐỊNH DẠNG SIDEBAR */
     [data-testid="stSidebar"] {
         min-width: 260px !important;
         max-width: 280px !important;
@@ -37,93 +37,102 @@ st.markdown("""
         border-right: 1px solid #e9ecef;
     }
 
-    /* 3. Thẻ Card tài khoản góc Sidebar (Khối 1) */
+    /* CARD TÀI KHOẢN GÓC SIDEBAR */
     .user-card {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         color: white;
         padding: 10px 12px;
         border-radius: 8px;
         margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
-    .user-card h4 {
+    .user-avatar-img {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background-color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+    .user-card-info h4 {
         color: #ffffff !important;
         margin: 0 !important;
-        font-size: 14px !important;
+        font-size: 13px !important;
         font-weight: 700 !important;
     }
-    .user-card p {
+    .user-card-info p {
         color: #e0e7ff !important;
         margin: 2px 0 0 0 !important;
         font-size: 11px !important;
     }
 
-    /* 4. CỐ ĐỊNH BANNER TIÊU ĐỀ KHI CUỘN TRANG (STICKY HEADER KHỐI 2) */
+    /* CỐ ĐỊNH BANNER TIÊU ĐỀ (STICKY) KHI CUỘN TRANG */
     .sticky-header-container {
         position: sticky;
         top: 2.8rem;
         z-index: 999;
         background-color: #ffffff;
         padding-top: 4px;
-        padding-bottom: 8px;
-        margin-bottom: 10px;
-        border-bottom: 2px solid #e2e8f0;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        padding-bottom: 6px;
+        margin-bottom: 8px;
+        border-bottom: 2px solid #cbd5e1;
     }
 
     .header-card {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         color: white;
-        padding: 10px 18px;
-        border-radius: 8px;
+        padding: 8px 16px;
+        border-radius: 6px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        height: 48px;
+        height: 42px;
     }
     .header-card h1 {
         color: #ffffff !important;
-        font-size: 17px !important;
+        font-size: 16px !important;
         font-weight: 700 !important;
         margin: 0 !important;
     }
     .version-badge {
         background-color: rgba(255,255,255,0.2);
-        padding: 3px 10px;
-        border-radius: 12px;
+        padding: 2px 8px;
+        border-radius: 10px;
         font-size: 11px;
         font-weight: 600;
     }
 
     .page-subheading {
-        margin-top: 8px !important;
-        margin-bottom: 0px !important;
-        font-size: 18px !important;
+        margin-top: 6px !important;
+        font-size: 17px !important;
         font-weight: 700 !important;
         color: #1e3c72 !important;
     }
 
-    /* Nút bấm liên kết bảng */
-    .btn-link-action {
-        display: inline-block;
-        background-color: #0d6efd;
-        color: #ffffff !important;
-        padding: 4px 10px;
-        border-radius: 4px;
-        text-decoration: none !important;
-        font-size: 12px;
-        font-weight: 600;
-        text-align: center;
-        white-space: nowrap;
+    /* CỐ ĐỊNH HÀNG TIÊU ĐỀ BẢNG KHI CUỘN */
+    .table-header-sticky {
+        position: sticky;
+        top: 8rem;
+        z-index: 998;
+        background-color: #f1f5f9;
+        padding: 8px 0;
+        border-bottom: 2px solid #94a3b8;
+        font-weight: 700;
     }
 
-    .path-box {
-        background-color: #eef2f7;
+    .path-box-inside {
+        background-color: #f1f5f9;
         border: 1px dashed #cbd5e1;
-        padding: 6px;
-        border-radius: 5px;
+        padding: 4px 6px;
+        border-radius: 4px;
         font-size: 10px;
         word-break: break-all;
         color: #475569;
+        margin-top: 4px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -137,6 +146,10 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "username" not in st.session_state:
     st.session_state.username = ""
+if "user_avatar" not in st.session_state:
+    st.session_state.user_avatar = "👤"
+if "theme_mode" not in st.session_state:
+    st.session_state.theme_mode = "Light Mode"
 
 if not st.session_state.logged_in:
     col1, col2, col3 = st.columns([1.2, 1.6, 1.2])
@@ -236,14 +249,39 @@ if "gsheet_df" not in st.session_state:
     ])
 
 # ---------------------------------------------------------
-# 4. SIDEBAR - KHỐI 1
+# DIALOG BẢNG QUẢN TRỊ TÀI KHOẢN & AVATAR
+# ---------------------------------------------------------
+@st.dialog("⚙️ Quản lý tài khoản & Giao diện")
+def account_manage_dialog():
+    st.markdown("##### 👤 Cấu hình tài khoản")
+    st.text_input("Tên tài khoản:", value="Trần Minh Trí (tmt)", disabled=True)
+    
+    avatar_choice = st.selectbox(
+        "Chọn Biểu tượng Avatar:",
+        ["👤", "👨‍💼", "👷‍♂️", "🛡️", "⚡", "🌟"],
+        index=0
+    )
+    if st.button("💾 Lưu Avatar", type="primary", use_container_width=True):
+        st.session_state.user_avatar = avatar_choice
+        st.toast("Đã đổi Avatar thành công!", icon="🎉")
+        st.rerun()
+
+# ---------------------------------------------------------
+# 4. SIDEBAR ĐẦY ĐỦ PHẦN QUẢN TRỊ & MỤC LÀM VIỆC
 # ---------------------------------------------------------
 st.sidebar.markdown(f"""
     <div class="user-card">
-        <h4>👤 Trần Minh Trí ({st.session_state.username})</h4>
-        <p>🟢 Quản trị viên TTM</p>
+        <div class="user-avatar-img">{st.session_state.user_avatar}</div>
+        <div class="user-card-info">
+            <h4>Trần Minh Trí ({st.session_state.username})</h4>
+            <p>🟢 Quản trị viên TTM</p>
+        </div>
     </div>
 """, unsafe_allow_html=True)
+
+# PHẦN 1: QUẢN TRỊ TÀI KHOẢN & KHU VỰC THƯ MỤC EXCEL
+if st.sidebar.button("⚙️ Quản lý tài khoản", use_container_width=True, type="secondary"):
+    account_manage_dialog()
 
 col_btn1, col_btn2 = st.sidebar.columns(2)
 with col_btn1:
@@ -253,13 +291,30 @@ with col_btn1:
         st.rerun()
 
 with col_btn2:
-    if st.button("🧹 Cache", use_container_width=True, type="secondary"):
+    if st.button("🧹 Clear Cache", use_container_width=True, type="secondary"):
         st.cache_data.clear()
-        st.toast("Đã xóa cache!", icon="🎉")
+        st.toast("Đã xóa cache thành công!", icon="🎉")
 
-st.sidebar.markdown("<hr style='margin: 8px 0;'>", unsafe_allow_html=True)
-st.sidebar.markdown("**📁 MỤC LÀM VIỆC**")
+# ĐƯA THƯ MỤC EXCEL VÀO TRONG MỤC QUẢN TRỊ
+st.sidebar.markdown("<div style='margin-top: 6px;'><b>📌 Thư mục Excel:</b></div>", unsafe_allow_html=True)
+st.sidebar.markdown(f'<div class="path-box-inside">{EXCEL_DIR}</div>', unsafe_allow_html=True)
 
+st.sidebar.markdown("<hr style='margin: 10px 0 8px 0;'>", unsafe_allow_html=True)
+
+# PHẦN 2: CHỌN GIAO DIỆN (THEME)
+st.sidebar.markdown("🎨 **CHỌN GIAO DIỆN (THEME)**")
+selected_theme = st.sidebar.radio(
+    "Theme mode:",
+    ["☀️ Light Mode", "🌙 Dark Mode"],
+    index=0 if st.session_state.theme_mode == "Light Mode" else 1,
+    label_visibility="collapsed"
+)
+st.session_state.theme_mode = "Light Mode" if "Light" in selected_theme else "Dark Mode"
+
+st.sidebar.markdown("<hr style='margin: 10px 0 8px 0;'>", unsafe_allow_html=True)
+
+# PHẦN 3: MỤC LÀM VIỆC
+st.sidebar.markdown("📁 **MỤC LÀM VIỆC**")
 menu_options = [
     ("1 🌐 DS WEBsites_CV", "1 🌐 DS WEBsites_CV"),
     ("2 📋 DM QL Files_CV", "2 📋 DM QL Files_CV"),
@@ -276,21 +331,16 @@ for label, key_val in menu_options:
 
 main_menu = st.session_state.active_tab
 
-st.sidebar.markdown("<hr style='margin: 10px 0;'>", unsafe_allow_html=True)
-st.sidebar.markdown("**📌 Thư mục Excel:**")
-st.sidebar.markdown(f'<div class="path-box">{EXCEL_DIR}</div>', unsafe_allow_html=True)
-
 # ---------------------------------------------------------
-# 5. HEADER KHỐI 2 CỐ ĐỊNH KHI CUỘN (STICKY HEADER)
+# 5. BANNER CỐ ĐỊNH Ở ĐỈNH MÀN HÌNH (STICKY HEADER)
 # ---------------------------------------------------------
 tab_titles = {
-    "1 🌐 DS WEBsites_CV": "🌐 Bảng Danh Sách WEBsites_CV",
-    "2 📋 DM QL Files_CV": "📋 Danh Mục Quản Lý Files_CV",
-    "3 📊 DS BCdinhky_CV": "📊 Bảng Danh Sách Báo Cáo Định Kỳ & Công Việc",
-    "4 🟢 DS Gsheet_CV": "🟢 Bảng Danh Sách Google Sheets_CV"
+    "1 🌐 DS WEBsites_CV": "Bảng Danh Sách WEBsites_CV",
+    "2 📋 DM QL Files_CV": "Danh Mục Quản Lý Files_CV",
+    "3 📊 DS BCdinhky_CV": "Bảng Danh Sách Báo Cáo Định Kỳ & Công Việc",
+    "4 🟢 DS Gsheet_CV": "Bảng Danh Sách Google Sheets_CV"
 }
 
-# Khung Banner cố định ở góc trên màn hình khi cuộn
 st.markdown(f"""
     <div class="sticky-header-container">
         <div class="header-card">
@@ -375,6 +425,7 @@ def render_data_table_with_actions(df, title_col, item_type="gsheet", category_n
         headers = ["STT", title_col, "Links truy cập", "Ghi chú", "Thao tác"]
         cols_width = [1, 4, 2, 3, 2]
 
+    # CỐ ĐỊNH HÀNG TIÊU ĐỀ CỘT BẢNG
     cols = st.columns(cols_width)
     for i, h in enumerate(headers):
         cols[i].markdown(f"**{h}**")
