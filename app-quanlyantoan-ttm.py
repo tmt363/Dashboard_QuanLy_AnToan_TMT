@@ -57,7 +57,7 @@ st.markdown(f"""
         color: {text_main} !important;
     }}
 
-    /* 1. ĐỒNG BỘ ĐỈNH TRANG - CHO Ô 1 VÀ Ô 2 HOÀN TOÀN NGANG HÀNG NHAU */
+    /* 1. ĐỒNG BỘ ĐỈNH TRANG - CHO SIDEBAR VÀ HEADER NGANG HÀNG NHAU */
     .main .block-container {{
         max-width: 99% !important;
         padding-top: 1.0rem !important;
@@ -79,7 +79,7 @@ st.markdown(f"""
         padding-right: 0.8rem !important;
     }}
 
-    /* CARD Ô 1: USER PROFILE SIDEBAR */
+    /* CARD USER PROFILE */
     .user-profile-card {{
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         border-radius: 10px;
@@ -134,7 +134,7 @@ st.markdown(f"""
         overflow: hidden;
     }}
 
-    /* 2. KHỐI CỐ ĐỊNH Ô 2 VÀ TIÊU ĐỀ TRANG KHI CUỘN (STICKY HEADER) */
+    /* 2. KHỐI CỐ ĐỊNH HEADER VÀ TIÊU ĐỀ TRANG KHI CUỘN (STICKY HEADER) */
     .sticky-header-wrapper {{
         position: sticky;
         top: 2.8rem;
@@ -172,6 +172,7 @@ st.markdown(f"""
         font-weight: 600;
     }}
 
+    /* Ô ĐƯỜNG DẪN THƯ MỤC EXCEL NẰM TRONG QUẢN TRỊ */
     .path-box {{
         background-color: {path_box_bg};
         border: 1px dashed {border_color};
@@ -180,6 +181,8 @@ st.markdown(f"""
         font-size: 10px;
         word-break: break-all;
         color: {path_box_text};
+        margin-top: 4px;
+        margin-bottom: 8px;
     }}
 
     /* BẢNG THÔNG BÁO QUẢN TRỊ */
@@ -197,7 +200,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 3. MÀN HÌNH ĐĂNG NHẬP (NẾU CHƯA LOGGED IN)
+# 3. MÀN HÌNH ĐĂNG NHẬP
 # ---------------------------------------------------------
 if not st.session_state.logged_in:
     col1, col2, col3 = st.columns([1.2, 1.6, 1.2])
@@ -353,7 +356,7 @@ def manage_account_dialog():
                 st.rerun()
 
 # ---------------------------------------------------------
-# 6. SIDEBAR: Ô 1 (PROFILE CARD) & ĐIỀU HƯỚNG
+# 6. SIDEBAR: PROFILE & KHU VỰC QUẢN TRỊ (ĐÃ ĐƯA MỤC EXCEL LÊN ĐÂY)
 # ---------------------------------------------------------
 user_prof = st.session_state.user_profile
 avatar_html = (
@@ -362,7 +365,7 @@ avatar_html = (
     else '<div class="user-avatar-default">👤</div>'
 )
 
-# Ô 1: CARD USER PROFILE
+# CARD USER PROFILE
 st.sidebar.markdown(f"""
     <div class="user-profile-card">
         {avatar_html}
@@ -373,7 +376,7 @@ st.sidebar.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# NÚT BẤM QUẢN LÝ TÀI KHOẢN
+# NÚT QUẢN LÝ TÀI KHOẢN
 if st.sidebar.button("⚙️ Quản lý tài khoản", use_container_width=True, type="secondary"):
     manage_account_dialog()
 
@@ -391,7 +394,11 @@ with col_btn2:
         st.cache_data.clear()
         st.toast("Đã làm sạch Cache!", icon="🎉")
 
-# NÚT THAY ĐỔI THEME: LIGHT MODE / DARK MODE
+# 🟢 [ĐÃ ĐƯA VÙNG SỐ 1 VÀO ĐÂY]: MỤC THƯ MỤC EXCEL NẰM TRONG QUẢN TRỊ
+st.sidebar.markdown("<div style='margin-top: 8px;'><b>📌 Thư mục Excel:</b></div>", unsafe_allow_html=True)
+st.sidebar.markdown(f'<div class="path-box">{EXCEL_DIR}</div>', unsafe_allow_html=True)
+
+# THAY ĐỔI THEME
 st.sidebar.markdown("<hr style='margin: 10px 0;'>", unsafe_allow_html=True)
 st.sidebar.markdown("**🎨 CHỌN GIAO DIỆN (THEME)**")
 selected_theme = st.sidebar.radio(
@@ -426,12 +433,8 @@ for label, key_val in menu_options:
 
 main_menu = st.session_state.active_tab
 
-st.sidebar.markdown("<hr style='margin: 10px 0;'>", unsafe_allow_html=True)
-st.sidebar.markdown("**📌 Thư mục Excel:**")
-st.sidebar.markdown(f'<div class="path-box">{EXCEL_DIR}</div>', unsafe_allow_html=True)
-
 # ---------------------------------------------------------
-# 7. KHỐI CỐ ĐỊNH BANNER Ô 2 + TIÊU ĐỀ TRANG (STICKY HEADER)
+# 7. KHỐI CỐ ĐỊNH BANNER + TIÊU ĐỀ TRANG (STICKY HEADER)
 # ---------------------------------------------------------
 page_titles = {
     "1 🌐 DS WEBsites_CV": "🌐 Bảng Danh Sách WEBsites_CV",
@@ -527,7 +530,7 @@ def edit_item_dialog(df_ref, idx, item_type="gsheet", category_name=None):
         st.rerun()
 
 # ---------------------------------------------------------
-# 9. HIỂN THỊ BẢNG DỮ LIỆU & BẢO MẬT KHU VỰC SỐ 2
+# 9. HIỂN THỊ BẢNG DỮ LIỆU
 # ---------------------------------------------------------
 def render_data_table_with_actions(df, title_col, item_type="gsheet", category_name=None):
     is_admin = st.session_state.is_admin_mode
@@ -572,7 +575,7 @@ def render_data_table_with_actions(df, title_col, item_type="gsheet", category_n
         c[col_offset].markdown(" | ".join(link_markdowns) if link_markdowns else "-")
         c[col_offset+1].write(str(row.get("Ghi chú", "")))
 
-        # Chỉ hiển thị cột sửa/xóa khi mở Chế độ Admin
+        # Sửa/Xóa chỉ hiển thị khi mở Admin Mode
         if is_admin:
             btn_e, btn_d = c[col_offset+2].columns(2)
             if btn_e.button("✏️", key=f"btn_edit_{item_type}_{category_name}_{idx}"):
@@ -590,7 +593,7 @@ def render_data_table_with_actions(df, title_col, item_type="gsheet", category_n
 
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # KHU VỰC SỐ 2: CHỈ HIỂN THỊ KHI MỞ CHẾ ĐỘ ADMIN
+    # NÚT THÊM DÒNG (ADMIN ONLY)
     if is_admin:
         col_add1, col_add2 = st.columns([1, 4])
         with col_add1:
@@ -614,7 +617,7 @@ def render_data_table_with_actions(df, title_col, item_type="gsheet", category_n
                     st.rerun()
 
 # ---------------------------------------------------------
-# 10. KHU VỰC SỐ 2: NHẬP / XUẤT EXCEL (ADMIN ONLY)
+# 10. NHẬP / XUẤT EXCEL (ADMIN ONLY)
 # ---------------------------------------------------------
 def render_io_excel_tools(df, current_key, file_prefix):
     if st.session_state.is_admin_mode:
