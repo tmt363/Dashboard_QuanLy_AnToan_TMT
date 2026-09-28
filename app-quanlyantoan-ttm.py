@@ -4,7 +4,7 @@ import os
 import io
 
 # ---------------------------------------------------------
-# 1. CẤU HÌNH TRANG & CUSTOM CSS CĂN CHỈNH BẰNG HÀNG NGANG
+# 1. CẤU HÌNH TRANG & CUSTOM CSS CỐ ĐỊNH TIÊU ĐỀ (STICKY HEADER)
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="Hệ Thống Quản Lý An Toàn TMT",
@@ -12,20 +12,19 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# CSS triệt tiêu lề thụt trên cùng để Khối 1 và Khối 2 thẳng hàng ngang
 st.markdown("""
     <style>
     /* 1. Ép phần lề trên cùng của Main và Sidebar bằng nhau tuyệt đối */
     .main .block-container {
         max-width: 99% !important;
-        padding-top: 1rem !important;
+        padding-top: 0.8rem !important;
         padding-bottom: 1rem !important;
         padding-left: 1.5rem !important;
         padding-right: 1.5rem !important;
     }
 
     [data-testid="stSidebar"] > div:first-child {
-        padding-top: 1rem !important;
+        padding-top: 0.8rem !important;
         padding-left: 0.8rem !important;
         padding-right: 0.8rem !important;
     }
@@ -58,14 +57,24 @@ st.markdown("""
         font-size: 11px !important;
     }
 
-    /* 4. Header Banner chính (Khối 2) */
+    /* 4. CỐ ĐỊNH BANNER TIÊU ĐỀ KHI CUỘN TRANG (STICKY HEADER KHỐI 2) */
+    .sticky-header-container {
+        position: sticky;
+        top: 2.8rem;
+        z-index: 999;
+        background-color: #ffffff;
+        padding-top: 4px;
+        padding-bottom: 8px;
+        margin-bottom: 10px;
+        border-bottom: 2px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
     .header-card {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         color: white;
         padding: 10px 18px;
         border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        margin-bottom: 15px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -83,6 +92,14 @@ st.markdown("""
         border-radius: 12px;
         font-size: 11px;
         font-weight: 600;
+    }
+
+    .page-subheading {
+        margin-top: 8px !important;
+        margin-bottom: 0px !important;
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        color: #1e3c72 !important;
     }
 
     /* Nút bấm liên kết bảng */
@@ -219,7 +236,7 @@ if "gsheet_df" not in st.session_state:
     ])
 
 # ---------------------------------------------------------
-# 4. SIDEBAR - KHỐI 1 (CĂN BẰNG ĐẦU VỚI KHỐI 2)
+# 4. SIDEBAR - KHỐI 1
 # ---------------------------------------------------------
 st.sidebar.markdown(f"""
     <div class="user-card">
@@ -264,12 +281,23 @@ st.sidebar.markdown("**📌 Thư mục Excel:**")
 st.sidebar.markdown(f'<div class="path-box">{EXCEL_DIR}</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 5. HEADER CHÍNH - KHỐI 2 (BẰNG HÀNG VỚI KHỐI 1)
+# 5. HEADER KHỐI 2 CỐ ĐỊNH KHI CUỘN (STICKY HEADER)
 # ---------------------------------------------------------
-st.markdown("""
-    <div class="header-card">
-        <h1>🛡️ Quản lý an toàn TTM</h1>
-        <span class="version-badge">Version 1.0 20260928</span>
+tab_titles = {
+    "1 🌐 DS WEBsites_CV": "🌐 Bảng Danh Sách WEBsites_CV",
+    "2 📋 DM QL Files_CV": "📋 Danh Mục Quản Lý Files_CV",
+    "3 📊 DS BCdinhky_CV": "📊 Bảng Danh Sách Báo Cáo Định Kỳ & Công Việc",
+    "4 🟢 DS Gsheet_CV": "🟢 Bảng Danh Sách Google Sheets_CV"
+}
+
+# Khung Banner cố định ở góc trên màn hình khi cuộn
+st.markdown(f"""
+    <div class="sticky-header-container">
+        <div class="header-card">
+            <h1>🛡️ Quản lý an toàn TTM</h1>
+            <span class="version-badge">Version 1.0 20260928</span>
+        </div>
+        <div class="page-subheading">{tab_titles.get(main_menu, "")}</div>
     </div>
 """, unsafe_allow_html=True)
 
@@ -442,7 +470,6 @@ def render_io_excel_tools(df, current_key, file_prefix):
 # 7. ĐIỀU HƯỚNG CÁC PHÂN MỤC
 # ---------------------------------------------------------
 if main_menu == "1 🌐 DS WEBsites_CV":
-    st.subheader("🌐 Bảng Danh Sách WEBsites_CV")
     render_data_table_with_actions(st.session_state.web_tools_df, title_col="Mô tả WEB", item_type="web")
     render_io_excel_tools(st.session_state.web_tools_df, "web", "DanhMuc_CongCu_WEB_TMT")
 
@@ -455,17 +482,14 @@ elif main_menu == "2 📋 DM QL Files_CV":
         label_visibility="collapsed"
     )
     
-    st.subheader(f"📂 Quản Lý Hồ Sơ: {selected_cat}")
     current_df = st.session_state.data_store[selected_cat]
     render_data_table_with_actions(current_df, title_col="Thư mục / Hồ sơ", item_type="hoso", category_name=selected_cat)
     render_io_excel_tools(current_df, selected_cat, f"HoSo_{selected_cat}")
 
 elif main_menu == "3 📊 DS BCdinhky_CV":
-    st.subheader("📊 Bảng Danh Sách Báo Cáo Định Kỳ & Công Việc")
     render_data_table_with_actions(st.session_state.bc_dinhky_df, title_col="Tên Báo Cáo / Công Việc", item_type="bc")
     render_io_excel_tools(st.session_state.bc_dinhky_df, "bc", "DanhSach_BaoCao_DinhKy_TMT")
 
 elif main_menu == "4 🟢 DS Gsheet_CV":
-    st.subheader("🟢 Bảng Danh Sách Google Sheets_CV")
     render_data_table_with_actions(st.session_state.gsheet_df, title_col="Mô tả Google Sheet", item_type="gsheet")
     render_io_excel_tools(st.session_state.gsheet_df, "gsheet", "DanhSach_Gsheet_TMT")
