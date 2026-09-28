@@ -15,28 +15,34 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-    /* THU HẸP KHOẢNG TRỐNG TỐI ĐA (VỊ TRÍ 2) */
+    /* 1. THU HẸP KHOẢNG TRỐNG TỐI ĐA TRÊN ĐỈNH TRANG (VỊ TRÍ 2) */
     .main .block-container {
         max-width: 99% !important;
-        padding-top: 0.3rem !important;
+        padding-top: 0rem !important;
         padding-bottom: 1rem !important;
         padding-left: 0.8rem !important;
         padding-right: 0.8rem !important;
     }
 
-    /* TỐI ƯU SIDEBAR */
+    /* 2. NƠI RỘNG THANH SIDEBAR ĐỂ NÚT KHÔNG BỊ BẤT CHỮ (VỊ TRÍ 1) */
     [data-testid="stSidebar"] {
-        min-width: 270px !important;
-        max-width: 290px !important;
+        min-width: 310px !important;
+        max-width: 330px !important;
         background-color: #f8fafc;
         border-right: 1px solid #e2e8f0;
     }
 
-    /* CARD USER PROFILE ĐẸP MẮT & MÀU SẮC (VỊ TRÍ 1) */
+    [data-testid="stSidebar"] > div:first-child {
+        padding-top: 0.5rem !important;
+        padding-left: 0.6rem !important;
+        padding-right: 0.6rem !important;
+    }
+
+    /* CARD USER PROFILE ĐẸP MẮT & NỔI BẬT */
     .user-profile-card {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         border-radius: 10px;
-        padding: 12px;
+        padding: 10px 12px;
         color: white;
         box-shadow: 0 4px 10px rgba(30, 60, 114, 0.2);
         margin-bottom: 10px;
@@ -45,16 +51,16 @@ st.markdown("""
         gap: 12px;
     }
     .user-avatar-img {
-        width: 45px;
-        height: 45px;
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
         object-fit: cover;
         border: 2px solid #ffffff;
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
     .user-avatar-default {
-        width: 45px;
-        height: 45px;
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
         background-color: #ffffff;
         display: flex;
@@ -90,6 +96,14 @@ st.markdown("""
         overflow: hidden;
     }
 
+    /* ĐỊNH DẠNG HÀNG NÚT BẤM VỊ TRÍ 1 ĐỂ HIỆN RÕ CHỮ */
+    div[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button {
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        padding: 4px 2px !important;
+        border-radius: 6px !important;
+    }
+
     /* HEADER CARD TIÊU ĐỀ TRANG CHÍNH */
     .header-card {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
@@ -97,6 +111,7 @@ st.markdown("""
         padding: 8px 15px;
         border-radius: 8px;
         box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        margin-top: 5px;
         margin-bottom: 12px;
         display: flex;
         justify-content: space-between;
@@ -126,10 +141,20 @@ st.markdown("""
         color: #475569;
     }
 
-    /* NÚT BẤM SIDEBAR HIỆU ỨNG TỐT HƠN */
-    div[data-testid="stSidebar"] button {
-        border-radius: 6px !important;
-        transition: all 0.2s ease !important;
+    /* 3. TỐI ƯU CHO GIAO DIỆN ĐIỆN THOẠI (RESPONSIVE MOBILE) */
+    @media (max-width: 768px) {
+        .main .block-container {
+            padding-left: 0.3rem !important;
+            padding-right: 0.3rem !important;
+        }
+        .header-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+        .header-card h1 {
+            font-size: 14px !important;
+        }
     }
     </style>
 """, unsafe_allow_html=True)
@@ -144,7 +169,6 @@ if "logged_in" not in st.session_state:
 if "username" not in st.session_state:
     st.session_state.username = ""
 
-# Khởi tạo lưu trữ thông tin Account & Avatar
 if "user_profile" not in st.session_state:
     st.session_state.user_profile = {
         "display_name": "Trần Minh Trí (tmt)",
@@ -297,7 +321,7 @@ def edit_user_profile_dialog():
             st.rerun()
 
 # ---------------------------------------------------------
-# 5. SIDEBAR - PROFILE CARD & CÁC NÚT THAO TÁC
+# 5. SIDEBAR - PROFILE CARD & CÁC NÚT THAO TÁC (SỬA VỊ TRÍ 1)
 # ---------------------------------------------------------
 user_prof = st.session_state.user_profile
 avatar_html = (
@@ -316,8 +340,8 @@ st.sidebar.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# HÀNG NÚT THAO TÁC PROFILE & HỆ THỐNG
-col_btn1, col_btn2, col_btn3 = st.sidebar.columns([1.1, 0.9, 0.9])
+# CĂN LẠI NÚT ĐỂ RÕ CHỮ
+col_btn1, col_btn2, col_btn3 = st.sidebar.columns([1.2, 1, 1])
 with col_btn1:
     if st.button("⚙️ Account", use_container_width=True, type="secondary"):
         edit_user_profile_dialog()
