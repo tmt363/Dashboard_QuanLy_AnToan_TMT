@@ -36,7 +36,7 @@ USER_CREDENTIALS = {"tmt": "123456", "admin": "123456"}
 ADMIN_PIN_CODE = "123456"
 
 # ---------------------------------------------------------
-# 2. CUSTOM CSS - CỐ ĐỊNH KHUNG 1 & XỬ LÝ KHUNG 2 CUỘN DÀI
+# 2. CUSTOM CSS - ĐÃ FIX KHUNG 1 CỐ ĐỊNH 100% TRÊN CÙNG
 # ---------------------------------------------------------
 is_dark = (st.session_state.theme_mode == "Dark")
 
@@ -57,7 +57,7 @@ st.markdown(f"""
 
     .main .block-container {{
         max-width: 99% !important;
-        padding-top: 0.5rem !important;
+        padding-top: 0.2rem !important;
         padding-bottom: 0.5rem !important;
         padding-left: 0.8rem !important;
         padding-right: 0.8rem !important;
@@ -131,32 +131,23 @@ st.markdown(f"""
         overflow: hidden;
     }}
 
-    /* KHUNG 1: CỐ ĐỊNH BANNER + TIÊU ĐỀ + HEADER BẢNG */
-    .sticky-header-wrapper {{
-        position: sticky;
-        top: 2.8rem;
-        z-index: 999;
-        background-color: {bg_main} !important;
-        padding-top: 2px;
-        padding-bottom: 4px;
-        border-bottom: 2px solid {border_color};
-    }}
-
+    /* HEADER BANNER */
     .header-card {{
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         color: white;
-        padding: 10px 18px;
+        padding: 8px 18px;
         border-radius: 10px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         display: flex;
         justify-content: space-between;
         align-items: center;
-        height: 52px;
+        height: 48px;
         box-sizing: border-box;
+        margin-bottom: 6px;
     }}
     .header-card h1 {{
         color: #ffffff !important;
-        font-size: 16px !important;
+        font-size: 15px !important;
         font-weight: 700 !important;
         margin: 0 !important;
     }}
@@ -168,13 +159,26 @@ st.markdown(f"""
         font-weight: 600;
     }}
 
-    /* CSS CHO HEADER BẢNG TRONG KHUNG CỐ ĐỊNH */
-    .table-header-sticky {{
-        background-color: {bg_main};
-        padding: 8px 0;
+    /* CSS ĐẠT CHUẨN CỐ ĐỊNH BANNER + HEADER BẢNG */
+    .sticky-header-container {{
+        position: -webkit-sticky;
+        position: sticky;
+        top: 0;
+        z-index: 99999;
+        background-color: {bg_main} !important;
+        padding-top: 5px;
+        padding-bottom: 5px;
+        border-bottom: 2px solid {border_color};
+    }}
+
+    .table-header-box {{
+        background-color: {path_box_bg};
+        border-radius: 6px;
+        padding: 8px 10px;
         font-weight: bold;
-        border-bottom: 1px solid {border_color};
-        margin-top: 8px;
+        color: {text_main};
+        border: 1px solid {border_color};
+        margin-top: 4px;
     }}
 
     .path-box {{
@@ -193,11 +197,11 @@ st.markdown(f"""
         background-color: #fff3cd;
         border: 1px solid #ffe69c;
         color: #664d03;
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11px;
         font-weight: 600;
-        margin-top: 6px;
+        margin-bottom: 4px;
     }}
     </style>
 """, unsafe_allow_html=True)
@@ -500,7 +504,7 @@ def edit_item_dialog(df_ref, idx, item_type="gsheet", category_name=None):
         st.rerun()
 
 # ---------------------------------------------------------
-# 8. HIỂN THỊ BẢNG: CỐ ĐỊNH KHUNG 1 VÀ CUỘN KHUNG 2
+# 8. HIỂN THỊ BẢNG: FIX STICKY KHUNG 1 CỐ ĐỊNH TRÊN CÙNG
 # ---------------------------------------------------------
 page_titles = {
     "1 🌐 DS WEBsites_CV": "🌐 Bảng Danh Sách WEBsites_CV",
@@ -512,7 +516,7 @@ page_titles = {
 def render_layout_and_table(df, title_col, item_type="gsheet", category_name=None):
     is_admin = st.session_state.is_admin_mode
 
-    # Xác định độ rộng các cột
+    # Cấu hình danh sách cột & Tỷ lệ chiều rộng
     if item_type == "bc":
         headers = ["STT", title_col, "Tần suất", "Đơn vị nhận", "Links truy cập", "Ghi chú"]
         cols_width = [1, 3, 2, 2, 2, 3]
@@ -527,75 +531,79 @@ def render_layout_and_table(df, title_col, item_type="gsheet", category_name=Non
             cols_width = [1, 4, 2, 3, 2]
 
     # =========================================================
-    # 📌 KHUNG 1: CỐ ĐỊNH KHUNG HEADER + BẢNG TIÊU ĐỀ
+    # 📌 KHUNG 1: CỐ ĐỊNH CHẮC CHẮN (STICKY HEADER)
     # =========================================================
+    st.markdown('<div class="sticky-header-container">', unsafe_allow_html=True)
+    
     st.markdown(f"""
-        <div class="sticky-header-wrapper">
-            <div class="header-card">
-                <h1>🛡️ Quản lý an toàn TTM</h1>
-                <span class="version-badge">Version 1.0 20260928</span>
-            </div>
-            <h3 style="margin-top: 8px; margin-bottom: 4px; font-weight: 700; color: {text_main};">
-                {page_titles.get(main_menu, "")}
-            </h3>
+        <div class="header-card">
+            <h1>🛡️ Quản lý an toàn TTM</h1>
+            <span class="version-badge">Version 1.0 20260928</span>
         </div>
+        <h4 style="margin-top: 4px; margin-bottom: 4px; font-weight: 700; color: {text_main};">
+            {page_titles.get(main_menu, "")}
+        </h4>
     """, unsafe_allow_html=True)
 
     if is_admin:
         st.markdown("""
             <div class="admin-mode-banner">
-                🔓 Đang mở Chế Độ Quản Trị (Cho phép Thêm/Sửa/Xóa & Nhập/Xuất Excel)
+                🔓 Chế Độ Quản Trị: Được phép Thêm / Sửa / Xóa & Nhập / Xuất Excel
             </div>
         """, unsafe_allow_html=True)
 
+    # BANNER HEADER CỘT (STT, MÔ TẢ, LINKS, GHI CHÚ)
+    st.markdown('<div class="table-header-box">', unsafe_allow_html=True)
+    h_cols = st.columns(cols_width)
+    for idx_h, h_text in enumerate(headers):
+        h_cols[idx_h].markdown(f"**{h_text}**")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True) # Đóng sticky-header-container
+
+    # Selectbox cho mảng công việc nếu ở Tab 2
     if main_menu == "2 📋 DM QL Files_CV":
-        st.markdown("##### 📁 Chọn mảng công việc:")
-
-    # BANNER CỘT TIÊU ĐỀ BẢNG (CỐ ĐỊNH)
-    st.markdown("<div class='table-header-sticky'>", unsafe_allow_html=True)
-    header_cols = st.columns(cols_width)
-    for i, h in enumerate(headers):
-        header_cols[i].markdown(f"**{h}**")
-    st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-top: 6px;'></div>", unsafe_allow_html=True)
 
     # =========================================================
-    # 📌 KHUNG 2: DANH SÁCH DỮ LIỆU CUỘN BÊN DƯỚI (HEIGHT CỐ ĐỊNH)
+    # 📌 KHUNG 2: DANH SÁCH DỮ LIỆU BÊN DƯỚI
     # =========================================================
-    with st.container(height=520, border=False):
-        for idx, row in df.iterrows():
-            c = st.columns(cols_width)
-            c[0].write(f"**{row.get('STT', idx+1)}**")
-            c[1].write(str(row.get(title_col, "")))
-            
-            col_offset = 2
-            if item_type == "bc":
-                c[2].write(str(row.get("Tần suất", "")))
-                c[3].write(str(row.get("Đơn vị nhận", "")))
-                col_offset = 4
+    for idx, row in df.iterrows():
+        c = st.columns(cols_width)
+        c[0].write(f"**{row.get('STT', idx+1)}**")
+        c[1].write(str(row.get(title_col, "")))
+        
+        col_offset = 2
+        if item_type == "bc":
+            c[2].write(str(row.get("Tần suất", "")))
+            c[3].write(str(row.get("Đơn vị nhận", "")))
+            col_offset = 4
 
-            link_markdowns = []
-            for col_name in df.columns:
-                if "Link" in col_name and str(row[col_name]) != "nan" and str(row[col_name]).strip() != "":
-                    l_url = str(row[col_name])
-                    link_markdowns.append(f"[{col_name}]({l_url})")
-            
-            c[col_offset].markdown(" | ".join(link_markdowns) if link_markdowns else "-")
-            c[col_offset+1].write(str(row.get("Ghi chú", "")))
+        link_markdowns = []
+        for col_name in df.columns:
+            if "Link" in col_name and str(row[col_name]) != "nan" and str(row[col_name]).strip() != "":
+                l_url = str(row[col_name])
+                link_markdowns.append(f"[{col_name}]({l_url})")
+        
+        c[col_offset].markdown(" | ".join(link_markdowns) if link_markdowns else "-")
+        c[col_offset+1].write(str(row.get("Ghi chú", "")))
 
-            if is_admin:
-                btn_e, btn_d = c[col_offset+2].columns(2)
-                if btn_e.button("✏️", key=f"btn_edit_{item_type}_{category_name}_{idx}"):
-                    edit_item_dialog(df, idx, item_type, category_name)
-                if btn_d.button("🗑️", key=f"btn_del_{item_type}_{category_name}_{idx}"):
-                    if item_type == "web":
-                        st.session_state.web_tools_df = reindex_df(df.drop(idx))
-                    elif item_type == "hoso":
-                        st.session_state.data_store[category_name] = reindex_df(df.drop(idx))
-                    elif item_type == "bc":
-                        st.session_state.bc_dinhky_df = reindex_df(df.drop(idx))
-                    else:
-                        st.session_state.gsheet_df = reindex_df(df.drop(idx))
-                    st.rerun()
+        if is_admin:
+            btn_e, btn_d = c[col_offset+2].columns(2)
+            if btn_e.button("✏️", key=f"btn_edit_{item_type}_{category_name}_{idx}"):
+                edit_item_dialog(df, idx, item_type, category_name)
+            if btn_d.button("🗑️", key=f"btn_del_{item_type}_{category_name}_{idx}"):
+                if item_type == "web":
+                    st.session_state.web_tools_df = reindex_df(df.drop(idx))
+                elif item_type == "hoso":
+                    st.session_state.data_store[category_name] = reindex_df(df.drop(idx))
+                elif item_type == "bc":
+                    st.session_state.bc_dinhky_df = reindex_df(df.drop(idx))
+                else:
+                    st.session_state.gsheet_df = reindex_df(df.drop(idx))
+                st.rerun()
+
+        st.markdown("<hr style='margin: 4px 0; border-color: #f0f0f0;'>", unsafe_allow_html=True)
 
     # NÚT THÊM DÒNG (ADMIN ONLY)
     if is_admin:
