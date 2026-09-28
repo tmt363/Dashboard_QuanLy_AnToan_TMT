@@ -5,7 +5,7 @@ import io
 from PIL import Image
 
 # ---------------------------------------------------------
-# 1. CẤU HÌNH TRANG & CUSTOM CSS CẢI TIẾN GIAO DIỆN
+# 1. CẤU HÌNH TRANG & CUSTOM CSS CẢI TIẾN GIAO DIỆN PRO
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="Hệ Thống Quản Lý An Toàn TTM",
@@ -15,30 +15,29 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-    /* 1. THU HẸP KHOẢNG TRỐNG TỐI ĐA TRÊN ĐỈNH TRANG (VỊ TRÍ 2) */
+    /* 1. ĐỒNG BỘ KHOẢNG TRỐNG ĐỈNH TRANG - CĂN NGHANG BANNER & PROFILE CARD */
     .main .block-container {
         max-width: 99% !important;
-        padding-top: 0rem !important;
+        padding-top: 1.2rem !important;
         padding-bottom: 1rem !important;
         padding-left: 0.8rem !important;
         padding-right: 0.8rem !important;
     }
 
-    /* 2. NƠI RỘNG THANH SIDEBAR ĐỂ NÚT KHÔNG BỊ BẤT CHỮ (VỊ TRÍ 1) */
     [data-testid="stSidebar"] {
-        min-width: 310px !important;
-        max-width: 330px !important;
+        min-width: 300px !important;
+        max-width: 320px !important;
         background-color: #f8fafc;
         border-right: 1px solid #e2e8f0;
     }
 
     [data-testid="stSidebar"] > div:first-child {
-        padding-top: 0.5rem !important;
-        padding-left: 0.6rem !important;
-        padding-right: 0.6rem !important;
+        padding-top: 1.2rem !important;
+        padding-left: 0.8rem !important;
+        padding-right: 0.8rem !important;
     }
 
-    /* CARD USER PROFILE ĐẸP MẮT & NỔI BẬT */
+    /* CARD USER PROFILE ĐẸP MẮT & SONG SONG VỚI BANNER */
     .user-profile-card {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         border-radius: 10px;
@@ -49,24 +48,26 @@ st.markdown("""
         display: flex;
         align-items: center;
         gap: 12px;
+        height: 52px; /* Cân bằng chiều cao chuẩn */
+        box-sizing: border-box;
     }
     .user-avatar-img {
-        width: 44px;
-        height: 44px;
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
         object-fit: cover;
         border: 2px solid #ffffff;
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
     .user-avatar-default {
-        width: 44px;
-        height: 44px;
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
         background-color: #ffffff;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 22px;
+        font-size: 18px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
     .user-info {
@@ -76,7 +77,7 @@ st.markdown("""
     }
     .user-name {
         font-weight: 700;
-        font-size: 14px;
+        font-size: 13px;
         color: #ffffff;
         margin: 0;
         line-height: 1.2;
@@ -90,45 +91,47 @@ st.markdown("""
         display: flex;
         align-items: center;
         gap: 4px;
-        margin-top: 3px;
+        margin-top: 2px;
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
     }
 
-    /* ĐỊNH DẠNG HÀNG NÚT BẤM VỊ TRÍ 1 ĐỂ HIỆN RÕ CHỮ */
-    div[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button {
-        font-size: 11px !important;
-        font-weight: 600 !important;
-        padding: 4px 2px !important;
-        border-radius: 6px !important;
-    }
-
-    /* HEADER CARD TIÊU ĐỀ TRANG CHÍNH */
+    /* 2. HEADER BANNER CỐ ĐỊNH KHI CUỘN TRANG (STICKY HEADER PRO) */
     .header-card {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         color: white;
-        padding: 8px 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        margin-top: 5px;
-        margin-bottom: 12px;
+        padding: 10px 18px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        margin-bottom: 16px;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        height: 52px; /* Chiều cao bằng với Profile Card bên Sidebar */
+        box-sizing: border-box;
+        
+        /* CỐ ĐỊNH BANNER KHI CUỘN TRANG */
+        position: sticky;
+        top: 0px;
+        z-index: 999;
     }
     .header-card h1 {
         color: #ffffff !important;
         font-size: 16px !important;
         font-weight: 700 !important;
         margin: 0 !important;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
     .version-badge {
         background-color: rgba(255,255,255,0.2);
-        padding: 2px 8px;
+        padding: 3px 10px;
         border-radius: 12px;
         font-size: 11px;
         font-weight: 600;
+        backdrop-filter: blur(4px);
     }
 
     .path-box {
@@ -141,16 +144,22 @@ st.markdown("""
         color: #475569;
     }
 
-    /* 3. TỐI ƯU CHO GIAO DIỆN ĐIỆN THOẠI (RESPONSIVE MOBILE) */
+    /* TỐI ƯU CÁC NÚT BẤM TRONG SIDEBAR */
+    div[data-testid="stSidebar"] button {
+        border-radius: 6px !important;
+        font-weight: 600 !important;
+    }
+
+    /* TỐI ƯU CHO GIAO DIỆN ĐIỆN THOẠI (RESPONSIVE) */
     @media (max-width: 768px) {
         .main .block-container {
-            padding-left: 0.3rem !important;
-            padding-right: 0.3rem !important;
+            padding-top: 0.5rem !important;
+            padding-left: 0.4rem !important;
+            padding-right: 0.4rem !important;
         }
         .header-card {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 5px;
+            height: auto;
+            padding: 8px 12px;
         }
         .header-card h1 {
             font-size: 14px !important;
@@ -280,7 +289,7 @@ if "gsheet_df" not in st.session_state:
         {"STT": 2, "Mô tả Google Sheet": "Theo Dõi Kiến Nghị Kiểm Tra", "Link 1": "https://docs.google.com/spreadsheets", "Ghi chú": "Cập nhật trực tuyến"}
     ])
 
-# HEADER HỆ THỐNG
+# HEADER HỆ THỐNG PRO (TÔ 2 - STICKY BANNER)
 st.markdown("""
     <div class="header-card">
         <h1>🛡️ Quản lý an toàn TTM</h1>
@@ -321,7 +330,7 @@ def edit_user_profile_dialog():
             st.rerun()
 
 # ---------------------------------------------------------
-# 5. SIDEBAR - PROFILE CARD & CÁC NÚT THAO TÁC (SỬA VỊ TRÍ 1)
+# 5. SIDEBAR - PROFILE CARD & THIẾT KẾ NÚT BẤM KHÔNG BỊ KHUẤT CHỮ (TÔ 1)
 # ---------------------------------------------------------
 user_prof = st.session_state.user_profile
 avatar_html = (
@@ -330,6 +339,7 @@ avatar_html = (
     else '<div class="user-avatar-default">👤</div>'
 )
 
+# PROFILE CARD SONG SONG VỚI BANNER
 st.sidebar.markdown(f"""
     <div class="user-profile-card">
         {avatar_html}
@@ -340,24 +350,23 @@ st.sidebar.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# CĂN LẠI NÚT ĐỂ RÕ CHỮ
-col_btn1, col_btn2, col_btn3 = st.sidebar.columns([1.2, 1, 1])
-with col_btn1:
-    if st.button("⚙️ Account", use_container_width=True, type="secondary"):
-        edit_user_profile_dialog()
+# Bố trí 2 HÀNG NÚT: Hàng 1 Quản lý account rộng rãi, Hàng 2 Chia đôi Thoát & Cache
+if st.sidebar.button("⚙️ Quản lý tài khoản", use_container_width=True, type="secondary"):
+    edit_user_profile_dialog()
 
-with col_btn2:
+col_btn1, col_btn2 = st.sidebar.columns(2)
+with col_btn1:
     if st.button("🚪 Thoát", use_container_width=True, type="secondary"):
         st.session_state.logged_in = False
         st.session_state.username = ""
         st.rerun()
 
-with col_btn3:
-    if st.button("🧹 Cache", use_container_width=True, type="secondary"):
+with col_btn2:
+    if st.button("🧹 Clear Cache", use_container_width=True, type="secondary"):
         st.cache_data.clear()
         st.toast("Đã xóa cache!", icon="🎉")
 
-st.sidebar.markdown("<hr style='margin: 8px 0;'>", unsafe_allow_html=True)
+st.sidebar.markdown("<hr style='margin: 10px 0;'>", unsafe_allow_html=True)
 st.sidebar.markdown("**📁 MỤC LÀM VIỆC**")
 
 menu_options = [
