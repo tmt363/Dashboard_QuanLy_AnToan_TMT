@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 import io
+import base64
 from PIL import Image
 
 # ---------------------------------------------------------
@@ -15,7 +16,7 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-    /* 1. ĐỒNG BỘ KHOẢNG TRỐNG ĐỈNH TRANG - CĂN NGHANG BANNER & PROFILE CARD */
+    /* 1. ĐỒNG BỘ KHOẢNG TRỐNG ĐỈNH TRANG - CĂN NGANG BANNER & PROFILE CARD */
     .main .block-container {
         max-width: 99% !important;
         padding-top: 1.2rem !important;
@@ -37,7 +38,7 @@ st.markdown("""
         padding-right: 0.8rem !important;
     }
 
-    /* CARD USER PROFILE ĐẸP MẮT & SONG SONG VỚI BANNER */
+    /* CARD USER PROFILE SONG SONG VỚI BANNER */
     .user-profile-card {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         border-radius: 10px;
@@ -48,7 +49,7 @@ st.markdown("""
         display: flex;
         align-items: center;
         gap: 12px;
-        height: 52px; /* Cân bằng chiều cao chuẩn */
+        height: 52px;
         box-sizing: border-box;
     }
     .user-avatar-img {
@@ -108,10 +109,8 @@ st.markdown("""
         display: flex;
         justify-content: space-between;
         align-items: center;
-        height: 52px; /* Chiều cao bằng với Profile Card bên Sidebar */
+        height: 52px;
         box-sizing: border-box;
-        
-        /* CỐ ĐỊNH BANNER KHI CUỘN TRANG */
         position: sticky;
         top: 0px;
         z-index: 999;
@@ -150,7 +149,21 @@ st.markdown("""
         font-weight: 600 !important;
     }
 
-    /* TỐI ƯU CHO GIAO DIỆN ĐIỆN THOẠI (RESPONSIVE) */
+    /* BẢNG THÔNG BÁO CHẾ ĐỘ QUẢN TRỊ */
+    .admin-mode-banner {
+        background-color: #fff3cd;
+        border: 1px solid #ffe69c;
+        color: #664d03;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
     @media (max-width: 768px) {
         .main .block-container {
             padding-top: 0.5rem !important;
@@ -169,14 +182,17 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 2. BẢO MẬT ĐĂNG NHẬP & THÔNG TIN ACCOUNT
+# 2. BẢO MẬT ĐĂNG NHẬP & SESSION STATE
 # ---------------------------------------------------------
 USER_CREDENTIALS = {"tmt": "123456", "admin": "123456"}
+ADMIN_PIN_CODE = "123456"  # Mã quản trị tài khoản để bật chế độ Admin/Chỉnh sửa
 
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "username" not in st.session_state:
     st.session_state.username = ""
+if "is_admin_mode" not in st.session_state:
+    st.session_state.is_admin_mode = False  # Mặc định TẮT chế độ quản trị (Ẩn khu vực 2)
 
 if "user_profile" not in st.session_state:
     st.session_state.user_profile = {
@@ -185,6 +201,7 @@ if "user_profile" not in st.session_state:
         "avatar_bytes": None
     }
 
+# Màn hình đăng nhập ban đầu
 if not st.session_state.logged_in:
     col1, col2, col3 = st.columns([1.2, 1.6, 1.2])
     with col2:
@@ -289,7 +306,7 @@ if "gsheet_df" not in st.session_state:
         {"STT": 2, "Mô tả Google Sheet": "Theo Dõi Kiến Nghị Kiểm Tra", "Link 1": "https://docs.google.com/spreadsheets", "Ghi chú": "Cập nhật trực tuyến"}
     ])
 
-# HEADER HỆ THỐNG PRO (TÔ 2 - STICKY BANNER)
+# BANNER HỆ THỐNG PRO (STICKY HEADER)
 st.markdown("""
     <div class="header-card">
         <h1>🛡️ Quản lý an toàn TTM</h1>
@@ -298,39 +315,65 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 4. DIALOG HIỆU CHỈNH THÔNG TIN ACCOUNT & AVATAR
+# 4. DIALOG POP-UP XÁC THỰC MÃ QUẢN TRỊ TÀI KHOẢN & EDIT PROFILE
 # ---------------------------------------------------------
-@st.dialog("👤 Hiệu chỉnh thông tin Tài khoản & Avatar")
-def edit_user_profile_dialog():
-    st.markdown("##### 📝 Cập nhật hồ sơ cá nhân")
-    new_name = st.text_input("Tên hiển thị:", value=st.session_state.user_profile["display_name"])
-    new_role = st.text_input("Vai trò / Chức danh:", value=st.session_state.user_profile["role"])
+@st.dialog("🔑 Quản Lý Tài Khoản & Bật Quyền Quản Trị")
+def manage_account_dialog():
+    st.markdown("##### 🔐 Yêu cầu xác thực Mã Quản Trị")
     
-    st.markdown("##### 🖼️ Cập nhật Avatar (Ảnh đại diện)")
-    uploaded_file = st.file_uploader("Chọn file ảnh từ máy tính/điện thoại:", type=["png", "jpg", "jpeg"])
-    
-    if uploaded_file is not None:
-        st.image(uploaded_file, caption="Ảnh đại diện vừa chọn", width=100)
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("💾 Lưu thay đổi", type="primary", use_container_width=True):
-            st.session_state.user_profile["display_name"] = new_name
-            st.session_state.user_profile["role"] = new_role
-            if uploaded_file is not None:
-                import base64
-                bytes_data = uploaded_file.getvalue()
-                b64_str = base64.b64encode(bytes_data).decode('utf-8')
-                mime_type = uploaded_file.type
-                st.session_state.user_profile["avatar_bytes"] = f"data:{mime_type};base64,{b64_str}"
-            st.toast("Đã cập nhật thông tin tài khoản!", icon="🎉")
-            st.rerun()
-    with col2:
-        if st.button("❌ Hủy", type="secondary", use_container_width=True):
-            st.rerun()
+    # Nếu chưa bật Admin Mode -> Yêu cầu nhập Mã PIN Admin
+    if not st.session_state.is_admin_mode:
+        admin_pin = st.text_input("Vui lòng nhập Mã quản trị tài khoản:", type="password", key="admin_pin_input")
+        
+        col_act1, col_act2 = st.columns(2)
+        with col_act1:
+            if st.button("🔓 Xác nhận & Mở Admin Mode", type="primary", use_container_width=True):
+                if admin_pin == ADMIN_PIN_CODE:
+                    st.session_state.is_admin_mode = True
+                    st.toast("Đã kích hoạt Chế độ Quản trị & Hiển thị khu vực chỉnh sửa/Excel!", icon="🎉")
+                    st.rerun()
+                else:
+                    st.error("❌ Mã quản trị không đúng! Vui lòng thử lại.")
+        with col_act2:
+            if st.button("❌ Đóng", type="secondary", use_container_width=True):
+                st.rerun()
+                
+    else:
+        # Nếu đã bật Admin Mode -> Hiển thị cài đặt Profile & Nút Tắt Admin Mode
+        st.success("✅ Đã xác thực thành công! Bạn đang ở Chế độ Quản trị viên.")
+        
+        st.markdown("---")
+        st.markdown("##### 📝 Cập nhật hồ sơ cá nhân")
+        new_name = st.text_input("Tên hiển thị:", value=st.session_state.user_profile["display_name"])
+        new_role = st.text_input("Vai trò / Chức danh:", value=st.session_state.user_profile["role"])
+        
+        st.markdown("##### 🖼️ Cập nhật Avatar (Ảnh đại diện)")
+        uploaded_file = st.file_uploader("Chọn file ảnh từ máy tính/điện thoại:", type=["png", "jpg", "jpeg"])
+        
+        if uploaded_file is not None:
+            st.image(uploaded_file, caption="Ảnh đại diện vừa chọn", width=100)
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("💾 Lưu thay đổi Profile", type="primary", use_container_width=True):
+                st.session_state.user_profile["display_name"] = new_name
+                st.session_state.user_profile["role"] = new_role
+                if uploaded_file is not None:
+                    bytes_data = uploaded_file.getvalue()
+                    b64_str = base64.b64encode(bytes_data).decode('utf-8')
+                    mime_type = uploaded_file.type
+                    st.session_state.user_profile["avatar_bytes"] = f"data:{mime_type};base64,{b64_str}"
+                st.toast("Đã cập nhật thông tin tài khoản!", icon="🎉")
+                st.rerun()
+                
+        with col2:
+            if st.button("🔒 Tắt Chế độ Quản trị (Ẩn khu vực 2)", type="secondary", use_container_width=True):
+                st.session_state.is_admin_mode = False
+                st.toast("Đã ẩn khu vực chỉnh sửa & Nhập/Xuất Excel!", icon="ℹ️")
+                st.rerun()
 
 # ---------------------------------------------------------
-# 5. SIDEBAR - PROFILE CARD & THIẾT KẾ NÚT BẤM KHÔNG BỊ KHUẤT CHỮ (TÔ 1)
+# 5. SIDEBAR - PROFILE CARD & NÚT BẤM CÂN BẰNG
 # ---------------------------------------------------------
 user_prof = st.session_state.user_profile
 avatar_html = (
@@ -350,15 +393,16 @@ st.sidebar.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# Bố trí 2 HÀNG NÚT: Hàng 1 Quản lý account rộng rãi, Hàng 2 Chia đôi Thoát & Cache
+# NÚT BẤM BẢO MẬT VÀ QUẢN LÝ
 if st.sidebar.button("⚙️ Quản lý tài khoản", use_container_width=True, type="secondary"):
-    edit_user_profile_dialog()
+    manage_account_dialog()
 
 col_btn1, col_btn2 = st.sidebar.columns(2)
 with col_btn1:
     if st.button("🚪 Thoát", use_container_width=True, type="secondary"):
         st.session_state.logged_in = False
         st.session_state.username = ""
+        st.session_state.is_admin_mode = False
         st.rerun()
 
 with col_btn2:
@@ -390,7 +434,7 @@ st.sidebar.markdown("**📌 Thư mục Excel:**")
 st.sidebar.markdown(f'<div class="path-box">{EXCEL_DIR}</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 6. DIALOG POP-UP CHỈNH SỬA & NÚT "➕ Thêm link"
+# 6. DIALOG CHỈNH SỬA TỪNG DÒNG (CHỈ KHI ADMIN MODE MỞ)
 # ---------------------------------------------------------
 @st.dialog("✏️ Chỉnh sửa mục")
 def edit_item_dialog(df_ref, idx, item_type="gsheet", category_name=None):
@@ -456,15 +500,27 @@ def edit_item_dialog(df_ref, idx, item_type="gsheet", category_name=None):
         st.rerun()
 
 # ---------------------------------------------------------
-# 7. HIỂN THỊ BẢNG DỮ LIỆU
+# 7. HIỂN THỊ BẢNG DỮ LIỆU & BẢO MẬT KHU VỰC SỐ 2
 # ---------------------------------------------------------
 def render_data_table_with_actions(df, title_col, item_type="gsheet", category_name=None):
+    # NẾU Ở CHẾ ĐỘ ADMIN -> HIỂN THỊ CỘT THAO TÁC (SỬA / XÓA)
+    # NẾU Ở CHẾ ĐỘ XEM BÌNH THƯỜNG -> CHỈ HIỂN THỊ XEM DỮ LIỆU (KHÔNG CÓ CỘT THAO TÁC)
+    is_admin = st.session_state.is_admin_mode
+
     if item_type == "bc":
-        headers = ["STT", title_col, "Tần suất", "Đơn vị nhận", "Links truy cập", "Ghi chú", "Thao tác"]
-        cols_width = [1, 3, 2, 2, 2, 3, 2]
+        if is_admin:
+            headers = ["STT", title_col, "Tần suất", "Đơn vị nhận", "Links truy cập", "Ghi chú", "Thao tác"]
+            cols_width = [1, 3, 2, 2, 2, 3, 2]
+        else:
+            headers = ["STT", title_col, "Tần suất", "Đơn vị nhận", "Links truy cập", "Ghi chú"]
+            cols_width = [1, 3, 2, 2, 3, 4]
     else:
-        headers = ["STT", title_col, "Links truy cập", "Ghi chú", "Thao tác"]
-        cols_width = [1, 4, 2, 3, 2]
+        if is_admin:
+            headers = ["STT", title_col, "Links truy cập", "Ghi chú", "Thao tác"]
+            cols_width = [1, 4, 2, 3, 2]
+        else:
+            headers = ["STT", title_col, "Links truy cập", "Ghi chú"]
+            cols_width = [1, 4, 3, 4]
 
     cols = st.columns(cols_width)
     for i, h in enumerate(headers):
@@ -491,85 +547,100 @@ def render_data_table_with_actions(df, title_col, item_type="gsheet", category_n
         c[col_offset].markdown(" | ".join(link_markdowns) if link_markdowns else "-")
         c[col_offset+1].write(str(row.get("Ghi chú", "")))
 
-        btn_e, btn_d = c[col_offset+2].columns(2)
-        if btn_e.button("✏️", key=f"btn_edit_{item_type}_{category_name}_{idx}"):
-            edit_item_dialog(df, idx, item_type, category_name)
-        if btn_d.button("🗑️", key=f"btn_del_{item_type}_{category_name}_{idx}"):
-            if item_type == "web":
-                st.session_state.web_tools_df = reindex_df(df.drop(idx))
-            elif item_type == "hoso":
-                st.session_state.data_store[category_name] = reindex_df(df.drop(idx))
-            elif item_type == "bc":
-                st.session_state.bc_dinhky_df = reindex_df(df.drop(idx))
-            else:
-                st.session_state.gsheet_df = reindex_df(df.drop(idx))
-            st.rerun()
+        # HIỂN THỊ CỘT THAO TÁC SỬA/XÓA CHỈ KHI ADMIN MODE MỞ
+        if is_admin:
+            btn_e, btn_d = c[col_offset+2].columns(2)
+            if btn_e.button("✏️", key=f"btn_edit_{item_type}_{category_name}_{idx}"):
+                edit_item_dialog(df, idx, item_type, category_name)
+            if btn_d.button("🗑️", key=f"btn_del_{item_type}_{category_name}_{idx}"):
+                if item_type == "web":
+                    st.session_state.web_tools_df = reindex_df(df.drop(idx))
+                elif item_type == "hoso":
+                    st.session_state.data_store[category_name] = reindex_df(df.drop(idx))
+                elif item_type == "bc":
+                    st.session_state.bc_dinhky_df = reindex_df(df.drop(idx))
+                else:
+                    st.session_state.gsheet_df = reindex_df(df.drop(idx))
+                st.rerun()
 
     st.markdown("<br>", unsafe_allow_html=True)
     
-    col_add1, col_add2 = st.columns([1, 4])
-    with col_add1:
-        if st.button("➕ Thêm mới dòng", type="primary", key=f"btn_add_new_{item_type}_{category_name}"):
-            new_idx = len(df)
-            if item_type == "web":
-                st.session_state.web_tools_df.loc[new_idx] = {"STT": new_idx+1, "Mô tả WEB": "Mô tả mới", "Link 1": "", "Ghi chú": ""}
-            elif item_type == "hoso":
-                st.session_state.data_store[category_name].loc[new_idx] = {"STT": new_idx+1, "Thư mục / Hồ sơ": "Hồ sơ mới", "Link 1": "", "Ghi chú": ""}
-            elif item_type == "bc":
-                st.session_state.bc_dinhky_df.loc[new_idx] = {"STT": new_idx+1, "Tên Báo Cáo / Công Việc": "Báo cáo mới", "Tần suất": "Hàng Tháng", "Đơn vị nhận": "", "Link 1": "", "Ghi chú": ""}
-            else:
-                st.session_state.gsheet_df.loc[new_idx] = {"STT": new_idx+1, "Mô tả Google Sheet": "Sheet mới", "Link 1": "", "Ghi chú": ""}
-            st.rerun()
-
-    if item_type == "web":
-        with col_add2:
-            if st.button("🔄 Khôi phục 16 Web mặc định", type="secondary"):
-                st.session_state.web_tools_df = reindex_df(pd.DataFrame(DEFAULT_WEBSITES))
-                st.toast("Đã khôi phục đủ 16 Web mặc định!", icon="🎉")
+    # 🔴 BẢO MẬT KHU VỰC SỐ 2: CHỈ HIỂN THỊ NÚT THÊM MỚI KHI BẬT CHẾ ĐỘ ADMIN!
+    if is_admin:
+        col_add1, col_add2 = st.columns([1, 4])
+        with col_add1:
+            if st.button("➕ Thêm mới dòng", type="primary", key=f"btn_add_new_{item_type}_{category_name}"):
+                new_idx = len(df)
+                if item_type == "web":
+                    st.session_state.web_tools_df.loc[new_idx] = {"STT": new_idx+1, "Mô tả WEB": "Mô tả mới", "Link 1": "", "Ghi chú": ""}
+                elif item_type == "hoso":
+                    st.session_state.data_store[category_name].loc[new_idx] = {"STT": new_idx+1, "Thư mục / Hồ sơ": "Hồ sơ mới", "Link 1": "", "Ghi chú": ""}
+                elif item_type == "bc":
+                    st.session_state.bc_dinhky_df.loc[new_idx] = {"STT": new_idx+1, "Tên Báo Cáo / Công Việc": "Báo cáo mới", "Tần suất": "Hàng Tháng", "Đơn vị nhận": "", "Link 1": "", "Ghi chú": ""}
+                else:
+                    st.session_state.gsheet_df.loc[new_idx] = {"STT": new_idx+1, "Mô tả Google Sheet": "Sheet mới", "Link 1": "", "Ghi chú": ""}
                 st.rerun()
 
+        if item_type == "web":
+            with col_add2:
+                if st.button("🔄 Khôi phục 16 Web mặc định", type="secondary"):
+                    st.session_state.web_tools_df = reindex_df(pd.DataFrame(DEFAULT_WEBSITES))
+                    st.toast("Đã khôi phục đủ 16 Web mặc định!", icon="🎉")
+                    st.rerun()
+
 # ---------------------------------------------------------
-# 8. BỘ CÔNG CỤ NHẬP / XUẤT EXCEL
+# 8. BỘ CÔNG CỤ NHẬP / XUẤT EXCEL (BẢO MẬT - CHỈ HIỂN THỊ KHI ADMIN MODE)
 # ---------------------------------------------------------
 def render_io_excel_tools(df, current_key, file_prefix):
-    st.markdown("---")
-    col_up, col_down = st.columns([1.2, 1])
-    
-    with col_up:
-        st.markdown("##### 📥 Tải lên / Thay thế dữ liệu từ file Excel (.xlsx)")
-        uploaded_file = st.file_uploader(f"Chọn file Excel [{file_prefix}]", type=["xlsx", "xls"], key=f"uploader_{current_key}")
-        if uploaded_file is not None:
-            try:
-                new_df = pd.read_excel(uploaded_file)
-                new_df = reindex_df(new_df)
-                if st.button("🔥 Xác nhận đè dữ liệu mới", type="primary", key=f"btn_confirm_{current_key}"):
-                    if current_key == "web":
-                        st.session_state.web_tools_df = new_df
-                    elif current_key == "bc":
-                        st.session_state.bc_dinhky_df = new_df
-                    elif current_key == "gsheet":
-                        st.session_state.gsheet_df = new_df
-                    else:
-                        st.session_state.data_store[current_key] = new_df
-                    st.success("Tải dữ liệu từ Excel thành công!")
-                    st.rerun()
-            except Exception as e:
-                st.error(f"Lỗi đọc file Excel: {e}")
+    # 🔴 KHU VỰC SỐ 2 CHỈ XUẤT HIỆN KHI BẬT ADMIN MODE
+    if st.session_state.is_admin_mode:
+        st.markdown("---")
+        col_up, col_down = st.columns([1.2, 1])
+        
+        with col_up:
+            st.markdown("##### 📥 Tải lên / Thay thế dữ liệu từ file Excel (.xlsx)")
+            uploaded_file = st.file_uploader(f"Chọn file Excel [{file_prefix}]", type=["xlsx", "xls"], key=f"uploader_{current_key}")
+            if uploaded_file is not None:
+                try:
+                    new_df = pd.read_excel(uploaded_file)
+                    new_df = reindex_df(new_df)
+                    if st.button("🔥 Xác nhận đè dữ liệu mới", type="primary", key=f"btn_confirm_{current_key}"):
+                        if current_key == "web":
+                            st.session_state.web_tools_df = new_df
+                        elif current_key == "bc":
+                            st.session_state.bc_dinhky_df = new_df
+                        elif current_key == "gsheet":
+                            st.session_state.gsheet_df = new_df
+                        else:
+                            st.session_state.data_store[current_key] = new_df
+                        st.success("Tải dữ liệu từ Excel thành công!")
+                        st.rerun()
+                except Exception as e:
+                    st.error(f"Lỗi đọc file Excel: {e}")
 
-    with col_down:
-        st.markdown("##### 📤 Xuất dữ liệu ra file Excel")
-        excel_bytes = to_excel_bytes(df)
-        st.download_button(
-            label="💾 Tải file Excel về máy",
-            data=excel_bytes,
-            file_name=f"{file_prefix}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            use_container_width=True
-        )
+        with col_down:
+            st.markdown("##### 📤 Xuất dữ liệu ra file Excel")
+            excel_bytes = to_excel_bytes(df)
+            st.download_button(
+                label="💾 Tải file Excel về máy",
+                data=excel_bytes,
+                file_name=f"{file_prefix}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True
+            )
 
 # ---------------------------------------------------------
 # 9. ĐIỀU HƯỚNG MỤC CHÍNH
 # ---------------------------------------------------------
+# HIỂN THỊ CẢNH BÁO NẾU ĐANG Ở CHẾ ĐỘ ADMIN
+if st.session_state.is_admin_mode:
+    st.markdown("""
+        <div class="admin-mode-banner">
+            <span>🔓 Đang bật Chế Độ Quản Trị (Cho phép Thêm/Sửa/Xóa & Nhập/Xuất Excel)</span>
+            <span>Mã xác thực: OK</span>
+        </div>
+    """, unsafe_allow_html=True)
+
 if main_menu == "1 🌐 DS WEBsites_CV":
     st.subheader("🌐 Bảng Danh Sách WEBsites_CV")
     render_data_table_with_actions(st.session_state.web_tools_df, title_col="Mô tả WEB", item_type="web")
