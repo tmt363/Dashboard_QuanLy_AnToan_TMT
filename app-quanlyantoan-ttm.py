@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 import io
+from PIL import Image
 
 # ---------------------------------------------------------
 # 1. CẤU HÌNH TRANG & CUSTOM CSS CẢI TIẾN GIAO DIỆN
@@ -41,22 +42,31 @@ st.markdown("""
         margin-bottom: 10px;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
     }
-    .user-avatar {
-        width: 42px;
-        height: 42px;
+    .user-avatar-img {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #ffffff;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .user-avatar-default {
+        width: 45px;
+        height: 45px;
         border-radius: 50%;
         background-color: #ffffff;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 20px;
+        font-size: 22px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
     .user-info {
         display: flex;
         flex-direction: column;
+        overflow: hidden;
     }
     .user-name {
         font-weight: 700;
@@ -64,6 +74,9 @@ st.markdown("""
         color: #ffffff;
         margin: 0;
         line-height: 1.2;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
     }
     .user-status {
         font-size: 11px;
@@ -71,7 +84,10 @@ st.markdown("""
         display: flex;
         align-items: center;
         gap: 4px;
-        margin-top: 2px;
+        margin-top: 3px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
     }
 
     /* HEADER CARD TIÊU ĐỀ TRANG CHÍNH */
@@ -119,7 +135,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 2. BẢO MẬT ĐĂNG NHẬP
+# 2. BẢO MẬT ĐĂNG NHẬP & THÔNG TIN ACCOUNT
 # ---------------------------------------------------------
 USER_CREDENTIALS = {"tmt": "123456", "admin": "123456"}
 
@@ -127,6 +143,14 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "username" not in st.session_state:
     st.session_state.username = ""
+
+# Khởi tạo lưu trữ thông tin Account & Avatar
+if "user_profile" not in st.session_state:
+    st.session_state.user_profile = {
+        "display_name": "Trần Minh Trí (tmt)",
+        "role": "🟢 Quản trị viên TTM",
+        "avatar_bytes": None
+    }
 
 if not st.session_state.logged_in:
     col1, col2, col3 = st.columns([1.2, 1.6, 1.2])
@@ -241,28 +265,70 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 4. SIDEBAR - VỊ TRÍ 1 ĐƯỢC LÀM MỚI
+# 4. DIALOG HIỆU CHỈNH THÔNG TIN ACCOUNT & AVATAR
 # ---------------------------------------------------------
-# PROFILE CARD NỔI BẬT VÀ NỔI BẬT HƠN
-user_display = st.session_state.username.upper()
+@st.dialog("👤 Hiệu chỉnh thông tin Tài khoản & Avatar")
+def edit_user_profile_dialog():
+    st.markdown("##### 📝 Cập nhật hồ sơ cá nhân")
+    new_name = st.text_input("Tên hiển thị:", value=st.session_state.user_profile["display_name"])
+    new_role = st.text_input("Vai trò / Chức danh:", value=st.session_state.user_profile["role"])
+    
+    st.markdown("##### 🖼️ Cập nhật Avatar (Ảnh đại diện)")
+    uploaded_file = st.file_uploader("Chọn file ảnh từ máy tính/điện thoại:", type=["png", "jpg", "jpeg"])
+    
+    if uploaded_file is not None:
+        st.image(uploaded_file, caption="Ảnh đại diện vừa chọn", width=100)
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("💾 Lưu thay đổi", type="primary", use_container_width=True):
+            st.session_state.user_profile["display_name"] = new_name
+            st.session_state.user_profile["role"] = new_role
+            if uploaded_file is not None:
+                import base64
+                bytes_data = uploaded_file.getvalue()
+                b64_str = base64.b64encode(bytes_data).decode('utf-8')
+                mime_type = uploaded_file.type
+                st.session_state.user_profile["avatar_bytes"] = f"data:{mime_type};base64,{b64_str}"
+            st.toast("Đã cập nhật thông tin tài khoản!", icon="🎉")
+            st.rerun()
+    with col2:
+        if st.button("❌ Hủy", type="secondary", use_container_width=True):
+            st.rerun()
+
+# ---------------------------------------------------------
+# 5. SIDEBAR - PROFILE CARD & CÁC NÚT THAO TÁC
+# ---------------------------------------------------------
+user_prof = st.session_state.user_profile
+avatar_html = (
+    f'<img src="{user_prof["avatar_bytes"]}" class="user-avatar-img">'
+    if user_prof["avatar_bytes"]
+    else '<div class="user-avatar-default">👤</div>'
+)
+
 st.sidebar.markdown(f"""
     <div class="user-profile-card">
-        <div class="user-avatar">👤</div>
+        {avatar_html}
         <div class="user-info">
-            <div class="user-name">Trần Minh Trí ({user_display})</div>
-            <div class="user-status">🟢 Quản trị viên TTM</div>
+            <div class="user-name" title="{user_prof['display_name']}">{user_prof['display_name']}</div>
+            <div class="user-status" title="{user_prof['role']}">{user_prof['role']}</div>
         </div>
     </div>
 """, unsafe_allow_html=True)
 
-col_btn1, col_btn2 = st.sidebar.columns(2)
+# HÀNG NÚT THAO TÁC PROFILE & HỆ THỐNG
+col_btn1, col_btn2, col_btn3 = st.sidebar.columns([1.1, 0.9, 0.9])
 with col_btn1:
+    if st.button("⚙️ Account", use_container_width=True, type="secondary"):
+        edit_user_profile_dialog()
+
+with col_btn2:
     if st.button("🚪 Thoát", use_container_width=True, type="secondary"):
         st.session_state.logged_in = False
         st.session_state.username = ""
         st.rerun()
 
-with col_btn2:
+with col_btn3:
     if st.button("🧹 Cache", use_container_width=True, type="secondary"):
         st.cache_data.clear()
         st.toast("Đã xóa cache!", icon="🎉")
@@ -291,7 +357,7 @@ st.sidebar.markdown("**📌 Thư mục Excel:**")
 st.sidebar.markdown(f'<div class="path-box">{EXCEL_DIR}</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 5. DIALOG POP-UP CHỈNH SỬA & NÚT "➕ Thêm link"
+# 6. DIALOG POP-UP CHỈNH SỬA & NÚT "➕ Thêm link"
 # ---------------------------------------------------------
 @st.dialog("✏️ Chỉnh sửa mục")
 def edit_item_dialog(df_ref, idx, item_type="gsheet", category_name=None):
@@ -357,7 +423,7 @@ def edit_item_dialog(df_ref, idx, item_type="gsheet", category_name=None):
         st.rerun()
 
 # ---------------------------------------------------------
-# 6. HIỂN THỊ BẢNG DỮ LIỆU
+# 7. HIỂN THỊ BẢNG DỮ LIỆU
 # ---------------------------------------------------------
 def render_data_table_with_actions(df, title_col, item_type="gsheet", category_name=None):
     if item_type == "bc":
@@ -430,7 +496,7 @@ def render_data_table_with_actions(df, title_col, item_type="gsheet", category_n
                 st.rerun()
 
 # ---------------------------------------------------------
-# 7. BỘ CÔNG CỤ NHẬP / XUẤT EXCEL
+# 8. BỘ CÔNG CỤ NHẬP / XUẤT EXCEL
 # ---------------------------------------------------------
 def render_io_excel_tools(df, current_key, file_prefix):
     st.markdown("---")
@@ -469,7 +535,7 @@ def render_io_excel_tools(df, current_key, file_prefix):
         )
 
 # ---------------------------------------------------------
-# 8. ĐIỀU HƯỚNG MỤC CHÍNH
+# 9. ĐIỀU HƯỚNG MỤC CHÍNH
 # ---------------------------------------------------------
 if main_menu == "1 🌐 DS WEBsites_CV":
     st.subheader("🌐 Bảng Danh Sách WEBsites_CV")
