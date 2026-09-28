@@ -105,7 +105,7 @@ if not st.session_state.logged_in:
     st.stop()
 
 # ---------------------------------------------------------
-# 3. KHỞI TẠO ĐƯỜNG DẪN & DỮ LIỆU
+# 3. KHỞI TẠO ĐƯỜNG DẪN & ĐẦY ĐỦ 16 LINK MẶC ĐỊNH
 # ---------------------------------------------------------
 EXCEL_DIR = r"D:\0 2025 0 LUU OFFICE drive\0000 chua luu\0 0 0 app\000TmT_VBA_source\Dashboard_AnToan"
 if not os.path.exists(EXCEL_DIR):
@@ -124,14 +124,24 @@ CATEGORIES = [
     "Quy dinh SPC va EVN", "Quy dinh trao doi EVN-SPC-PCTN"
 ]
 
+# ĐẦY ĐỦ 16 LINK WEBSITES MẶC ĐỊNH
 DEFAULT_WEBSITES = [
     {'STT': 1, 'Mô tả WEB': 'D-Office', 'Link 1': 'https://doffice.evn.com.vn', 'Ghi chú': 'Công văn / văn bản EVN'},
     {'STT': 2, 'Mô tả WEB': 'Công cụ web trực tuyến', 'Link 1': 'https://www.congcuweb.net/', 'Ghi chú': 'Hiệu chỉnh tên công văn / văn bản'},
     {'STT': 3, 'Mô tả WEB': 'QLAT SPC', 'Link 1': 'https://giamsatantoan.evnspc.vn/Home/Index', 'Ghi chú': 'Quản lý giám sát an toàn SPC'},
     {'STT': 4, 'Mô tả WEB': 'Lịch tuần', 'Link 1': 'https://lichtuan.evnspc.vn', 'Ghi chú': 'Công ty Điện lực Tây Ninh'},
     {'STT': 5, 'Mô tả WEB': 'Hệ thống PMIS', 'Link 1': 'https://pmis.evn.com.vn', 'Ghi chú': 'Quản lý vận hành thiết bị & lưới điện'},
-    {'STT': 6, 'Mô tả WEB': 'Tritm.la Dashboard 2026 DTTU ', 'Link 1': 'https://docs.google.com/spreadsheets/d/1gVAroFIytWwrBMCScYuXWbzlS1ZNXrPY4Pcgb__Dv-c/edit?gid=964445540#gid=964445540', 'Ghi chú': 'Google sheet CV'},
-    {'STT': 7, 'Mô tả WEB': 'Hệ thống Giám sát Thiên tai Việt Nam', 'Link 1': 'https://vndms.gov.vn/', 'Ghi chú': 'Cảnh báo và phòng chống thiên tai'}
+    {'STT': 6, 'Mô tả WEB': 'Tritm.la Dashboard 2026 DTTU', 'Link 1': 'https://docs.google.com/spreadsheets/d/1gVAroFIytWwrBMCScYuXWbzlS1ZNXrPY4Pcgb__Dv-c/edit?gid=964445540#gid=964445540', 'Ghi chú': 'Google sheet CV'},
+    {'STT': 7, 'Mô tả WEB': 'Hệ thống Giám sát Thiên tai Việt Nam', 'Link 1': 'https://vndms.gov.vn/', 'Ghi chú': 'Cảnh báo và phòng chống thiên tai'},
+    {'STT': 8, 'Mô tả WEB': 'Hệ thống HRMS', 'Link 1': 'https://hrms.evn.com.vn', 'Ghi chú': 'Quản lý lao động tiền lương'},
+    {'STT': 9, 'Mô tả WEB': 'Hệ thống E-Learning', 'Link 1': 'https://elearning.evn.com.vn', 'Ghi chú': 'Huấn luyện an toàn & thi trực tuyến'},
+    {'STT': 10, 'Mô tả WEB': 'Cổng Dịch vụ công Quốc gia', 'Link 1': 'https://dichvucong.gov.vn', 'Ghi chú': 'Thực hiện thủ tục hành chính PCCC/ĐTXD'},
+    {'STT': 11, 'Mô tả WEB': 'Cổng Thông tin Bộ Công Thương', 'Link 1': 'https://moit.gov.vn', 'Ghi chú': 'Theo dõi văn bản quy phạm kỹ thuật'},
+    {'STT': 12, 'Mô tả WEB': 'Cổng Báo cáo Phòng chống thiên tai', 'Link 1': 'https://pctt.evn.com.vn', 'Ghi chú': 'Cập nhật tình hình PCTT & TKCN'},
+    {'STT': 13, 'Mô tả WEB': 'Hệ thống Quản lý Đầu tư Xây dựng (IMIS)', 'Link 1': 'https://imis.evn.com.vn', 'Ghi chú': 'Theo dõi an toàn dự án ĐTXD'},
+    {'STT': 14, 'Mô tả WEB': 'Hệ thống Thông tin Báo cáo EVN', 'Link 1': 'https://baocao.evn.com.vn', 'Ghi chú': 'Tổng hợp chỉ tiêu an toàn - kỹ thuật'},
+    {'STT': 15, 'Mô tả WEB': 'Lưu trữ Hồ sơ / Biểu mẫu TMT', 'Link 1': 'https://drive.google.com', 'Ghi chú': 'Kho lưu trữ dữ liệu dùng chung TMT'},
+    {'STT': 16, 'Mô tả WEB': 'Thư viện Quy chuẩn - Quy định An toàn', 'Link 1': 'https://drive.google.com', 'Ghi chú': 'Tra cứu tài liệu an toàn PCCC & ĐT'}
 ]
 
 def reindex_df(df):
@@ -290,7 +300,7 @@ def edit_item_dialog(df_ref, idx, item_type="gsheet", category_name=None):
         st.rerun()
 
 # ---------------------------------------------------------
-# 6. KHÔI PHỤC BẢNG VỚI CỘT THAO TÁC (NÚT ✏️ VÀ 🗑️ ĐẦY ĐỦ)
+# 6. HIỂN THỊ BẢNG VỚI CỘT THAO TÁC (CÂY BÚT ✏️ VÀ THÙNG RÁC 🗑️)
 # ---------------------------------------------------------
 def render_data_table_with_actions(df, title_col, item_type="gsheet", category_name=None):
     if item_type == "bc":
@@ -344,17 +354,28 @@ def render_data_table_with_actions(df, title_col, item_type="gsheet", category_n
             st.rerun()
 
     st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("➕ Thêm mới dòng", type="primary", key=f"btn_add_new_{item_type}_{category_name}"):
-        new_idx = len(df)
-        if item_type == "web":
-            st.session_state.web_tools_df.loc[new_idx] = {"STT": new_idx+1, "Mô tả WEB": "Mô tả mới", "Link 1": "", "Ghi chú": ""}
-        elif item_type == "hoso":
-            st.session_state.data_store[category_name].loc[new_idx] = {"STT": new_idx+1, "Thư mục / Hồ sơ": "Hồ sơ mới", "Link 1": "", "Ghi chú": ""}
-        elif item_type == "bc":
-            st.session_state.bc_dinhky_df.loc[new_idx] = {"STT": new_idx+1, "Tên Báo Cáo / Công Việc": "Báo cáo mới", "Tần suất": "Hàng Tháng", "Đơn vị nhận": "", "Link 1": "", "Ghi chú": ""}
-        else:
-            st.session_state.gsheet_df.loc[new_idx] = {"STT": new_idx+1, "Mô tả Google Sheet": "Sheet mới", "Link 1": "", "Ghi chú": ""}
-        st.rerun()
+    
+    # NÚT THÊM MỚI & KHÔI PHỤC MẶC ĐỊNH
+    col_add1, col_add2 = st.columns([1, 4])
+    with col_add1:
+        if st.button("➕ Thêm mới dòng", type="primary", key=f"btn_add_new_{item_type}_{category_name}"):
+            new_idx = len(df)
+            if item_type == "web":
+                st.session_state.web_tools_df.loc[new_idx] = {"STT": new_idx+1, "Mô tả WEB": "Mô tả mới", "Link 1": "", "Ghi chú": ""}
+            elif item_type == "hoso":
+                st.session_state.data_store[category_name].loc[new_idx] = {"STT": new_idx+1, "Thư mục / Hồ sơ": "Hồ sơ mới", "Link 1": "", "Ghi chú": ""}
+            elif item_type == "bc":
+                st.session_state.bc_dinhky_df.loc[new_idx] = {"STT": new_idx+1, "Tên Báo Cáo / Công Việc": "Báo cáo mới", "Tần suất": "Hàng Tháng", "Đơn vị nhận": "", "Link 1": "", "Ghi chú": ""}
+            else:
+                st.session_state.gsheet_df.loc[new_idx] = {"STT": new_idx+1, "Mô tả Google Sheet": "Sheet mới", "Link 1": "", "Ghi chú": ""}
+            st.rerun()
+
+    if item_type == "web":
+        with col_add2:
+            if st.button("🔄 Khôi phục 16 Web mặc định", type="secondary"):
+                st.session_state.web_tools_df = reindex_df(pd.DataFrame(DEFAULT_WEBSITES))
+                st.toast("Đã khôi phục đủ 16 Web mặc định!", icon="🎉")
+                st.rerun()
 
 # ---------------------------------------------------------
 # 7. BỘ CÔNG CỤ NHẬP / XUẤT EXCEL
