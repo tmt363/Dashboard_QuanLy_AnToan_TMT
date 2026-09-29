@@ -28,23 +28,23 @@ if "dark_mode" not in st.session_state:
 if "excel_dir" not in st.session_state:
     st.session_state.excel_dir = DEFAULT_EXCEL_DIR
 
-# Xử lý CSS Giao diện Mượt mà & Sáng/Tối
+# Xử lý CSS Giao diện Mượt mà & Sáng/Tối (Đã sửa lỗi hiển thị text)
 css_style = """
-    <style>
-    .st-emotion-cache-1y4p8pa { padding-top: 2rem; }
-    .table-header { font-weight: bold; color: #1E88E5; }
-    .row-text { font-size: 14px; }
-    </style>
+<style>
+.st-emotion-cache-1y4p8pa { padding-top: 2rem; }
+.table-header { font-weight: bold; color: #1E88E5; }
+.row-text { font-size: 14px; }
+</style>
 """
 if st.session_state.get("dark_mode"):
     css_style += """
-        <style>
-        .stApp { background-color: #1E1E1E !important; color: #FFFFFF !important; }
-        .stSidebar { background-color: #2D2D2D !important; }
-        .table-header { color: #64B5F6 !important; }
-        h1, h2, h3, h4, h5, h6, p, span, div, strong { color: #E0E0E0 !important; }
-        </style>
-    """
+<style>
+.stApp { background-color: #1E1E1E !important; color: #FFFFFF !important; }
+.stSidebar { background-color: #2D2D2D !important; }
+.table-header { color: #64B5F6 !important; }
+h1, h2, h3, h4, h5, h6, p, span, div, strong { color: #E0E0E0 !important; }
+</style>
+"""
 st.markdown(css_style, unsafe_allow_html=True)
 
 
