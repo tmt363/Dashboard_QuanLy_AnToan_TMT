@@ -289,7 +289,7 @@ with st.sidebar:
 
 
 # ----------------- MAIN LAYOUT -----------------
-st.title("🛡️ Hệ Thống Quản Lý An Toàn & Công Tác Chuyên Môn TTM")
+st.title("🛡️ Quản Lý An Toàn TTM")
 st.caption("📌 Phiên bản hệ thống hiệu chỉnh ngày: 28/09/2026")
 
 # Hàng thông số tổng quan (Dashboard metrics)
