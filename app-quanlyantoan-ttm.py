@@ -31,9 +31,10 @@ if "excel_dir" not in st.session_state:
     st.session_state.excel_dir = DEFAULT_EXCEL_DIR
 
 # Xử lý CSS Giao diện Mượt mà & Sáng/Tối/Desktop
+# Giảm padding-top của block-container để đẩy phần bảng (Tô 4) lên cao nhất có thể
 css_style = """
 <style>
-.st-emotion-cache-1y4p8pa { padding-top: 2rem; }
+.block-container { padding-top: 1.5rem !important; padding-bottom: 1rem !important; }
 .table-header { font-weight: bold; color: #1E88E5; }
 .row-text { font-size: 14px; }
 </style>
@@ -310,6 +311,11 @@ def edit_bc_dialog(idx):
 # 4. SIDEBAR (THANH ĐIỀU HƯỚNG BÊN TRÁI)
 # ==========================================
 with st.sidebar:
+    # --- Dời Tiêu đề vào Sidebar theo yêu cầu ---
+    st.title("🛡️ Quản Lý An Toàn TTM")
+    st.caption("📌 Phiên bản hiệu chỉnh: 28/09/2026")
+    st.divider()
+
     st.markdown("### 👤 Người dùng: `ttm`")
     
     # --- Hàng 1: Đăng xuất & Xóa Cache ---
@@ -370,7 +376,6 @@ with st.sidebar:
         st.header("⚙️ Cấu Hình Thư Mục")
         st.caption("*(Lưu ý: Mở thư mục chỉ hoạt động khi chạy trên máy tính cá nhân)*")
         
-        # Ô nhập liệu cho phép người dùng thay đổi đường dẫn
         new_dir = st.text_input("Đường dẫn lưu file cục bộ:", value=st.session_state.excel_dir)
         
         col_dir1, col_dir2 = st.columns(2)
@@ -390,16 +395,9 @@ with st.sidebar:
 
 
 # ==========================================
-# 5. MAIN LAYOUT (GIAO DIỆN CHÍNH)
+# 5. MAIN LAYOUT (GIAO DIỆN CHÍNH TỐI ĐA HÓA KHÔNG GIAN)
 # ==========================================
-st.title("🛡️ Quản Lý An Toàn TTM")
-st.caption("📌 Phiên bản hệ thống hiệu chỉnh ngày: 28/09/2026")
-
-m1, m2, m3 = st.columns(3)
-m1.metric("🌐 Tổng số Websites", len(st.session_state.web_tools_df))
-m2.metric("📊 Tổng số BC Định kỳ", len(st.session_state.bc_dinhky_df))
-m3.metric("🟢 Tổng số GSheets", len(st.session_state.gsheet_df))
-st.divider()
+# Đã dời tiêu đề sang Sidebar và xóa mục thống kê theo yêu cầu
 
 # ------------------------------------------
 # PHẦN 1: DS WEBsites_CV
