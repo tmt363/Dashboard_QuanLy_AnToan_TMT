@@ -20,15 +20,17 @@ DEFAULT_EXCEL_DIR = r"D:\0 2025 0 LUU OFFICE drive\0000 chua luu\0 0 0 app\000Tm
 if not os.path.exists(DEFAULT_EXCEL_DIR):
     DEFAULT_EXCEL_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Khởi tạo biến lưu trạng thái Giao diện, Admin và Thư mục
+# Khởi tạo biến lưu trạng thái Giao diện, Admin, Thư mục và Chế độ xem
 if "is_admin" not in st.session_state:
     st.session_state.is_admin = False
 if "dark_mode" not in st.session_state:
     st.session_state.dark_mode = False
+if "desktop_mode" not in st.session_state:
+    st.session_state.desktop_mode = False
 if "excel_dir" not in st.session_state:
     st.session_state.excel_dir = DEFAULT_EXCEL_DIR
 
-# Xử lý CSS Giao diện Mượt mà & Sáng/Tối (Đã sửa lỗi hiển thị text)
+# Xử lý CSS Giao diện Mượt mà & Sáng/Tối/Desktop
 css_style = """
 <style>
 .st-emotion-cache-1y4p8pa { padding-top: 2rem; }
@@ -36,6 +38,8 @@ css_style = """
 .row-text { font-size: 14px; }
 </style>
 """
+
+# Bật chế độ Tối (Dark Mode)
 if st.session_state.get("dark_mode"):
     css_style += """
 <style>
@@ -45,6 +49,16 @@ if st.session_state.get("dark_mode"):
 h1, h2, h3, h4, h5, h6, p, span, div, strong { color: #E0E0E0 !important; }
 </style>
 """
+
+# Bật chế độ Máy tính (Desktop Mode) ép hiển thị ngang trên Điện thoại
+if st.session_state.get("desktop_mode"):
+    css_style += """
+<style>
+.stApp .block-container { min-width: 1024px !important; overflow-x: auto; }
+header { min-width: 1024px !important; }
+</style>
+"""
+
 st.markdown(css_style, unsafe_allow_html=True)
 
 
@@ -298,6 +312,7 @@ def edit_bc_dialog(idx):
 with st.sidebar:
     st.markdown("### 👤 Người dùng: `ttm`")
     
+    # --- Hàng 1: Đăng xuất & Xóa Cache ---
     col_sb1, col_sb2 = st.columns(2)
     with col_sb1:
         if st.button("🚪 Đăng xuất", use_container_width=True):
@@ -307,6 +322,7 @@ with st.sidebar:
             st.cache_data.clear()
             st.success("Đã xóa cache!")
 
+    # --- Hàng 2: Đổi Giao Diện Sáng/Tối & Chế độ xem Điện Thoại/Máy tính ---
     col_sb3, col_sb4 = st.columns(2)
     with col_sb3:
         theme_label = "☀️ Sáng" if st.session_state.get("dark_mode") else "🌙 Tối"
@@ -315,13 +331,19 @@ with st.sidebar:
             st.rerun()
             
     with col_sb4:
-        if st.session_state.get("is_admin"):
-            if st.button("🔓 Thoát Admin", use_container_width=True):
-                st.session_state.is_admin = False
-                st.rerun()
-        else:
-            if st.button("🔐 Quản trị", use_container_width=True):
-                admin_login_dialog()
+        desktop_label = "💻 Dạng PC" if st.session_state.get("desktop_mode") else "📱 Dạng ĐT"
+        if st.button(desktop_label, use_container_width=True, help="Ép hiển thị dạng bảng rộng trên Điện thoại"):
+            st.session_state.desktop_mode = not st.session_state.desktop_mode
+            st.rerun()
+
+    # --- Nút Quản trị ---
+    if st.session_state.get("is_admin"):
+        if st.button("🔓 Thoát chế độ Admin", use_container_width=True):
+            st.session_state.is_admin = False
+            st.rerun()
+    else:
+        if st.button("🔐 Đăng nhập Quản trị", use_container_width=True):
+            admin_login_dialog()
 
     st.divider()
     
