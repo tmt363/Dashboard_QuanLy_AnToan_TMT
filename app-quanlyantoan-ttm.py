@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import openpyxl
 from datetime import datetime
-import io  # Thư viện mới để hỗ trợ tải file trên nền web
+import io 
 
 # ==========================================
 # 1. CẤU HÌNH TRANG VÀ SESSION STATE
@@ -15,11 +15,18 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Khởi tạo biến lưu trạng thái Giao diện và Admin
+# Thư mục mặc định ban đầu
+DEFAULT_EXCEL_DIR = r"D:\0 2025 0 LUU OFFICE drive\0000 chua luu\0 0 0 app\000TmT_VBA_source\Dashboard_AnToan"
+if not os.path.exists(DEFAULT_EXCEL_DIR):
+    DEFAULT_EXCEL_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Khởi tạo biến lưu trạng thái Giao diện, Admin và Thư mục
 if "is_admin" not in st.session_state:
     st.session_state.is_admin = False
 if "dark_mode" not in st.session_state:
     st.session_state.dark_mode = False
+if "excel_dir" not in st.session_state:
+    st.session_state.excel_dir = DEFAULT_EXCEL_DIR
 
 # Xử lý CSS Giao diện Mượt mà & Sáng/Tối
 css_style = """
@@ -44,10 +51,6 @@ st.markdown(css_style, unsafe_allow_html=True)
 # ==========================================
 # 2. BIẾN VÀ HÀM HỖ TRỢ
 # ==========================================
-EXCEL_DIR = r"D:\0 2025 0 LUU OFFICE drive\0000 chua luu\0 0 0 app\000TmT_VBA_source\Dashboard_AnToan"
-if not os.path.exists(EXCEL_DIR):
-    EXCEL_DIR = os.path.dirname(os.path.abspath(__file__))
-
 DATE_STR = datetime.now().strftime("%Y%m%d")
 
 CATEGORIES = [
@@ -117,7 +120,6 @@ def auto_fit_columns(workbook):
             adjusted_width = max(max_len + 4, 12)
             worksheet.column_dimensions[col_letter].width = min(adjusted_width, 60)
 
-# Hàm hỗ trợ tạo file Excel ảo để tải xuống
 def generate_excel_download(df, sheet_name):
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
@@ -154,7 +156,7 @@ def admin_login_dialog():
     st.write("Vui lòng nhập mật khẩu để kích hoạt các tính năng thêm/sửa/xóa.")
     pwd = st.text_input("Mật khẩu:", type="password")
     if st.button("Xác nhận", type="primary", use_container_width=True):
-        if pwd == "admin123":  # Thay đổi mật khẩu tại đây
+        if pwd == "admin123":
             st.session_state.is_admin = True
             st.success("Đăng nhập thành công!")
             st.rerun()
@@ -296,7 +298,6 @@ def edit_bc_dialog(idx):
 with st.sidebar:
     st.markdown("### 👤 Người dùng: `ttm`")
     
-    # Hàng nút 1: Đăng xuất & Cache
     col_sb1, col_sb2 = st.columns(2)
     with col_sb1:
         if st.button("🚪 Đăng xuất", use_container_width=True):
@@ -306,7 +307,6 @@ with st.sidebar:
             st.cache_data.clear()
             st.success("Đã xóa cache!")
 
-    # Hàng nút 2: Chế độ Sáng/Tối & Admin
     col_sb3, col_sb4 = st.columns(2)
     with col_sb3:
         theme_label = "☀️ Sáng" if st.session_state.get("dark_mode") else "🌙 Tối"
@@ -340,15 +340,31 @@ with st.sidebar:
         label_visibility="collapsed"
     )
 
-    st.divider()
-    st.header("⚙️ Cấu Hình Thư Mục")
-    st.caption("*(Lưu ý: Mở thư mục này chỉ hoạt động khi chạy code trên máy tính cá nhân)*")
-    st.text_input("Thư mục lưu file Excel cục bộ:", value=EXCEL_DIR, disabled=True)
-    if st.button("📂 Mở thư mục lưu trữ", use_container_width=True):
-        try:
-            os.startfile(EXCEL_DIR)
-        except Exception:
-            st.error("Tính năng này không khả dụng khi chạy trên Web Cloud!")
+    # -----------------------------------------------------
+    # CẤU HÌNH THƯ MỤC (Chỉ hiển thị khi là Admin)
+    # -----------------------------------------------------
+    if st.session_state.get("is_admin"):
+        st.divider()
+        st.header("⚙️ Cấu Hình Thư Mục")
+        st.caption("*(Lưu ý: Mở thư mục chỉ hoạt động khi chạy trên máy tính cá nhân)*")
+        
+        # Ô nhập liệu cho phép người dùng thay đổi đường dẫn
+        new_dir = st.text_input("Đường dẫn lưu file cục bộ:", value=st.session_state.excel_dir)
+        
+        col_dir1, col_dir2 = st.columns(2)
+        with col_dir1:
+            if st.button("💾 Xác nhận", type="primary", use_container_width=True):
+                st.session_state.excel_dir = new_dir
+                st.toast("🎉 Đã cập nhật đường dẫn thư mục!", icon="✅")
+        with col_dir2:
+            if st.button("📂 Mở thư mục", use_container_width=True):
+                if os.path.exists(st.session_state.excel_dir):
+                    try:
+                        os.startfile(st.session_state.excel_dir)
+                    except Exception:
+                        st.error("Tính năng này không khả dụng khi chạy trên Web Cloud!")
+                else:
+                    st.error("Đường dẫn thư mục không tồn tại!")
 
 
 # ==========================================
@@ -357,7 +373,6 @@ with st.sidebar:
 st.title("🛡️ Quản Lý An Toàn TTM")
 st.caption("📌 Phiên bản hệ thống hiệu chỉnh ngày: 28/09/2026")
 
-# Thống kê
 m1, m2, m3 = st.columns(3)
 m1.metric("🌐 Tổng số Websites", len(st.session_state.web_tools_df))
 m2.metric("📊 Tổng số BC Định kỳ", len(st.session_state.bc_dinhky_df))
