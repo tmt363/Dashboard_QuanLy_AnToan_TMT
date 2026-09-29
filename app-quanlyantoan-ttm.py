@@ -31,10 +31,10 @@ if "excel_dir" not in st.session_state:
     st.session_state.excel_dir = DEFAULT_EXCEL_DIR
 
 # Xử lý CSS Giao diện Mượt mà & Sáng/Tối/Desktop
-# Giảm padding-top của block-container để đẩy phần bảng (Tô 4) lên cao nhất có thể
+# Đã nới lỏng padding-top lên 3rem để chữ và icon không bị lẹm mất nét
 css_style = """
 <style>
-.block-container { padding-top: 1.5rem !important; padding-bottom: 1rem !important; }
+.block-container { padding-top: 3rem !important; padding-bottom: 1rem !important; }
 .table-header { font-weight: bold; color: #1E88E5; }
 .row-text { font-size: 14px; }
 </style>
@@ -311,14 +311,12 @@ def edit_bc_dialog(idx):
 # 4. SIDEBAR (THANH ĐIỀU HƯỚNG BÊN TRÁI)
 # ==========================================
 with st.sidebar:
-    # --- Dời Tiêu đề vào Sidebar theo yêu cầu ---
     st.title("🛡️ Quản Lý An Toàn TTM")
     st.caption("📌 Phiên bản hiệu chỉnh: 28/09/2026")
     st.divider()
 
     st.markdown("### 👤 Người dùng: `ttm`")
     
-    # --- Hàng 1: Đăng xuất & Xóa Cache ---
     col_sb1, col_sb2 = st.columns(2)
     with col_sb1:
         if st.button("🚪 Đăng xuất", use_container_width=True):
@@ -328,7 +326,6 @@ with st.sidebar:
             st.cache_data.clear()
             st.success("Đã xóa cache!")
 
-    # --- Hàng 2: Đổi Giao Diện Sáng/Tối & Chế độ xem Điện Thoại/Máy tính ---
     col_sb3, col_sb4 = st.columns(2)
     with col_sb3:
         theme_label = "☀️ Sáng" if st.session_state.get("dark_mode") else "🌙 Tối"
@@ -342,7 +339,6 @@ with st.sidebar:
             st.session_state.desktop_mode = not st.session_state.desktop_mode
             st.rerun()
 
-    # --- Nút Quản trị ---
     if st.session_state.get("is_admin"):
         if st.button("🔓 Thoát chế độ Admin", use_container_width=True):
             st.session_state.is_admin = False
@@ -368,9 +364,6 @@ with st.sidebar:
         label_visibility="collapsed"
     )
 
-    # -----------------------------------------------------
-    # CẤU HÌNH THƯ MỤC (Chỉ hiển thị khi là Admin)
-    # -----------------------------------------------------
     if st.session_state.get("is_admin"):
         st.divider()
         st.header("⚙️ Cấu Hình Thư Mục")
@@ -397,7 +390,6 @@ with st.sidebar:
 # ==========================================
 # 5. MAIN LAYOUT (GIAO DIỆN CHÍNH TỐI ĐA HÓA KHÔNG GIAN)
 # ==========================================
-# Đã dời tiêu đề sang Sidebar và xóa mục thống kê theo yêu cầu
 
 # ------------------------------------------
 # PHẦN 1: DS WEBsites_CV
