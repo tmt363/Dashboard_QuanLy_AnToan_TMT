@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import openpyxl
 from datetime import datetime
+import io  # Thư viện mới để hỗ trợ tải file trên nền web
 
 # ==========================================
 # 1. CẤU HÌNH TRANG VÀ SESSION STATE
@@ -116,6 +117,14 @@ def auto_fit_columns(workbook):
             adjusted_width = max(max_len + 4, 12)
             worksheet.column_dimensions[col_letter].width = min(adjusted_width, 60)
 
+# Hàm hỗ trợ tạo file Excel ảo để tải xuống
+def generate_excel_download(df, sheet_name):
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, sheet_name=sheet_name, index=False)
+        auto_fit_columns(writer.book)
+    return output.getvalue()
+
 # Khởi tạo dữ liệu
 if "web_tools_df" not in st.session_state:
     st.session_state.web_tools_df = reindex_df(pd.DataFrame(DEFAULT_14_WEBS))
@@ -145,7 +154,7 @@ def admin_login_dialog():
     st.write("Vui lòng nhập mật khẩu để kích hoạt các tính năng thêm/sửa/xóa.")
     pwd = st.text_input("Mật khẩu:", type="password")
     if st.button("Xác nhận", type="primary", use_container_width=True):
-        if pwd == "123456":  # Thay đổi mật khẩu tại đây
+        if pwd == "admin123":  # Thay đổi mật khẩu tại đây
             st.session_state.is_admin = True
             st.success("Đăng nhập thành công!")
             st.rerun()
@@ -333,12 +342,13 @@ with st.sidebar:
 
     st.divider()
     st.header("⚙️ Cấu Hình Thư Mục")
-    st.text_input("Thư mục lưu file Excel:", value=EXCEL_DIR, disabled=True)
+    st.caption("*(Lưu ý: Mở thư mục này chỉ hoạt động khi chạy code trên máy tính cá nhân)*")
+    st.text_input("Thư mục lưu file Excel cục bộ:", value=EXCEL_DIR, disabled=True)
     if st.button("📂 Mở thư mục lưu trữ", use_container_width=True):
         try:
             os.startfile(EXCEL_DIR)
         except Exception:
-            st.error("Không mở được thư mục!")
+            st.error("Tính năng này không khả dụng khi chạy trên Web Cloud!")
 
 
 # ==========================================
@@ -401,17 +411,17 @@ if main_menu == "1 🌐 DS WEBsites_CV":
         with st.expander("⚙️ Quản lý Nhập / Xuất Excel (WEBsites)", expanded=False):
             col_w1, col_w2 = st.columns(2)
             with col_w1:
-                st.markdown("#### Xuất dữ liệu")
-                if st.button("📥 Xuất toàn bộ ra Excel", type="primary", use_container_width=True):
-                    try:
-                        out_path = os.path.join(EXCEL_DIR, f"1 DS WEBsites_CV out_{DATE_STR}.xlsx")
-                        out_df = reindex_df(st.session_state.web_tools_df)
-                        with pd.ExcelWriter(out_path, engine='openpyxl') as writer:
-                            out_df.to_excel(writer, sheet_name="WEBSITES", index=False)
-                            auto_fit_columns(writer.book)
-                        st.success(f"Đã xuất thành công: {out_path}")
-                    except Exception as e:
-                        st.error(f"Lỗi: {e}")
+                st.markdown("#### Tải dữ liệu xuống máy")
+                out_df = reindex_df(st.session_state.web_tools_df)
+                excel_data = generate_excel_download(out_df, "WEBSITES")
+                st.download_button(
+                    label="📥 Tải file Excel",
+                    data=excel_data,
+                    file_name=f"1_DS_WEBsites_CV_{DATE_STR}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    type="primary",
+                    use_container_width=True
+                )
             with col_w2:
                 st.markdown("#### Nhập dữ liệu")
                 up_w = st.file_uploader("Chọn file Excel:", type=["xlsx", "xls"], key="up_w", label_visibility="collapsed")
@@ -468,18 +478,18 @@ elif main_menu == "2 📋 DM QL Files_CV":
         with st.expander(f"⚙️ Quản lý Nhập / Xuất Excel ({selected_cat})", expanded=False):
             col_q1, col_q2 = st.columns(2)
             with col_q1:
-                st.markdown("#### Xuất dữ liệu")
-                if st.button("📥 Xuất Excel mục này", type="primary", use_container_width=True):
-                    try:
-                        safe_name = selected_cat.replace(" ", "_")
-                        out_path = os.path.join(EXCEL_DIR, f"2 DM QL Files_CV_{safe_name}_out_{DATE_STR}.xlsx")
-                        out_df = reindex_df(st.session_state.data_store[selected_cat])
-                        with pd.ExcelWriter(out_path, engine='openpyxl') as writer:
-                            out_df.to_excel(writer, sheet_name="HOSO", index=False)
-                            auto_fit_columns(writer.book)
-                        st.success(f"Đã xuất file: {out_path}")
-                    except Exception as e:
-                        st.error(f"Lỗi: {e}")
+                st.markdown("#### Tải dữ liệu xuống máy")
+                safe_name = selected_cat.replace(" ", "_")
+                out_df = reindex_df(st.session_state.data_store[selected_cat])
+                excel_data = generate_excel_download(out_df, "HOSO")
+                st.download_button(
+                    label="📥 Tải file Excel",
+                    data=excel_data,
+                    file_name=f"2_DM_QL_Files_CV_{safe_name}_{DATE_STR}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    type="primary",
+                    use_container_width=True
+                )
             with col_q2:
                 st.markdown("#### Nhập dữ liệu")
                 up_q = st.file_uploader("Chọn file Excel:", type=["xlsx", "xls"], key=f"up_q_{selected_cat}", label_visibility="collapsed")
@@ -538,17 +548,17 @@ elif main_menu == "3 📊 DS BCdinhky_CV":
         with st.expander("⚙️ Quản lý Nhập / Xuất Excel (Báo Cáo)", expanded=False):
             col_b1, col_b2 = st.columns(2)
             with col_b1:
-                st.markdown("#### Xuất dữ liệu")
-                if st.button("📥 Xuất toàn bộ ra Excel", type="primary", use_container_width=True):
-                    try:
-                        out_path = os.path.join(EXCEL_DIR, f"3 DS BCdinhky_CV out_{DATE_STR}.xlsx")
-                        out_df = reindex_df(st.session_state.bc_dinhky_df)
-                        with pd.ExcelWriter(out_path, engine='openpyxl') as writer:
-                            out_df.to_excel(writer, sheet_name="BAOCAO", index=False)
-                            auto_fit_columns(writer.book)
-                        st.success(f"Đã xuất thành công: {out_path}")
-                    except Exception as e:
-                        st.error(f"Lỗi: {e}")
+                st.markdown("#### Tải dữ liệu xuống máy")
+                out_df = reindex_df(st.session_state.bc_dinhky_df)
+                excel_data = generate_excel_download(out_df, "BAOCAO")
+                st.download_button(
+                    label="📥 Tải file Excel",
+                    data=excel_data,
+                    file_name=f"3_DS_BCdinhky_CV_{DATE_STR}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    type="primary",
+                    use_container_width=True
+                )
             with col_b2:
                 st.markdown("#### Nhập dữ liệu")
                 up_b = st.file_uploader("Chọn file Excel:", type=["xlsx", "xls"], key="up_b", label_visibility="collapsed")
@@ -611,17 +621,17 @@ elif main_menu == "4 🟢 DS Gsheet_CV":
         with st.expander("⚙️ Quản lý Nhập / Xuất Excel (Gsheet)", expanded=False):
             col_gx1, col_gx2 = st.columns(2)
             with col_gx1:
-                st.markdown("#### Xuất dữ liệu")
-                if st.button("📥 Xuất toàn bộ ra Excel", type="primary", use_container_width=True):
-                    try:
-                        out_path = os.path.join(EXCEL_DIR, f"4 DS Gsheet_CV out_{DATE_STR}.xlsx")
-                        out_df = reindex_df(st.session_state.gsheet_df)
-                        with pd.ExcelWriter(out_path, engine='openpyxl') as writer:
-                            out_df.to_excel(writer, sheet_name="GSHEETS", index=False)
-                            auto_fit_columns(writer.book)
-                        st.success(f"Đã xuất thành công: {out_path}")
-                    except Exception as e:
-                        st.error(f"Lỗi: {e}")
+                st.markdown("#### Tải dữ liệu xuống máy")
+                out_df = reindex_df(st.session_state.gsheet_df)
+                excel_data = generate_excel_download(out_df, "GSHEETS")
+                st.download_button(
+                    label="📥 Tải file Excel",
+                    data=excel_data,
+                    file_name=f"4_DS_Gsheet_CV_{DATE_STR}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    type="primary",
+                    use_container_width=True
+                )
             with col_gx2:
                 st.markdown("#### Nhập dữ liệu")
                 up_g = st.file_uploader("Chọn file Excel:", type=["xlsx", "xls"], key="up_g", label_visibility="collapsed")
