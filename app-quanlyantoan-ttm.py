@@ -20,46 +20,28 @@ DEFAULT_EXCEL_DIR = r"D:\0 2025 0 LUU OFFICE drive\0000 chua luu\0 0 0 app\000Tm
 if not os.path.exists(DEFAULT_EXCEL_DIR):
     DEFAULT_EXCEL_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Khởi tạo biến lưu trạng thái Giao diện, Admin, Thư mục và Chế độ xem
+# Khởi tạo biến lưu trạng thái
 if "is_admin" not in st.session_state:
     st.session_state.is_admin = False
 if "dark_mode" not in st.session_state:
     st.session_state.dark_mode = False
-if "desktop_mode" not in st.session_state:
-    st.session_state.desktop_mode = False
 if "excel_dir" not in st.session_state:
     st.session_state.excel_dir = DEFAULT_EXCEL_DIR
 
-# Xử lý CSS Giao diện Mượt mà & Sáng/Tối/Desktop
-# Đã nới lỏng padding-top lên 3rem để chữ và icon không bị lẹm mất nét
+# Xử lý CSS Giao diện
 css_style = """
 <style>
-.block-container { padding-top: 3rem !important; padding-bottom: 1rem !important; }
-.table-header { font-weight: bold; color: #1E88E5; }
-.row-text { font-size: 14px; }
+.block-container { padding-top: 2.5rem !important; padding-bottom: 1rem !important; }
 </style>
 """
-
-# Bật chế độ Tối (Dark Mode)
 if st.session_state.get("dark_mode"):
     css_style += """
 <style>
 .stApp { background-color: #1E1E1E !important; color: #FFFFFF !important; }
 .stSidebar { background-color: #2D2D2D !important; }
-.table-header { color: #64B5F6 !important; }
 h1, h2, h3, h4, h5, h6, p, span, div, strong { color: #E0E0E0 !important; }
 </style>
 """
-
-# Bật chế độ Máy tính (Desktop Mode) ép hiển thị ngang trên Điện thoại
-if st.session_state.get("desktop_mode"):
-    css_style += """
-<style>
-.stApp .block-container { min-width: 1024px !important; overflow-x: auto; }
-header { min-width: 1024px !important; }
-</style>
-"""
-
 st.markdown(css_style, unsafe_allow_html=True)
 
 
@@ -113,16 +95,6 @@ def reindex_df(df):
             df[col] = df[col].fillna("")
     return df
 
-def render_links_cell(l1, l2, l3):
-    links = []
-    if l1 and str(l1).strip().startswith("http"):
-        links.append(f"[Link 1]({str(l1).strip()})")
-    if l2 and str(l2).strip().startswith("http"):
-        links.append(f"[Link 2]({str(l2).strip()})")
-    if l3 and str(l3).strip().startswith("http"):
-        links.append(f"[Link 3]({str(l3).strip()})")
-    return " | ".join(links) if links else "-"
-
 def auto_fit_columns(workbook):
     for sheetname in workbook.sheetnames:
         worksheet = workbook[sheetname]
@@ -141,6 +113,44 @@ def generate_excel_download(df, sheet_name):
         df.to_excel(writer, sheet_name=sheet_name, index=False)
         auto_fit_columns(writer.book)
     return output.getvalue()
+
+# Hàm tạo Bảng chuẩn HTML Responsive (Tối ưu Vuốt trên điện thoại)
+def create_responsive_table(df, main_col_name, extra_cols=None):
+    if extra_cols is None: extra_cols = []
+    html = '<div style="overflow-x: auto; margin-bottom: 20px; border-radius: 6px; border: 1px solid #555;">'
+    html += '<table style="width: 100%; border-collapse: collapse; font-size: 14.5px; text-align: left;">'
+    html += '<thead style="background-color: rgba(30, 136, 229, 0.1);">'
+    html += '<tr style="border-bottom: 2px solid #1E88E5;">'
+    html += '<th style="padding: 12px; color: #1E88E5; white-space: nowrap;">STT</th>'
+    html += f'<th style="padding: 12px; color: #1E88E5; min-width: 250px;">{main_col_name}</th>'
+    for ec in extra_cols:
+        html += f'<th style="padding: 12px; color: #1E88E5; white-space: nowrap;">{ec}</th>'
+    html += '<th style="padding: 12px; color: #1E88E5; min-width: 150px;">Links truy cập</th>'
+    html += '<th style="padding: 12px; color: #1E88E5; min-width: 200px;">Ghi chú</th>'
+    html += '</tr></thead><tbody>'
+    
+    if df.empty:
+        html += '<tr><td colspan="10" style="padding: 15px; text-align: center; color: #888;">Chưa có dữ liệu</td></tr>'
+    else:
+        for idx, row in df.iterrows():
+            html += '<tr style="border-bottom: 1px dashed #666;">'
+            html += f'<td style="padding: 12px; font-weight: bold;">{row.get("STT", "")}</td>'
+            html += f'<td style="padding: 12px;">{row.get(main_col_name, "")}</td>'
+            for ec in extra_cols:
+                html += f'<td style="padding: 12px;">{row.get(ec, "")}</td>'
+            
+            links = []
+            l1, l2, l3 = row.get("Link 1", ""), row.get("Link 2", ""), row.get("Link 3", "")
+            if l1 and str(l1).strip().startswith("http"): links.append(f'<a href="{str(l1).strip()}" target="_blank" style="color: #64B5F6; text-decoration: none; font-weight: bold;">Link 1</a>')
+            if l2 and str(l2).strip().startswith("http"): links.append(f'<a href="{str(l2).strip()}" target="_blank" style="color: #64B5F6; text-decoration: none; font-weight: bold;">Link 2</a>')
+            if l3 and str(l3).strip().startswith("http"): links.append(f'<a href="{str(l3).strip()}" target="_blank" style="color: #64B5F6; text-decoration: none; font-weight: bold;">Link 3</a>')
+            links_str = " | ".join(links) if links else "-"
+            
+            html += f'<td style="padding: 12px;">{links_str}</td>'
+            html += f'<td style="padding: 12px;">{row.get("Ghi chú", "")}</td>'
+            html += '</tr>'
+    html += '</tbody></table></div>'
+    return html
 
 # Khởi tạo dữ liệu
 if "web_tools_df" not in st.session_state:
@@ -168,7 +178,7 @@ if "gsheet_df" not in st.session_state:
 # ==========================================
 @st.dialog("🔐 Đăng Nhập Quản Trị Viên")
 def admin_login_dialog():
-    st.write("Vui lòng nhập mật khẩu để kích hoạt các tính năng thêm/sửa/xóa.")
+    st.write("Vui lòng nhập mật khẩu để kích hoạt tính năng thêm/sửa/xóa.")
     pwd = st.text_input("Mật khẩu:", type="password")
     if st.button("Xác nhận", type="primary", use_container_width=True):
         if pwd == "admin123":
@@ -326,18 +336,11 @@ with st.sidebar:
             st.cache_data.clear()
             st.success("Đã xóa cache!")
 
-    col_sb3, col_sb4 = st.columns(2)
-    with col_sb3:
-        theme_label = "☀️ Sáng" if st.session_state.get("dark_mode") else "🌙 Tối"
-        if st.button(theme_label, use_container_width=True):
-            st.session_state.dark_mode = not st.session_state.dark_mode
-            st.rerun()
-            
-    with col_sb4:
-        desktop_label = "💻 Dạng PC" if st.session_state.get("desktop_mode") else "📱 Dạng ĐT"
-        if st.button(desktop_label, use_container_width=True, help="Ép hiển thị dạng bảng rộng trên Điện thoại"):
-            st.session_state.desktop_mode = not st.session_state.desktop_mode
-            st.rerun()
+    # Chế độ Sáng/Tối (Bỏ nút PC hacky đi)
+    theme_label = "☀️ Sáng" if st.session_state.get("dark_mode") else "🌙 Tối"
+    if st.button(theme_label, use_container_width=True):
+        st.session_state.dark_mode = not st.session_state.dark_mode
+        st.rerun()
 
     if st.session_state.get("is_admin"):
         if st.button("🔓 Thoát chế độ Admin", use_container_width=True):
@@ -388,53 +391,50 @@ with st.sidebar:
 
 
 # ==========================================
-# 5. MAIN LAYOUT (GIAO DIỆN CHÍNH TỐI ĐA HÓA KHÔNG GIAN)
+# 5. MAIN LAYOUT (GIAO DIỆN CHÍNH)
 # ==========================================
 
 # ------------------------------------------
 # PHẦN 1: DS WEBsites_CV
 # ------------------------------------------
 if main_menu == "1 🌐 DS WEBsites_CV":
-    col_title, col_action1, col_action2 = st.columns([5, 2, 2])
-    col_title.subheader("🌐 Danh Sách Các Website Hỗ Trợ CV")
-    with col_action1:
-        if st.session_state.is_admin:
+    st.subheader("🌐 Danh Sách Các Website Hỗ Trợ CV")
+    
+    # Hiển thị bảng HTML Native (Tự động cuộn ngang mượt mà)
+    st.markdown(create_responsive_table(st.session_state.web_tools_df, "Mô tả WEB"), unsafe_allow_html=True)
+    
+    # Khu vực Admin quản lý
+    if st.session_state.is_admin:
+        st.markdown("---")
+        st.markdown("### ⚙️ Bảng Điều Khiển Admin")
+        col_add, col_edit = st.columns([1, 2])
+        
+        with col_add:
+            st.caption("📌 **Thêm Dữ Liệu**")
             if st.button("➕ Thêm mới Website", type="primary", use_container_width=True):
                 add_web_dialog()
-    with col_action2:
-        if st.session_state.is_admin:
             if st.button("🔄 Khôi phục mặc định", use_container_width=True):
                 st.session_state.web_tools_df = reindex_df(pd.DataFrame(DEFAULT_14_WEBS))
                 st.rerun()
+                
+        with col_edit:
+            with st.container(border=True):
+                st.caption("📌 **Sửa / Xóa dữ liệu theo STT**")
+                df_web = st.session_state.web_tools_df
+                stt_list = df_web['STT'].tolist() if not df_web.empty else []
+                if stt_list:
+                    c1, c2, c3 = st.columns([2, 1, 1], vertical_alignment="bottom")
+                    selected_stt = c1.selectbox("Nhìn bảng và chọn số STT cần thao tác:", stt_list, key="sel_web")
+                    if c2.button("✏️ Sửa", use_container_width=True, key="edit_web"):
+                        idx = df_web[df_web['STT'] == selected_stt].index[0]
+                        edit_web_dialog(idx)
+                    if c3.button("🗑️ Xóa", use_container_width=True, key="del_web"):
+                        idx = df_web[df_web['STT'] == selected_stt].index[0]
+                        st.session_state.web_tools_df = reindex_df(df_web.drop(idx))
+                        st.rerun()
+                else:
+                    st.info("Bảng đang trống.")
 
-    with st.container(border=True):
-        h_cols = st.columns([0.7, 3, 3, 2.5, 1.5] if st.session_state.is_admin else [0.7, 3, 3, 3.3])
-        h_cols[0].markdown("<span class='table-header'>STT</span>", unsafe_allow_html=True)
-        h_cols[1].markdown("<span class='table-header'>Mô tả WEB</span>", unsafe_allow_html=True)
-        h_cols[2].markdown("<span class='table-header'>Links truy cập</span>", unsafe_allow_html=True)
-        h_cols[3].markdown("<span class='table-header'>Ghi chú</span>", unsafe_allow_html=True)
-        if st.session_state.is_admin:
-            h_cols[4].markdown("<span class='table-header'>Thao tác</span>", unsafe_allow_html=True)
-        st.markdown("<hr style='margin: 8px 0;'>", unsafe_allow_html=True)
-
-        df_web = st.session_state.web_tools_df
-        for idx, row in df_web.iterrows():
-            c_cols = st.columns([0.7, 3, 3, 2.5, 1.5] if st.session_state.is_admin else [0.7, 3, 3, 3.3], vertical_alignment="center")
-            c_cols[0].markdown(f"**{row['STT']}**")
-            c_cols[1].write(row["Mô tả WEB"])
-            c_cols[2].markdown(render_links_cell(row["Link 1"], row["Link 2"], row["Link 3"]))
-            c_cols[3].write(row["Ghi chú"])
-            
-            if st.session_state.is_admin:
-                btn_edit, btn_del = c_cols[4].columns(2)
-                if btn_edit.button("✏️", key=f"ew_{idx}", help="Chỉnh sửa"):
-                    edit_web_dialog(idx)
-                if btn_del.button("🗑️", key=f"dw_{idx}", help="Xóa"):
-                    st.session_state.web_tools_df = reindex_df(df_web.drop(idx))
-                    st.rerun()
-            st.markdown("<hr style='margin: 4px 0; border-top: 1px dashed #555;'>", unsafe_allow_html=True)
-
-    if st.session_state.is_admin:
         with st.expander("⚙️ Quản lý Nhập / Xuất Excel (WEBsites)", expanded=False):
             col_w1, col_w2 = st.columns(2)
             with col_w1:
@@ -461,47 +461,45 @@ if main_menu == "1 🌐 DS WEBsites_CV":
                     except Exception as e:
                         st.error(f"Lỗi: {e}")
 
+
 # ------------------------------------------
 # PHẦN 2: DM QL Files_CV
 # ------------------------------------------
 elif main_menu == "2 📋 DM QL Files_CV":
     selected_cat = st.selectbox("📌 Chọn Mảng Công Việc:", CATEGORIES)
-    
-    col_title, col_action = st.columns([7, 3])
-    col_title.subheader(f"📂 Hồ Sơ: {selected_cat}")
-    with col_action:
-        if st.session_state.is_admin:
-            if st.button("➕ Thêm Hồ Sơ Mới", type="primary", use_container_width=True):
-                add_file_dialog(selected_cat)
+    st.subheader(f"📂 Hồ Sơ: {selected_cat}")
 
-    with st.container(border=True):
-        h_cols = st.columns([0.7, 3.5, 3, 2.5, 1.5] if st.session_state.is_admin else [0.7, 3.5, 3, 2.8])
-        h_cols[0].markdown("<span class='table-header'>STT</span>", unsafe_allow_html=True)
-        h_cols[1].markdown("<span class='table-header'>Thư mục / Hồ sơ</span>", unsafe_allow_html=True)
-        h_cols[2].markdown("<span class='table-header'>Links xem</span>", unsafe_allow_html=True)
-        h_cols[3].markdown("<span class='table-header'>Ghi chú</span>", unsafe_allow_html=True)
-        if st.session_state.is_admin:
-            h_cols[4].markdown("<span class='table-header'>Thao tác</span>", unsafe_allow_html=True)
-        st.markdown("<hr style='margin: 8px 0;'>", unsafe_allow_html=True)
-
-        df_cat = st.session_state.data_store[selected_cat]
-        for idx, row in df_cat.iterrows():
-            c_cols = st.columns([0.7, 3.5, 3, 2.5, 1.5] if st.session_state.is_admin else [0.7, 3.5, 3, 2.8], vertical_alignment="center")
-            c_cols[0].markdown(f"**{row['STT']}**")
-            c_cols[1].write(row["Thư mục / Hồ sơ"])
-            c_cols[2].markdown(render_links_cell(row["Link 1"], row["Link 2"], row["Link 3"]))
-            c_cols[3].write(row["Ghi chú"])
-            
-            if st.session_state.is_admin:
-                btn_e, btn_d = c_cols[4].columns(2)
-                if btn_e.button("✏️", key=f"eq_{idx}"):
-                    edit_file_dialog(selected_cat, idx)
-                if btn_d.button("🗑️", key=f"dq_{idx}"):
-                    st.session_state.data_store[selected_cat] = reindex_df(df_cat.drop(idx))
-                    st.rerun()
-            st.markdown("<hr style='margin: 4px 0; border-top: 1px dashed #555;'>", unsafe_allow_html=True)
+    st.markdown(create_responsive_table(st.session_state.data_store[selected_cat], "Thư mục / Hồ sơ"), unsafe_allow_html=True)
 
     if st.session_state.is_admin:
+        st.markdown("---")
+        st.markdown("### ⚙️ Bảng Điều Khiển Admin")
+        col_add, col_edit = st.columns([1, 2])
+        
+        with col_add:
+            st.caption("📌 **Thêm Dữ Liệu**")
+            if st.button("➕ Thêm Hồ Sơ Mới", type="primary", use_container_width=True):
+                add_file_dialog(selected_cat)
+                
+        with col_edit:
+            with st.container(border=True):
+                st.caption("📌 **Sửa / Xóa dữ liệu theo STT**")
+                df_cat = st.session_state.data_store[selected_cat]
+                stt_list = df_cat['STT'].tolist() if not df_cat.empty else []
+                if stt_list:
+                    c1, c2, c3 = st.columns([2, 1, 1], vertical_alignment="bottom")
+                    safe_key = selected_cat.replace(" ", "_")
+                    selected_stt = c1.selectbox("Nhìn bảng và chọn số STT cần thao tác:", stt_list, key=f"sel_cat_{safe_key}")
+                    if c2.button("✏️ Sửa", use_container_width=True, key=f"edit_cat_{safe_key}"):
+                        idx = df_cat[df_cat['STT'] == selected_stt].index[0]
+                        edit_file_dialog(selected_cat, idx)
+                    if c3.button("🗑️ Xóa", use_container_width=True, key=f"del_cat_{safe_key}"):
+                        idx = df_cat[df_cat['STT'] == selected_stt].index[0]
+                        st.session_state.data_store[selected_cat] = reindex_df(df_cat.drop(idx))
+                        st.rerun()
+                else:
+                    st.info("Bảng đang trống.")
+
         with st.expander(f"⚙️ Quản lý Nhập / Xuất Excel ({selected_cat})", expanded=False):
             col_q1, col_q2 = st.columns(2)
             with col_q1:
@@ -529,49 +527,43 @@ elif main_menu == "2 📋 DM QL Files_CV":
                     except Exception as e:
                         st.error(f"Lỗi: {e}")
 
+
 # ------------------------------------------
 # PHẦN 3: DS BCdinhky_CV
 # ------------------------------------------
 elif main_menu == "3 📊 DS BCdinhky_CV":
-    col_title, col_action = st.columns([7, 3])
-    col_title.subheader("📊 Quản Lý Báo Cáo Định Kỳ")
-    with col_action:
-        if st.session_state.is_admin:
-            if st.button("➕ Thêm Báo Cáo Mới", type="primary", use_container_width=True):
-                add_bc_dialog()
+    st.subheader("📊 Quản Lý Báo Cáo Định Kỳ")
 
-    with st.container(border=True):
-        h_cols = st.columns([0.6, 2.5, 1.5, 1.5, 2, 2, 1.2] if st.session_state.is_admin else [0.6, 2.5, 1.5, 1.5, 2, 3])
-        h_cols[0].markdown("<span class='table-header'>STT</span>", unsafe_allow_html=True)
-        h_cols[1].markdown("<span class='table-header'>Tên Báo Cáo / CV</span>", unsafe_allow_html=True)
-        h_cols[2].markdown("<span class='table-header'>Tần suất</span>", unsafe_allow_html=True)
-        h_cols[3].markdown("<span class='table-header'>Đơn vị nhận</span>", unsafe_allow_html=True)
-        h_cols[4].markdown("<span class='table-header'>Links biểu mẫu</span>", unsafe_allow_html=True)
-        h_cols[5].markdown("<span class='table-header'>Ghi chú</span>", unsafe_allow_html=True)
-        if st.session_state.is_admin:
-            h_cols[6].markdown("<span class='table-header'>Thao tác</span>", unsafe_allow_html=True)
-        st.markdown("<hr style='margin: 8px 0;'>", unsafe_allow_html=True)
-
-        df_bc = st.session_state.bc_dinhky_df
-        for idx, row in df_bc.iterrows():
-            c_cols = st.columns([0.6, 2.5, 1.5, 1.5, 2, 2, 1.2] if st.session_state.is_admin else [0.6, 2.5, 1.5, 1.5, 2, 3], vertical_alignment="center")
-            c_cols[0].markdown(f"**{row['STT']}**")
-            c_cols[1].write(str(row.get("Tên Báo Cáo / Công Việc", "")))
-            c_cols[2].write(str(row.get("Tần suất", "")))
-            c_cols[3].write(str(row.get("Đơn vị nhận", "")))
-            c_cols[4].markdown(render_links_cell(row.get("Link 1", ""), row.get("Link 2", ""), row.get("Link 3", "")))
-            c_cols[5].write(str(row.get("Ghi chú", "")))
-            
-            if st.session_state.is_admin:
-                btn_e, btn_d = c_cols[6].columns(2)
-                if btn_e.button("✏️", key=f"ebc_{idx}"):
-                    edit_bc_dialog(idx)
-                if btn_d.button("🗑️", key=f"dbc_{idx}"):
-                    st.session_state.bc_dinhky_df = reindex_df(df_bc.drop(idx))
-                    st.rerun()
-            st.markdown("<hr style='margin: 4px 0; border-top: 1px dashed #555;'>", unsafe_allow_html=True)
+    st.markdown(create_responsive_table(st.session_state.bc_dinhky_df, "Tên Báo Cáo / Công Việc", ["Tần suất", "Đơn vị nhận"]), unsafe_allow_html=True)
 
     if st.session_state.is_admin:
+        st.markdown("---")
+        st.markdown("### ⚙️ Bảng Điều Khiển Admin")
+        col_add, col_edit = st.columns([1, 2])
+        
+        with col_add:
+            st.caption("📌 **Thêm Dữ Liệu**")
+            if st.button("➕ Thêm Báo Cáo Mới", type="primary", use_container_width=True):
+                add_bc_dialog()
+                
+        with col_edit:
+            with st.container(border=True):
+                st.caption("📌 **Sửa / Xóa dữ liệu theo STT**")
+                df_bc = st.session_state.bc_dinhky_df
+                stt_list = df_bc['STT'].tolist() if not df_bc.empty else []
+                if stt_list:
+                    c1, c2, c3 = st.columns([2, 1, 1], vertical_alignment="bottom")
+                    selected_stt = c1.selectbox("Nhìn bảng và chọn số STT cần thao tác:", stt_list, key="sel_bc")
+                    if c2.button("✏️ Sửa", use_container_width=True, key="edit_bc"):
+                        idx = df_bc[df_bc['STT'] == selected_stt].index[0]
+                        edit_bc_dialog(idx)
+                    if c3.button("🗑️ Xóa", use_container_width=True, key="del_bc"):
+                        idx = df_bc[df_bc['STT'] == selected_stt].index[0]
+                        st.session_state.bc_dinhky_df = reindex_df(df_bc.drop(idx))
+                        st.rerun()
+                else:
+                    st.info("Bảng đang trống.")
+
         with st.expander("⚙️ Quản lý Nhập / Xuất Excel (Báo Cáo)", expanded=False):
             col_b1, col_b2 = st.columns(2)
             with col_b1:
@@ -598,53 +590,49 @@ elif main_menu == "3 📊 DS BCdinhky_CV":
                     except Exception as e:
                         st.error(f"Lỗi: {e}")
 
+
 # ------------------------------------------
 # PHẦN 4: DS Gsheet_CV
 # ------------------------------------------
 elif main_menu == "4 🟢 DS Gsheet_CV":
-    col_title, col_action1, col_action2 = st.columns([5, 2, 2])
-    col_title.subheader("🟢 Danh Sách Gsheet Hỗ Trợ CV")
-    with col_action1:
-        if st.session_state.is_admin:
+    st.subheader("🟢 Danh Sách Gsheet Hỗ Trợ CV")
+
+    st.markdown(create_responsive_table(st.session_state.gsheet_df, "Mô tả Gsheet"), unsafe_allow_html=True)
+
+    if st.session_state.is_admin:
+        st.markdown("---")
+        st.markdown("### ⚙️ Bảng Điều Khiển Admin")
+        col_add, col_edit = st.columns([1, 2])
+        
+        with col_add:
+            st.caption("📌 **Thêm Dữ Liệu**")
             if st.button("➕ Thêm mới Gsheet", type="primary", use_container_width=True):
                 add_gsheet_dialog()
-    with col_action2:
-        if st.session_state.is_admin:
             if st.button("🔄 Khôi phục mặc định", use_container_width=True):
                 st.session_state.gsheet_df = reindex_df(pd.DataFrame([
                     {"Mô tả Gsheet": "Bảng Theo Dõi Công Việc Theo Tuần", "Link 1": "https://docs.google.com/spreadsheets", "Link 2": "", "Link 3": "", "Ghi chú": "Dùng chung phòng An Toàn"},
                     {"Mô tả Gsheet": "Theo Dõi Kiến Nghị Kiểm Tra", "Link 1": "https://docs.google.com/spreadsheets", "Link 2": "", "Link 3": "", "Ghi chú": "Cập nhật trực tuyến"}
                 ]))
                 st.rerun()
+                
+        with col_edit:
+            with st.container(border=True):
+                st.caption("📌 **Sửa / Xóa dữ liệu theo STT**")
+                df_gsheet = st.session_state.gsheet_df
+                stt_list = df_gsheet['STT'].tolist() if not df_gsheet.empty else []
+                if stt_list:
+                    c1, c2, c3 = st.columns([2, 1, 1], vertical_alignment="bottom")
+                    selected_stt = c1.selectbox("Nhìn bảng và chọn số STT cần thao tác:", stt_list, key="sel_gs")
+                    if c2.button("✏️ Sửa", use_container_width=True, key="edit_gs"):
+                        idx = df_gsheet[df_gsheet['STT'] == selected_stt].index[0]
+                        edit_gsheet_dialog(idx)
+                    if c3.button("🗑️ Xóa", use_container_width=True, key="del_gs"):
+                        idx = df_gsheet[df_gsheet['STT'] == selected_stt].index[0]
+                        st.session_state.gsheet_df = reindex_df(df_gsheet.drop(idx))
+                        st.rerun()
+                else:
+                    st.info("Bảng đang trống.")
 
-    with st.container(border=True):
-        h_cols = st.columns([0.7, 3, 3, 2.5, 1.5] if st.session_state.is_admin else [0.7, 3, 3, 3.3])
-        h_cols[0].markdown("<span class='table-header'>STT</span>", unsafe_allow_html=True)
-        h_cols[1].markdown("<span class='table-header'>Mô tả Gsheet</span>", unsafe_allow_html=True)
-        h_cols[2].markdown("<span class='table-header'>Links truy cập</span>", unsafe_allow_html=True)
-        h_cols[3].markdown("<span class='table-header'>Ghi chú</span>", unsafe_allow_html=True)
-        if st.session_state.is_admin:
-            h_cols[4].markdown("<span class='table-header'>Thao tác</span>", unsafe_allow_html=True)
-        st.markdown("<hr style='margin: 8px 0;'>", unsafe_allow_html=True)
-
-        df_gsheet = st.session_state.gsheet_df
-        for idx, row in df_gsheet.iterrows():
-            c_cols = st.columns([0.7, 3, 3, 2.5, 1.5] if st.session_state.is_admin else [0.7, 3, 3, 3.3], vertical_alignment="center")
-            c_cols[0].markdown(f"**{row['STT']}**")
-            c_cols[1].write(row["Mô tả Gsheet"])
-            c_cols[2].markdown(render_links_cell(row["Link 1"], row["Link 2"], row["Link 3"]))
-            c_cols[3].write(row["Ghi chú"])
-            
-            if st.session_state.is_admin:
-                btn_edit, btn_del = c_cols[4].columns(2)
-                if btn_edit.button("✏️", key=f"eg_{idx}"):
-                    edit_gsheet_dialog(idx)
-                if btn_del.button("🗑️", key=f"dg_{idx}"):
-                    st.session_state.gsheet_df = reindex_df(df_gsheet.drop(idx))
-                    st.rerun()
-            st.markdown("<hr style='margin: 4px 0; border-top: 1px dashed #555;'>", unsafe_allow_html=True)
-
-    if st.session_state.is_admin:
         with st.expander("⚙️ Quản lý Nhập / Xuất Excel (Gsheet)", expanded=False):
             col_gx1, col_gx2 = st.columns(2)
             with col_gx1:
