@@ -6,7 +6,7 @@ from datetime import datetime
 
 # 1. Cấu hình trang Dashboard
 st.set_page_config(
-    page_title="Hệ Thống Quản Lý An Toàn & Công Tác Chuyên Môn TMT",
+    page_title="Quản Lý An Toàn TTM",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -255,7 +255,7 @@ def edit_bc_dialog(idx):
 
 # ----------------- SIDEBAR -----------------
 with st.sidebar:
-    st.markdown("### 👤 Người dùng: `tmt`")
+    st.markdown("### 👤 Người dùng: `ttm`")
     col_sb1, col_sb2 = st.columns(2)
     with col_sb1:
         if st.button("🚪 Đăng xuất", use_container_width=True):
@@ -289,7 +289,7 @@ with st.sidebar:
 
 
 # ----------------- MAIN LAYOUT -----------------
-st.title("🛡️ Hệ Thống Quản Lý An Toàn & Công Tác Chuyên Môn TMT")
+st.title("🛡️ Hệ Thống Quản Lý An Toàn & Công Tác Chuyên Môn TTM")
 st.caption("📌 Phiên bản hệ thống hiệu chỉnh ngày: 28/09/2026")
 
 # Hàng thông số tổng quan (Dashboard metrics)
