@@ -7,9 +7,19 @@ from datetime import datetime
 # 1. Cấu hình trang Dashboard
 st.set_page_config(
     page_title="Hệ Thống Quản Lý An Toàn & Công Tác Chuyên Môn TMT",
+    page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Custom CSS để giao diện mượt mà hơn
+st.markdown("""
+    <style>
+    .st-emotion-cache-1y4p8pa { padding-top: 2rem; }
+    .table-header { font-weight: bold; color: #1E88E5; }
+    .row-text { font-size: 14px; }
+    </style>
+""", unsafe_allow_html=True)
 
 # Thư mục làm việc & Lưu trữ
 EXCEL_DIR = r"D:\0 2025 0 LUU OFFICE drive\0000 chua luu\0 0 0 app\000TmT_VBA_source\Dashboard_AnToan"
@@ -49,6 +59,7 @@ DEFAULT_14_WEBS = [
     {"Mô tả WEB": "Hệ thống Thông tin Báo cáo EVN", "Link 1": "https://baocao.evn.com.vn", "Link 2": "", "Link 3": "", "Ghi chú": "Tổng hợp chỉ tiêu an toàn - kỹ thuật"}
 ]
 
+# --- HELPER FUNCTIONS ---
 def reindex_df(df):
     if df is None or df.empty:
         return pd.DataFrame()
@@ -86,40 +97,7 @@ def auto_fit_columns(workbook):
             adjusted_width = max(max_len + 4, 12)
             worksheet.column_dimensions[col_letter].width = min(adjusted_width, 60)
 
-# ----------------- SIDEBAR -----------------
-st.sidebar.markdown("👤 **Xin chào:** `tmt`")
-col_sb1, col_sb2 = st.sidebar.columns(2)
-with col_sb1:
-    if st.button("🚪 Đăng xuất", use_container_width=True):
-        st.info("Đã đăng xuất!")
-with col_sb2:
-    if st.button("🧹 Xóa Cache", use_container_width=True):
-        st.cache_data.clear()
-        st.sidebar.success("Đã xóa cache!")
-
-st.sidebar.markdown("---")
-st.sidebar.header("📂 PHÂN MỤC CHÍNH")
-main_menu = st.sidebar.radio(
-    "Chọn phân mục làm việc:",
-    [
-        "1 🌐 DS WEBsites_CV", 
-        "2 📋 DM QL Files_CV", 
-        "3 📊 DS BCdinhky_CV",
-        "4 🟢 DS Gsheet_CV"
-    ]
-)
-
-st.sidebar.markdown("---")
-st.sidebar.header("⚙️ Cấu Hình Thư Mục Lưu File")
-st.sidebar.text_input("Đường dẫn thư mục lưu file Excel:", value=EXCEL_DIR, disabled=True)
-
-if st.sidebar.button("📂 Mở thư mục lưu trữ"):
-    try:
-        os.startfile(EXCEL_DIR)
-    except Exception:
-        st.sidebar.error("Không mở được thư mục!")
-
-# ----------------- DỮ LIỆU SESSION STATE -----------------
+# --- DỮ LIỆU SESSION STATE ---
 if "web_tools_df" not in st.session_state:
     st.session_state.web_tools_df = reindex_df(pd.DataFrame(DEFAULT_14_WEBS))
 
@@ -142,8 +120,9 @@ if "gsheet_df" not in st.session_state:
         {"Mô tả Gsheet": "Theo Dõi Kiến Nghị Kiểm Tra", "Link 1": "https://docs.google.com/spreadsheets", "Link 2": "", "Link 3": "", "Ghi chú": "Cập nhật trực tuyến"}
     ]))
 
+
 # ==========================================
-# DIALOGS
+# DIALOGS (Giữ nguyên logic của bạn)
 # ==========================================
 @st.dialog("➕ Thêm mới Website_CV")
 def add_web_dialog():
@@ -171,11 +150,7 @@ def edit_web_dialog(idx):
     l3 = st.text_input("Link 3:", value=row["Link 3"])
     ghichu = st.text_input("Ghi chú:", value=row["Ghi chú"])
     if st.button("💾 Cập Nhật", type="primary", use_container_width=True):
-        st.session_state.web_tools_df.at[idx, "Mô tả WEB"] = mota
-        st.session_state.web_tools_df.at[idx, "Link 1"] = l1
-        st.session_state.web_tools_df.at[idx, "Link 2"] = l2
-        st.session_state.web_tools_df.at[idx, "Link 3"] = l3
-        st.session_state.web_tools_df.at[idx, "Ghi chú"] = ghichu
+        st.session_state.web_tools_df.loc[idx, ["Mô tả WEB", "Link 1", "Link 2", "Link 3", "Ghi chú"]] = [mota, l1, l2, l3, ghichu]
         st.session_state.web_tools_df = reindex_df(st.session_state.web_tools_df)
         st.success("Đã cập nhật!")
         st.rerun()
@@ -206,11 +181,7 @@ def edit_gsheet_dialog(idx):
     l3 = st.text_input("Link 3:", value=row["Link 3"])
     ghichu = st.text_input("Ghi chú:", value=row["Ghi chú"])
     if st.button("💾 Cập Nhật", type="primary", use_container_width=True):
-        st.session_state.gsheet_df.at[idx, "Mô tả Gsheet"] = mota
-        st.session_state.gsheet_df.at[idx, "Link 1"] = l1
-        st.session_state.gsheet_df.at[idx, "Link 2"] = l2
-        st.session_state.gsheet_df.at[idx, "Link 3"] = l3
-        st.session_state.gsheet_df.at[idx, "Ghi chú"] = ghichu
+        st.session_state.gsheet_df.loc[idx, ["Mô tả Gsheet", "Link 1", "Link 2", "Link 3", "Ghi chú"]] = [mota, l1, l2, l3, ghichu]
         st.session_state.gsheet_df = reindex_df(st.session_state.gsheet_df)
         st.success("Đã cập nhật!")
         st.rerun()
@@ -241,11 +212,7 @@ def edit_file_dialog(selected_cat, idx):
     l3 = st.text_input("Link 3:", value=row["Link 3"])
     ghichu = st.text_input("Ghi chú:", value=row["Ghi chú"])
     if st.button("💾 Cập Nhật", type="primary", use_container_width=True):
-        st.session_state.data_store[selected_cat].at[idx, "Thư mục / Hồ sơ"] = hoso
-        st.session_state.data_store[selected_cat].at[idx, "Link 1"] = l1
-        st.session_state.data_store[selected_cat].at[idx, "Link 2"] = l2
-        st.session_state.data_store[selected_cat].at[idx, "Link 3"] = l3
-        st.session_state.data_store[selected_cat].at[idx, "Ghi chú"] = ghichu
+        st.session_state.data_store[selected_cat].loc[idx, ["Thư mục / Hồ sơ", "Link 1", "Link 2", "Link 3", "Ghi chú"]] = [hoso, l1, l2, l3, ghichu]
         st.session_state.data_store[selected_cat] = reindex_df(st.session_state.data_store[selected_cat])
         st.success("Đã cập nhật!")
         st.rerun()
@@ -280,293 +247,321 @@ def edit_bc_dialog(idx):
     l3 = st.text_input("Link 3:", value=str(row.get("Link 3", "")))
     ghichu = st.text_input("Ghi chú:", value=str(row.get("Ghi chú", "")))
     if st.button("💾 Cập Nhật", type="primary", use_container_width=True):
-        st.session_state.bc_dinhky_df.at[idx, "Tên Báo Cáo / Công Việc"] = ten_bc
-        st.session_state.bc_dinhky_df.at[idx, "Tần suất"] = tan_suat
-        st.session_state.bc_dinhky_df.at[idx, "Đơn vị nhận"] = don_vi
-        st.session_state.bc_dinhky_df.at[idx, "Link 1"] = l1
-        st.session_state.bc_dinhky_df.at[idx, "Link 2"] = l2
-        st.session_state.bc_dinhky_df.at[idx, "Link 3"] = l3
-        st.session_state.bc_dinhky_df.at[idx, "Ghi chú"] = ghichu
+        st.session_state.bc_dinhky_df.loc[idx, ["Tên Báo Cáo / Công Việc", "Tần suất", "Đơn vị nhận", "Link 1", "Link 2", "Link 3", "Ghi chú"]] = [ten_bc, tan_suat, don_vi, l1, l2, l3, ghichu]
         st.session_state.bc_dinhky_df = reindex_df(st.session_state.bc_dinhky_df)
         st.success("Đã cập nhật!")
         st.rerun()
 
-# ----------------- GIAO DIỆN CHÍNH -----------------
+
+# ----------------- SIDEBAR -----------------
+with st.sidebar:
+    st.markdown("### 👤 Người dùng: `tmt`")
+    col_sb1, col_sb2 = st.columns(2)
+    with col_sb1:
+        if st.button("🚪 Đăng xuất", use_container_width=True):
+            st.info("Đã đăng xuất!")
+    with col_sb2:
+        if st.button("🧹 Xóa Cache", use_container_width=True):
+            st.cache_data.clear()
+            st.success("Đã xóa cache!")
+
+    st.divider()
+    st.header("📂 PHÂN MỤC CHÍNH")
+    main_menu = st.radio(
+        "Điều hướng ứng dụng:",
+        [
+            "1 🌐 DS WEBsites_CV", 
+            "2 📋 DM QL Files_CV", 
+            "3 📊 DS BCdinhky_CV",
+            "4 🟢 DS Gsheet_CV"
+        ],
+        label_visibility="collapsed"
+    )
+
+    st.divider()
+    st.header("⚙️ Cấu Hình Thư Mục")
+    st.text_input("Thư mục lưu file Excel:", value=EXCEL_DIR, disabled=True)
+    if st.button("📂 Mở thư mục lưu trữ", use_container_width=True):
+        try:
+            os.startfile(EXCEL_DIR)
+        except Exception:
+            st.error("Không mở được thư mục!")
+
+
+# ----------------- MAIN LAYOUT -----------------
 st.title("🛡️ Hệ Thống Quản Lý An Toàn & Công Tác Chuyên Môn TMT")
 st.caption("📌 Phiên bản hệ thống hiệu chỉnh ngày: 28/09/2026")
-st.markdown("---")
+
+# Hàng thông số tổng quan (Dashboard metrics)
+m1, m2, m3 = st.columns(3)
+m1.metric("🌐 Tổng số Websites", len(st.session_state.web_tools_df))
+m2.metric("📊 Tổng số BC Định kỳ", len(st.session_state.bc_dinhky_df))
+m3.metric("🟢 Tổng số GSheets", len(st.session_state.gsheet_df))
+st.divider()
 
 # ==========================================
-# 1. DS WEBsites_CV (Tên file xuất: 1 DS WEBsites_CV out_YYYYMMDD.xlsx)
+# 1. DS WEBsites_CV
 # ==========================================
 if main_menu == "1 🌐 DS WEBsites_CV":
-    st.subheader("🌐 Bảng Danh Sách WEBsites_CV")
-    
-    col_btn1, col_btn2 = st.columns([2, 1])
-    with col_btn1:
-        if st.button("➕ Thêm mới Website_CV", type="primary"):
+    col_title, col_action1, col_action2 = st.columns([5, 2, 2])
+    col_title.subheader("🌐 Danh Sách Các Website Hỗ Trợ CV")
+    with col_action1:
+        if st.button("➕ Thêm mới Website", type="primary", use_container_width=True):
             add_web_dialog()
-    with col_btn2:
-        if st.button("🔄 Khôi phục Web mặc định"):
+    with col_action2:
+        if st.button("🔄 Khôi phục mặc định", use_container_width=True):
             st.session_state.web_tools_df = reindex_df(pd.DataFrame(DEFAULT_14_WEBS))
-            st.success("Đã khôi phục dữ liệu Web mặc định!")
             st.rerun()
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    # Bảng dữ liệu có viền (Card UI)
+    with st.container(border=True):
+        # Header của bảng
+        h1, h2, h3, h4, h5 = st.columns([0.7, 3, 3, 2.5, 1.5])
+        h1.markdown("<span class='table-header'>STT</span>", unsafe_allow_html=True)
+        h2.markdown("<span class='table-header'>Mô tả WEB</span>", unsafe_allow_html=True)
+        h3.markdown("<span class='table-header'>Links truy cập</span>", unsafe_allow_html=True)
+        h4.markdown("<span class='table-header'>Ghi chú</span>", unsafe_allow_html=True)
+        h5.markdown("<span class='table-header'>Thao tác</span>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin: 8px 0;'>", unsafe_allow_html=True)
 
-    h1, h2, h3, h4, h5 = st.columns([1, 3, 3, 3, 2])
-    h1.markdown("**STT**")
-    h2.markdown("**Mô tả WEB**")
-    h3.markdown("**Links truy cập**")
-    h4.markdown("**Ghi chú**")
-    h5.markdown("<span style='color: #4CAF50; font-weight: bold;'>Thao tác</span>", unsafe_allow_html=True)
-    st.markdown("<hr style='margin: 5px 0 15px 0;'>", unsafe_allow_html=True)
+        # Dữ liệu
+        df_web = st.session_state.web_tools_df
+        for idx, row in df_web.iterrows():
+            c1, c2, c3, c4, c5 = st.columns([0.7, 3, 3, 2.5, 1.5], vertical_alignment="center")
+            c1.markdown(f"**{row['STT']}**")
+            c2.write(row["Mô tả WEB"])
+            c3.markdown(render_links_cell(row["Link 1"], row["Link 2"], row["Link 3"]))
+            c4.write(row["Ghi chú"])
+            
+            btn_edit, btn_del = c5.columns(2)
+            if btn_edit.button("✏️", key=f"ew_{idx}", help="Chỉnh sửa"):
+                edit_web_dialog(idx)
+            if btn_del.button("🗑️", key=f"dw_{idx}", help="Xóa"):
+                st.session_state.web_tools_df = reindex_df(df_web.drop(idx))
+                st.rerun()
+            st.markdown("<hr style='margin: 4px 0; border-top: 1px dashed #ddd;'>", unsafe_allow_html=True)
 
-    df_web = st.session_state.web_tools_df
-    for idx, row in df_web.iterrows():
-        c1, c2, c3, c4, c5 = st.columns([1, 3, 3, 3, 2])
-        c1.write(f"**{row['STT']}**")
-        c2.write(row["Mô tả WEB"])
-        c3.markdown(render_links_cell(row["Link 1"], row["Link 2"], row["Link 3"]))
-        c4.write(row["Ghi chú"])
-        
-        btn_edit, btn_del = c5.columns(2)
-        if btn_edit.button("✏️", key=f"edit_w_{idx}"):
-            edit_web_dialog(idx)
-        if btn_del.button("🗑️", key=f"del_w_{idx}"):
-            st.session_state.web_tools_df = reindex_df(df_web.drop(idx))
-            st.rerun()
-
-    st.markdown("---")
-    st.subheader("📊 Xuất / Nhập Excel WEBsites_CV")
-    col_w1, col_w2 = st.columns(2)
-    with col_w1:
-        if st.button("📥 Xuất toàn bộ Excel WEBsites_CV", type="primary", use_container_width=True):
-            try:
-                out_path_web = os.path.join(EXCEL_DIR, f"1 DS WEBsites_CV out_{DATE_STR}.xlsx")
-                out_df = reindex_df(st.session_state.web_tools_df)
-                with pd.ExcelWriter(out_path_web, engine='openpyxl') as writer:
-                    out_df.to_excel(writer, sheet_name="WEBSITES", index=False)
-                    auto_fit_columns(writer.book)
-                st.balloons()
-                st.success(f"Đã xuất file thành công tại:\n`{out_path_web}`")
-            except Exception as e:
-                st.error(f"Lỗi: {e}")
-
-    with col_w2:
-        up_w = st.file_uploader("Nhập file Excel WEBsites để cập nhật:", type=["xlsx", "xls"], key="up_w")
-        if up_w is not None:
-            if st.button("🚀 Tiến hành cập nhật WEBsites từ File", type="primary", use_container_width=True):
+    # Nút Xuất / Nhập thu gọn
+    with st.expander("⚙️ Quản lý Nhập / Xuất Excel (WEBsites)", expanded=False):
+        col_w1, col_w2 = st.columns(2)
+        with col_w1:
+            st.markdown("#### Xuất dữ liệu")
+            if st.button("📥 Xuất toàn bộ ra Excel", type="primary", use_container_width=True):
+                try:
+                    out_path = os.path.join(EXCEL_DIR, f"1 DS WEBsites_CV out_{DATE_STR}.xlsx")
+                    out_df = reindex_df(st.session_state.web_tools_df)
+                    with pd.ExcelWriter(out_path, engine='openpyxl') as writer:
+                        out_df.to_excel(writer, sheet_name="WEBSITES", index=False)
+                        auto_fit_columns(writer.book)
+                    st.success(f"Đã xuất thành công: {out_path}")
+                except Exception as e:
+                    st.error(f"Lỗi: {e}")
+        with col_w2:
+            st.markdown("#### Nhập dữ liệu")
+            up_w = st.file_uploader("Chọn file Excel:", type=["xlsx", "xls"], key="up_w", label_visibility="collapsed")
+            if up_w and st.button("🚀 Cập nhật từ File", type="primary", use_container_width=True):
                 try:
                     df_u = pd.read_excel(up_w)
                     st.session_state.web_tools_df = reindex_df(df_u)
-                    st.balloons()
                     st.toast("🎉 Đã cập nhật thành công!", icon="✅")
                     st.rerun()
                 except Exception as e:
                     st.error(f"Lỗi: {e}")
 
 # ==========================================
-# 2. DM QL Files_CV (Tên file xuất: 2 DM QL Files_CV_[Mảng]_out_YYYYMMDD.xlsx)
+# 2. DM QL Files_CV
 # ==========================================
 elif main_menu == "2 📋 DM QL Files_CV":
-    selected_cat = st.sidebar.radio("Chọn mảng công việc:", CATEGORIES)
-    st.subheader(f"📂 Quản Lý Hồ Sơ: {selected_cat}")
+    selected_cat = st.selectbox("📌 Chọn Mảng Công Việc:", CATEGORIES)
+    
+    col_title, col_action = st.columns([7, 3])
+    col_title.subheader(f"📂 Hồ Sơ: {selected_cat}")
+    with col_action:
+        if st.button("➕ Thêm Hồ Sơ Mới", type="primary", use_container_width=True):
+            add_file_dialog(selected_cat)
 
-    if st.button(f"➕ Thêm mới Hồ Sơ ({selected_cat})", type="primary"):
-        add_file_dialog(selected_cat)
+    with st.container(border=True):
+        h1, h2, h3, h4, h5 = st.columns([0.7, 3.5, 3, 2.5, 1.5])
+        h1.markdown("<span class='table-header'>STT</span>", unsafe_allow_html=True)
+        h2.markdown("<span class='table-header'>Thư mục / Hồ sơ</span>", unsafe_allow_html=True)
+        h3.markdown("<span class='table-header'>Links xem</span>", unsafe_allow_html=True)
+        h4.markdown("<span class='table-header'>Ghi chú</span>", unsafe_allow_html=True)
+        h5.markdown("<span class='table-header'>Thao tác</span>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin: 8px 0;'>", unsafe_allow_html=True)
 
-    st.markdown("<br>", unsafe_allow_html=True)
+        df_cat = st.session_state.data_store[selected_cat]
+        for idx, row in df_cat.iterrows():
+            c1, c2, c3, c4, c5 = st.columns([0.7, 3.5, 3, 2.5, 1.5], vertical_alignment="center")
+            c1.markdown(f"**{row['STT']}**")
+            c2.write(row["Thư mục / Hồ sơ"])
+            c3.markdown(render_links_cell(row["Link 1"], row["Link 2"], row["Link 3"]))
+            c4.write(row["Ghi chú"])
+            
+            btn_e, btn_d = c5.columns(2)
+            if btn_e.button("✏️", key=f"eq_{idx}"):
+                edit_file_dialog(selected_cat, idx)
+            if btn_d.button("🗑️", key=f"dq_{idx}"):
+                st.session_state.data_store[selected_cat] = reindex_df(df_cat.drop(idx))
+                st.rerun()
+            st.markdown("<hr style='margin: 4px 0; border-top: 1px dashed #ddd;'>", unsafe_allow_html=True)
 
-    q1, q2, q3, q4, q5 = st.columns([1, 4, 3, 3, 2])
-    q1.markdown("**STT**")
-    q2.markdown("**Thư mục / Hồ sơ**")
-    q3.markdown("**Links xem**")
-    q4.markdown("**Ghi chú**")
-    q5.markdown("<span style='color: #4CAF50; font-weight: bold;'>Thao tác</span>", unsafe_allow_html=True)
-    st.markdown("<hr style='margin: 5px 0 15px 0;'>", unsafe_allow_html=True)
-
-    df_cat = st.session_state.data_store[selected_cat]
-    for idx, row in df_cat.iterrows():
-        c1, c2, c3, c4, c5 = st.columns([1, 4, 3, 3, 2])
-        c1.write(f"**{row['STT']}**")
-        c2.write(row["Thư mục / Hồ sơ"])
-        c3.markdown(render_links_cell(row["Link 1"], row["Link 2"], row["Link 3"]))
-        c4.write(row["Ghi chú"])
-        
-        btn_e, btn_d = c5.columns(2)
-        if btn_e.button("✏️", key=f"e_q_{idx}"):
-            edit_file_dialog(selected_cat, idx)
-        if btn_d.button("🗑️", key=f"d_q_{idx}"):
-            st.session_state.data_store[selected_cat] = reindex_df(df_cat.drop(idx))
-            st.rerun()
-
-    st.markdown("---")
-    st.subheader(f"📊 Xuất / Nhập Excel Hồ Sơ: {selected_cat}")
-    col_q1, col_q2 = st.columns(2)
-    with col_q1:
-        if st.button(f"📥 Xuất Excel mục {selected_cat}", type="primary", use_container_width=True):
-            try:
-                safe_name_cat = selected_cat.replace(" ", "_")
-                out_path_cat = os.path.join(EXCEL_DIR, f"2 DM QL Files_CV_{safe_name_cat}_out_{DATE_STR}.xlsx")
-                out_df = reindex_df(st.session_state.data_store[selected_cat])
-                with pd.ExcelWriter(out_path_cat, engine='openpyxl') as writer:
-                    out_df.to_excel(writer, sheet_name="HOSO", index=False)
-                    auto_fit_columns(writer.book)
-                st.balloons()
-                st.success(f"Đã xuất file thành công tại:\n`{out_path_cat}`")
-            except Exception as e:
-                st.error(f"Lỗi: {e}")
-
-    with col_q2:
-        up_q = st.file_uploader(f"Nhập file Excel cho mục {selected_cat}:", type=["xlsx", "xls"], key=f"up_q_{selected_cat}")
-        if up_q is not None:
-            if st.button(f"🚀 Tiến hành cập nhật Hồ Sơ {selected_cat}", type="primary", use_container_width=True):
+    with st.expander(f"⚙️ Quản lý Nhập / Xuất Excel ({selected_cat})", expanded=False):
+        col_q1, col_q2 = st.columns(2)
+        with col_q1:
+            st.markdown("#### Xuất dữ liệu")
+            if st.button("📥 Xuất Excel mục này", type="primary", use_container_width=True):
+                try:
+                    safe_name = selected_cat.replace(" ", "_")
+                    out_path = os.path.join(EXCEL_DIR, f"2 DM QL Files_CV_{safe_name}_out_{DATE_STR}.xlsx")
+                    out_df = reindex_df(st.session_state.data_store[selected_cat])
+                    with pd.ExcelWriter(out_path, engine='openpyxl') as writer:
+                        out_df.to_excel(writer, sheet_name="HOSO", index=False)
+                        auto_fit_columns(writer.book)
+                    st.success(f"Đã xuất file: {out_path}")
+                except Exception as e:
+                    st.error(f"Lỗi: {e}")
+        with col_q2:
+            st.markdown("#### Nhập dữ liệu")
+            up_q = st.file_uploader("Chọn file Excel:", type=["xlsx", "xls"], key=f"up_q_{selected_cat}", label_visibility="collapsed")
+            if up_q and st.button("🚀 Cập nhật từ File", type="primary", use_container_width=True):
                 try:
                     df_qu = pd.read_excel(up_q)
                     st.session_state.data_store[selected_cat] = reindex_df(df_qu)
-                    st.balloons()
+                    st.toast("🎉 Cập nhật thành công!", icon="✅")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Lỗi: {e}")
+
+# ==========================================
+# 3. DS BCdinhky_CV
+# ==========================================
+elif main_menu == "3 📊 DS BCdinhky_CV":
+    col_title, col_action = st.columns([7, 3])
+    col_title.subheader("📊 Quản Lý Báo Cáo Định Kỳ")
+    with col_action:
+        if st.button("➕ Thêm Báo Cáo Mới", type="primary", use_container_width=True):
+            add_bc_dialog()
+
+    with st.container(border=True):
+        # Tỷ lệ cột cho bảng Báo cáo (cần nhiều chi tiết hơn)
+        b1, b2, b3, b4, b5, b6, b7 = st.columns([0.6, 2.5, 1.5, 1.5, 2, 2, 1.2])
+        b1.markdown("<span class='table-header'>STT</span>", unsafe_allow_html=True)
+        b2.markdown("<span class='table-header'>Tên Báo Cáo / CV</span>", unsafe_allow_html=True)
+        b3.markdown("<span class='table-header'>Tần suất</span>", unsafe_allow_html=True)
+        b4.markdown("<span class='table-header'>Đơn vị nhận</span>", unsafe_allow_html=True)
+        b5.markdown("<span class='table-header'>Links biểu mẫu</span>", unsafe_allow_html=True)
+        b6.markdown("<span class='table-header'>Ghi chú</span>", unsafe_allow_html=True)
+        b7.markdown("<span class='table-header'>Thao tác</span>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin: 8px 0;'>", unsafe_allow_html=True)
+
+        df_bc = st.session_state.bc_dinhky_df
+        for idx, row in df_bc.iterrows():
+            c1, c2, c3, c4, c5, c6, c7 = st.columns([0.6, 2.5, 1.5, 1.5, 2, 2, 1.2], vertical_alignment="center")
+            c1.markdown(f"**{row['STT']}**")
+            c2.write(str(row.get("Tên Báo Cáo / Công Việc", "")))
+            c3.write(str(row.get("Tần suất", "")))
+            c4.write(str(row.get("Đơn vị nhận", "")))
+            c5.markdown(render_links_cell(row.get("Link 1", ""), row.get("Link 2", ""), row.get("Link 3", "")))
+            c6.write(str(row.get("Ghi chú", "")))
+            
+            btn_e, btn_d = c7.columns(2)
+            if btn_e.button("✏️", key=f"ebc_{idx}"):
+                edit_bc_dialog(idx)
+            if btn_d.button("🗑️", key=f"dbc_{idx}"):
+                st.session_state.bc_dinhky_df = reindex_df(df_bc.drop(idx))
+                st.rerun()
+            st.markdown("<hr style='margin: 4px 0; border-top: 1px dashed #ddd;'>", unsafe_allow_html=True)
+
+    with st.expander("⚙️ Quản lý Nhập / Xuất Excel (Báo Cáo)", expanded=False):
+        col_b1, col_b2 = st.columns(2)
+        with col_b1:
+            st.markdown("#### Xuất dữ liệu")
+            if st.button("📥 Xuất toàn bộ ra Excel", type="primary", use_container_width=True):
+                try:
+                    out_path = os.path.join(EXCEL_DIR, f"3 DS BCdinhky_CV out_{DATE_STR}.xlsx")
+                    out_df = reindex_df(st.session_state.bc_dinhky_df)
+                    with pd.ExcelWriter(out_path, engine='openpyxl') as writer:
+                        out_df.to_excel(writer, sheet_name="BAOCAO", index=False)
+                        auto_fit_columns(writer.book)
+                    st.success(f"Đã xuất thành công: {out_path}")
+                except Exception as e:
+                    st.error(f"Lỗi: {e}")
+        with col_b2:
+            st.markdown("#### Nhập dữ liệu")
+            up_b = st.file_uploader("Chọn file Excel:", type=["xlsx", "xls"], key="up_b", label_visibility="collapsed")
+            if up_b and st.button("🚀 Cập nhật từ File", type="primary", use_container_width=True):
+                try:
+                    df_raw = pd.read_excel(up_b)
+                    st.session_state.bc_dinhky_df = reindex_df(df_raw)
                     st.toast("🎉 Đã cập nhật thành công!", icon="✅")
                     st.rerun()
                 except Exception as e:
                     st.error(f"Lỗi: {e}")
 
 # ==========================================
-# 3. DS BCdinhky_CV (Tên file xuất: 3 DS BCdinhky_CV out_YYYYMMDD.xlsx)
-# ==========================================
-elif main_menu == "3 📊 DS BCdinhky_CV":
-    st.subheader("📊 Quản Lý Báo Cáo Định Kỳ")
-    
-    if st.button("➕ Thêm mới Báo Cáo / Công Việc", type="primary"):
-        add_bc_dialog()
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    b1, b2, b3, b4, b5, b6, b7 = st.columns([1, 3, 2, 2, 3, 2, 2])
-    b1.markdown("**STT**")
-    b2.markdown("**Tên Báo Cáo / Công Việc**")
-    b3.markdown("**Tần suất**")
-    b4.markdown("**Đơn vị nhận**")
-    b5.markdown("**Links biểu mẫu**")
-    b6.markdown("**Ghi chú**")
-    b7.markdown("<span style='color: #4CAF50; font-weight: bold;'>Thao tác</span>", unsafe_allow_html=True)
-    st.markdown("<hr style='margin: 5px 0 15px 0;'>", unsafe_allow_html=True)
-
-    df_bc = st.session_state.bc_dinhky_df
-    for idx, row in df_bc.iterrows():
-        c1, c2, c3, c4, c5, c6, c7 = st.columns([1, 3, 2, 2, 3, 2, 2])
-        c1.write(f"**{row['STT']}**")
-        c2.write(str(row.get("Tên Báo Cáo / Công Việc", "")))
-        c3.write(str(row.get("Tần suất", "")))
-        c4.write(str(row.get("Đơn vị nhận", "")))
-        c5.markdown(render_links_cell(row.get("Link 1", ""), row.get("Link 2", ""), row.get("Link 3", "")))
-        c6.write(str(row.get("Ghi chú", "")))
-        
-        btn_e, btn_d = c7.columns(2)
-        if btn_e.button("✏️", key=f"e_bc_{idx}"):
-            edit_bc_dialog(idx)
-        if btn_d.button("🗑️", key=f"d_bc_{idx}"):
-            st.session_state.bc_dinhky_df = reindex_df(df_bc.drop(idx))
-            st.rerun()
-
-    st.markdown("---")
-    st.subheader("📊 Xuất / Nhập Excel Báo Cáo Định Kỳ")
-    col_b1, col_b2 = st.columns(2)
-    with col_b1:
-        if st.button("📥 Xuất toàn bộ Excel Báo Cáo Định Kỳ", type="primary", use_container_width=True):
-            try:
-                out_path_bc = os.path.join(EXCEL_DIR, f"3 DS BCdinhky_CV out_{DATE_STR}.xlsx")
-                out_df = reindex_df(st.session_state.bc_dinhky_df)
-                with pd.ExcelWriter(out_path_bc, engine='openpyxl') as writer:
-                    out_df.to_excel(writer, sheet_name="BAOCAO", index=False)
-                    auto_fit_columns(writer.book)
-                st.balloons()
-                st.success(f"Đã xuất file thành công tại:\n`{out_path_bc}`")
-            except Exception as e:
-                st.error(f"Lỗi: {e}")
-
-    with col_b2:
-        up_b = st.file_uploader("Nhập file Excel Báo cáo định kỳ để cập nhật:", type=["xlsx", "xls"], key="up_b")
-        if up_b is not None:
-            if st.button("🚀 Tiến hành cập nhật Báo Cáo Định Kỳ từ File", type="primary", use_container_width=True):
-                try:
-                    df_raw = pd.read_excel(up_b)
-                    st.session_state.bc_dinhky_df = reindex_df(df_raw)
-                    st.balloons()
-                    st.toast("🎉 Đã cập nhật thành công!", icon="✅")
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Lỗi đọc file Excel: {e}")
-
-# ==========================================
-# 4. DS Gsheet_CV (Tên file xuất: 4 DS Gsheet_CV out_YYYYMMDD.xlsx)
+# 4. DS Gsheet_CV
 # ==========================================
 elif main_menu == "4 🟢 DS Gsheet_CV":
-    st.subheader("🟢 Bảng Danh Sách Gsheet_CV")
-    
-    col_g1, col_g2 = st.columns([2, 1])
-    with col_g1:
-        if st.button("➕ Thêm mới Gsheet_CV", type="primary"):
+    col_title, col_action1, col_action2 = st.columns([5, 2, 2])
+    col_title.subheader("🟢 Danh Sách Gsheet Hỗ Trợ CV")
+    with col_action1:
+        if st.button("➕ Thêm mới Gsheet", type="primary", use_container_width=True):
             add_gsheet_dialog()
-    with col_g2:
-        if st.button("🔄 Khôi phục Gsheet mặc định"):
+    with col_action2:
+        if st.button("🔄 Khôi phục mặc định", use_container_width=True):
             st.session_state.gsheet_df = reindex_df(pd.DataFrame([
                 {"Mô tả Gsheet": "Bảng Theo Dõi Công Việc Theo Tuần", "Link 1": "https://docs.google.com/spreadsheets", "Link 2": "", "Link 3": "", "Ghi chú": "Dùng chung phòng An Toàn"},
                 {"Mô tả Gsheet": "Theo Dõi Kiến Nghị Kiểm Tra", "Link 1": "https://docs.google.com/spreadsheets", "Link 2": "", "Link 3": "", "Ghi chú": "Cập nhật trực tuyến"}
             ]))
-            st.success("Đã khôi phục Gsheet mặc định!")
             st.rerun()
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    with st.container(border=True):
+        gh1, gh2, gh3, gh4, gh5 = st.columns([0.7, 3, 3, 2.5, 1.5])
+        gh1.markdown("<span class='table-header'>STT</span>", unsafe_allow_html=True)
+        gh2.markdown("<span class='table-header'>Mô tả Gsheet</span>", unsafe_allow_html=True)
+        gh3.markdown("<span class='table-header'>Links truy cập</span>", unsafe_allow_html=True)
+        gh4.markdown("<span class='table-header'>Ghi chú</span>", unsafe_allow_html=True)
+        gh5.markdown("<span class='table-header'>Thao tác</span>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin: 8px 0;'>", unsafe_allow_html=True)
 
-    gh1, gh2, gh3, gh4, gh5 = st.columns([1, 3, 3, 3, 2])
-    gh1.markdown("**STT**")
-    gh2.markdown("**Mô tả Gsheet**")
-    gh3.markdown("**Links truy cập**")
-    gh4.markdown("**Ghi chú**")
-    gh5.markdown("<span style='color: #4CAF50; font-weight: bold;'>Thao tác</span>", unsafe_allow_html=True)
-    st.markdown("<hr style='margin: 5px 0 15px 0;'>", unsafe_allow_html=True)
+        df_gsheet = st.session_state.gsheet_df
+        for idx, row in df_gsheet.iterrows():
+            c1, c2, c3, c4, c5 = st.columns([0.7, 3, 3, 2.5, 1.5], vertical_alignment="center")
+            c1.markdown(f"**{row['STT']}**")
+            c2.write(row["Mô tả Gsheet"])
+            c3.markdown(render_links_cell(row["Link 1"], row["Link 2"], row["Link 3"]))
+            c4.write(row["Ghi chú"])
+            
+            btn_edit, btn_del = c5.columns(2)
+            if btn_edit.button("✏️", key=f"eg_{idx}"):
+                edit_gsheet_dialog(idx)
+            if btn_del.button("🗑️", key=f"dg_{idx}"):
+                st.session_state.gsheet_df = reindex_df(df_gsheet.drop(idx))
+                st.rerun()
+            st.markdown("<hr style='margin: 4px 0; border-top: 1px dashed #ddd;'>", unsafe_allow_html=True)
 
-    df_gsheet = st.session_state.gsheet_df
-    for idx, row in df_gsheet.iterrows():
-        c1, c2, c3, c4, c5 = st.columns([1, 3, 3, 3, 2])
-        c1.write(f"**{row['STT']}**")
-        c2.write(row["Mô tả Gsheet"])
-        c3.markdown(render_links_cell(row["Link 1"], row["Link 2"], row["Link 3"]))
-        c4.write(row["Ghi chú"])
-        
-        btn_edit, btn_del = c5.columns(2)
-        if btn_edit.button("✏️", key=f"edit_g_{idx}"):
-            edit_gsheet_dialog(idx)
-        if btn_del.button("🗑️", key=f"del_g_{idx}"):
-            st.session_state.gsheet_df = reindex_df(df_gsheet.drop(idx))
-            st.rerun()
-
-    st.markdown("---")
-    st.subheader("📊 Xuất / Nhập Excel Gsheet_CV")
-    col_gx1, col_gx2 = st.columns(2)
-    with col_gx1:
-        if st.button("📥 Xuất toàn bộ Excel Gsheet_CV", type="primary", use_container_width=True):
-            try:
-                out_path_gsheet = os.path.join(EXCEL_DIR, f"4 DS Gsheet_CV out_{DATE_STR}.xlsx")
-                out_df = reindex_df(st.session_state.gsheet_df)
-                with pd.ExcelWriter(out_path_gsheet, engine='openpyxl') as writer:
-                    out_df.to_excel(writer, sheet_name="GSHEETS", index=False)
-                    auto_fit_columns(writer.book)
-                st.balloons()
-                st.success(f"Đã xuất file thành công tại:\n`{out_path_gsheet}`")
-            except Exception as e:
-                st.error(f"Lỗi: {e}")
-
-    with col_gx2:
-        up_g = st.file_uploader("Nhập file Excel Gsheets để cập nhật:", type=["xlsx", "xls"], key="up_g")
-        if up_g is not None:
-            if st.button("🚀 Tiến hành cập nhật Gsheets từ File", type="primary", use_container_width=True):
+    with st.expander("⚙️ Quản lý Nhập / Xuất Excel (Gsheet)", expanded=False):
+        col_gx1, col_gx2 = st.columns(2)
+        with col_gx1:
+            st.markdown("#### Xuất dữ liệu")
+            if st.button("📥 Xuất toàn bộ ra Excel", type="primary", use_container_width=True):
+                try:
+                    out_path = os.path.join(EXCEL_DIR, f"4 DS Gsheet_CV out_{DATE_STR}.xlsx")
+                    out_df = reindex_df(st.session_state.gsheet_df)
+                    with pd.ExcelWriter(out_path, engine='openpyxl') as writer:
+                        out_df.to_excel(writer, sheet_name="GSHEETS", index=False)
+                        auto_fit_columns(writer.book)
+                    st.success(f"Đã xuất thành công: {out_path}")
+                except Exception as e:
+                    st.error(f"Lỗi: {e}")
+        with col_gx2:
+            st.markdown("#### Nhập dữ liệu")
+            up_g = st.file_uploader("Chọn file Excel:", type=["xlsx", "xls"], key="up_g", label_visibility="collapsed")
+            if up_g and st.button("🚀 Cập nhật từ File", type="primary", use_container_width=True):
                 try:
                     df_gu = pd.read_excel(up_g)
                     st.session_state.gsheet_df = reindex_df(df_gu)
-                    st.balloons()
-                    st.toast("🎉 Đã cập nhật danh sách Gsheet thành công!", icon="✅")
+                    st.toast("🎉 Đã cập nhật thành công!", icon="✅")
                     st.rerun()
                 except Exception as e:
                     st.error(f"Lỗi: {e}")
