@@ -145,7 +145,7 @@ def admin_login_dialog():
     st.write("Vui lòng nhập mật khẩu để kích hoạt các tính năng thêm/sửa/xóa.")
     pwd = st.text_input("Mật khẩu:", type="password")
     if st.button("Xác nhận", type="primary", use_container_width=True):
-        if pwd == "admin123":  # Thay đổi mật khẩu tại đây
+        if pwd == "123456":  # Thay đổi mật khẩu tại đây
             st.session_state.is_admin = True
             st.success("Đăng nhập thành công!")
             st.rerun()
