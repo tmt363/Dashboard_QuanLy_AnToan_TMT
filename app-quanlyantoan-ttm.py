@@ -32,7 +32,7 @@ if "theme_mode" not in st.session_state:
   st.session_state.theme_mode = "Dark"
 
 # ==========================================
-# 2. BỘ MÃ CSS TẠO NÚT SLIDE 1 VÀ SLIDE 2 TRƯỢT NGANG
+# 2. BỘ MÃ CSS GIỮ NÚT SLIDE 1 & SLIDE 2 LUÔN HIỆN CỐ ĐỊNH
 # ==========================================
 is_dark = st.session_state.theme_mode == "Dark"
 
@@ -73,11 +73,22 @@ header[data-testid="stHeader"] {{
 }}
 
 /* ==================================================== */
-/* 🔵 NÚT SLIDE 1 ( << - ĐÓNG SIDEBAR )                  */
+/* 🔵 ÉP CẢ 2 NÚT SLIDE LUÔN LUÔN HIỂN THỊ (KHÔNG ẨN)     */
 /* ==================================================== */
+[data-testid="stSidebarCollapseButton"],
+[data-testid="stSidebarCollapsedControl"] {{
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: flex !important;
+    z-index: 999999 !important;
+}}
+
+/* 🔵 NÚT SLIDE 1 ( << - ĐÓNG SIDEBAR ) */
 [data-testid="stSidebarCollapseButton"] button,
 button[aria-label="Close sidebar"],
 button[aria-label="Collapse sidebar"] {{
+    opacity: 1 !important;
+    visibility: visible !important;
     background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
     color: #FFFFFF !important;
     border-radius: 30px !important;
@@ -86,7 +97,7 @@ button[aria-label="Collapse sidebar"] {{
     padding: 6px 28px !important;
     height: 38px !important;
     min-width: 90px !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -101,21 +112,20 @@ button[aria-label="Collapse sidebar"] {{
     height: 20px !important;
 }}
 
-/* Hiệu ứng TRƯỢT NGANG SANG TRÁI khi di chuột nút Slide 1 */
+/* Hiệu ứng trượt ngang sang trái khi di chuột */
 [data-testid="stSidebarCollapseButton"] button:hover {{
     transform: translateX(-8px) scale(1.05) !important;
     box-shadow: 0 0 25px rgba(0, 198, 255, 1) !important;
 }}
 
-/* ==================================================== */
-/* 🔵 NÚT SLIDE 2 ( >> - MỞ SIDEBAR )                   */
-/* ==================================================== */
-[data-testid="stSidebarCollapsedControl"],
+/* 🔵 NÚT SLIDE 2 ( >> - MỞ SIDEBAR ) */
 [data-testid="stSidebarCollapsedControl"] button,
 button[aria-label="Expand sidebar"],
 button[aria-label="Open sidebar"],
 header button[aria-label*="sidebar" i],
 header button[aria-label*="Sidebar" i] {{
+    opacity: 1 !important;
+    visibility: visible !important;
     background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
     color: #FFFFFF !important;
     border-radius: 30px !important;
@@ -124,7 +134,7 @@ header button[aria-label*="Sidebar" i] {{
     padding: 6px 28px !important;
     height: 38px !important;
     min-width: 90px !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -141,7 +151,7 @@ header button[aria-label*="sidebar" i] svg {{
     height: 20px !important;
 }}
 
-/* Hiệu ứng TRƯỢT NGANG SANG PHẢI khi di chuột nút Slide 2 */
+/* Hiệu ứng trượt ngang sang phải khi di chuột */
 [data-testid="stSidebarCollapsedControl"] button:hover,
 header button[aria-label*="sidebar" i]:hover {{
     transform: translateX(8px) scale(1.05) !important;
