@@ -10,7 +10,7 @@ import streamlit as st
 # ==========================================
 st.set_page_config(
     page_title="Quản Lý An Toàn TTM",
-    page_icon="🛡️",
+    page_icon="🛡️️",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -28,12 +28,24 @@ if "dark_mode" not in st.session_state:
 if "excel_dir" not in st.session_state:
   st.session_state.excel_dir = DEFAULT_EXCEL_DIR
 if "lan_hieuchinh" not in st.session_state:
-  st.session_state.lan_hieuchinh = "001"  # Số lần hiệu chỉnh
+  st.session_state.lan_hieuchinh = "001"
+if "main_menu" not in st.session_state:
+  st.session_state.main_menu = "1 🌐 DS WEBsites_CV"
 
 # Xử lý CSS Giao diện
 css_style = """
 <style>
 .block-container { padding-top: 2.5rem !important; padding-bottom: 1rem !important; }
+
+/* Tùy chỉnh nút Menu ở Sidebar chuyên nghiệp */
+[data-testid="stSidebar"] div.stButton > button {
+    text-align: left !important;
+    justify-content: flex-start !important;
+    padding: 10px 14px !important;
+    font-weight: 500 !important;
+    border-radius: 8px !important;
+    margin-bottom: 2px !important;
+}
 </style>
 """
 if st.session_state.get("dark_mode"):
@@ -409,7 +421,7 @@ def add_web_dialog():
       st.warning("Vui lòng nhập mô tả WEB!")
 
 
-@st.dialog("✏️️ Chỉnh sửa Website_CV")
+@st.dialog("✏️ Chỉnh sửa Website_CV")
 def edit_web_dialog(idx):
   df = st.session_state.web_tools_df
   row = df.loc[idx]
@@ -597,19 +609,29 @@ with st.sidebar:
   st.divider()
 
   # ----------------------------------------
-  # B. PHÂN VÙNG LÀM VIỆC (ĐƯA LÊN TRÊN)
+  # B. PHÂN VÙNG LÀM VIỆC (NÚT BẤM DẠNG MENU)
   # ----------------------------------------
   st.header("📂 PHÂN VÙNG LÀM VIỆC")
-  main_menu = st.radio(
-      "Điều hướng ứng dụng:",
-      [
-          "1 🌐 DS WEBsites_CV",
-          "2 📋 DM QL Files_CV",
-          "3 📊 DS BCdinhky_CV",
-          "4 🟢 DS Gsheet_CV",
-      ],
-      label_visibility="collapsed",
-  )
+
+  menu_options = [
+      "1 🌐 DS WEBsites_CV",
+      "2 📋 DM QL Files_CV",
+      "3 📊 DS BCdinhky_CV",
+      "4 🟢 DS Gsheet_CV",
+  ]
+
+  for item in menu_options:
+    # Nếu là mục đang chọn thì hiển thị nổi bật dạng Primary
+    is_active = st.session_state.main_menu == item
+    btn_type = "primary" if is_active else "secondary"
+
+    if st.button(
+        item, key=f"nav_btn_{item}", use_container_width=True, type=btn_type
+    ):
+      st.session_state.main_menu = item
+      st.rerun()
+
+  main_menu = st.session_state.main_menu
 
   # Cấu hình Thư mục dành cho ADMIN
   if st.session_state.get("is_admin"):
@@ -643,7 +665,7 @@ with st.sidebar:
   st.divider()
 
   # ----------------------------------------
-  # C. CỤM NGƯỜI DÙNG & TIỆN ÍCH (XUỐNG DƯỚI)
+  # C. CỤM NGƯỜI DÙNG & TIỆN ÍCH (GÓC DƯỚI)
   # ----------------------------------------
   st.markdown("### 👤 Người dùng: `ttm`")
   if st.session_state.get("is_admin"):
