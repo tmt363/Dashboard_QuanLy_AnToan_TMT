@@ -37,7 +37,7 @@ css_style = """
 <style>
 /* Khoảng cách chính tránh che Header */
 .block-container { 
-    padding-top: 3.5rem !important; 
+    padding-top: 3.8rem !important; 
     padding-bottom: 1rem !important; 
 }
 
@@ -48,57 +48,88 @@ css_style = """
 }
 
 /* ---------------------------------------------------- */
-/* 🔥 1. NÚT SLIDE BAR (MỞ/TẮT SIDEBAR >>) DẠNG IPHONE  */
+/* 🌟 1. CẤU HÌNH HEADER VÀ BỘ NÚT CÔNG CỤ TẠI HEADER   */
+/* ---------------------------------------------------- */
+header[data-testid="stHeader"] {
+    background: rgba(14, 17, 23, 0.85) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    z-index: 99990 !important;
+}
+
+/* Các nút công cụ góc phải (Share, Star, Edit, GitHub, Menu) */
+header[data-testid="stHeader"] button,
+[data-testid="stHeaderActionElements"] button,
+[data-testid="stToolbar"] button {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(66, 165, 245, 0.3) !important;
+    border-radius: 8px !important;
+    color: #E0E6ED !important;
+    padding: 4px 10px !important;
+    margin: 0 2px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+header[data-testid="stHeader"] button:hover,
+[data-testid="stHeaderActionElements"] button:hover,
+[data-testid="stToolbar"] button:hover {
+    background: rgba(30, 136, 229, 0.25) !important;
+    border-color: #42A5F5 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 0 12px rgba(66, 165, 245, 0.5) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* ---------------------------------------------------- */
+/* 🔥 2. NÚT SLIDE BAR MỞ SIDEBAR ( >> ) PHONG CÁCH IOS  */
 /* ---------------------------------------------------- */
 [data-testid="stSidebarCollapsedControl"] {
     position: fixed !important;
-    top: 15px !important;
-    left: 15px !important;
+    top: 10px !important;
+    left: 12px !important;
     z-index: 99999 !important;
     display: flex !important;
     align-items: center !important;
-    background: rgba(22, 27, 34, 0.8) !important;
+    background: rgba(22, 27, 34, 0.85) !important;
     backdrop-filter: blur(12px) !important;
     -webkit-backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(66, 165, 245, 0.4) !important;
+    border: 1px solid rgba(66, 165, 245, 0.5) !important;
     border-radius: 30px !important;
-    padding: 4px 16px 4px 6px !important;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 12px rgba(30, 136, 229, 0.2) !important;
+    padding: 3px 14px 3px 5px !important;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4), 0 0 12px rgba(30, 136, 229, 0.3) !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     cursor: pointer !important;
 }
 
-/* Hiệu ứng Hover rực sáng cho Nút Slide Bar */
 [data-testid="stSidebarCollapsedControl"]:hover {
     border-color: #42A5F5 !important;
-    background: rgba(30, 136, 229, 0.25) !important;
-    box-shadow: 0 8px 25px rgba(30, 136, 229, 0.5), 0 0 15px rgba(66, 165, 245, 0.4) !important;
+    background: rgba(30, 136, 229, 0.3) !important;
+    box-shadow: 0 8px 22px rgba(30, 136, 229, 0.6) !important;
     transform: translateY(-1px) scale(1.02) !important;
 }
 
-/* Nút icon tròn bên trong (Knob Slider) */
 [data-testid="stSidebarCollapsedControl"] button {
     background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%) !important;
     color: #FFFFFF !important;
     border-radius: 50% !important;
-    width: 32px !important;
-    height: 32px !important;
+    width: 28px !important;
+    height: 28px !important;
     border: none !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
     transition: transform 0.3s ease !important;
 }
 
 [data-testid="stSidebarCollapsedControl"]:hover button {
-    transform: translateX(4px) !important;
+    transform: translateX(3px) !important;
 }
 
-/* Dòng chữ vệt sáng TRƯỢT ĐỂ MỞ kiểu iOS */
 [data-testid="stSidebarCollapsedControl"]::after {
     content: "TRƯỢT ĐỂ MỞ ❯❯" !important;
-    font-size: 12px !important;
+    font-size: 11px !important;
     font-weight: 700 !important;
-    letter-spacing: 1.5px !important;
-    margin-left: 10px !important;
+    letter-spacing: 1.2px !important;
+    margin-left: 8px !important;
     background: linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0.2) 100%) !important;
     background-size: 200% auto !important;
     color: transparent !important;
@@ -114,7 +145,28 @@ css_style = """
 }
 
 /* ---------------------------------------------------- */
-/* 2. SIDEBAR THIẾT KẾ DARK GLASS                       */
+/* ⚡ 3. NÚT ĐÓNG SIDEBAR ( << ) BÊN TRONG SIDEBAR      */
+/* ---------------------------------------------------- */
+[data-testid="stSidebarCollapseButton"] button,
+button[aria-label="Close sidebar"],
+button[aria-label="Collapse sidebar"] {
+    background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%) !important;
+    color: #FFFFFF !important;
+    border-radius: 50% !important;
+    border: 1px solid #42A5F5 !important;
+    box-shadow: 0 0 10px rgba(30, 136, 229, 0.4) !important;
+    transition: all 0.3s ease !important;
+}
+
+[data-testid="stSidebarCollapseButton"] button:hover,
+button[aria-label="Close sidebar"]:hover,
+button[aria-label="Collapse sidebar"]:hover {
+    transform: scale(1.1) rotate(-90deg) !important;
+    box-shadow: 0 0 15px rgba(66, 165, 245, 0.8) !important;
+}
+
+/* ---------------------------------------------------- */
+/* 4. SIDEBAR THIẾT KẾ DARK GLASS                       */
 /* ---------------------------------------------------- */
 [data-testid="stSidebar"] {
     background-color: #12161F !important;
@@ -154,7 +206,7 @@ css_style = """
 }
 
 /* ---------------------------------------------------- */
-/* 🔥 3. NÚT TRƯỢT LINK (SLIDE BUTTONS) TRONG CỘT BẢNG  */
+/* 5. NÚT TRƯỢT LINK (SLIDE BUTTONS) TRONG CỘT BẢNG     */
 /* ---------------------------------------------------- */
 .slide-link-btn {
     display: inline-flex !important;
