@@ -27,6 +27,8 @@ if "dark_mode" not in st.session_state:
   st.session_state.dark_mode = False
 if "excel_dir" not in st.session_state:
   st.session_state.excel_dir = DEFAULT_EXCEL_DIR
+if "lan_hieuchinh" not in st.session_state:
+  st.session_state.lan_hieuchinh = "001"  # Số lần hiệu chỉnh
 
 # Xử lý CSS Giao diện
 css_style = """
@@ -48,6 +50,7 @@ st.markdown(css_style, unsafe_allow_html=True)
 # ==========================================
 # 2. BIẾN VÀ HÀM HỖ TRỢ
 # ==========================================
+TODAY_STR = datetime.now().strftime("%d/%m/%Y")
 DATE_STR = datetime.now().strftime("%Y%m%d")
 
 CATEGORIES = [
@@ -221,7 +224,7 @@ def generate_excel_download(df, sheet_name):
   return output.getvalue()
 
 
-# Hàm tạo Bảng chuẩn HTML Responsive (Tối ưu Vuốt trên điện thoại)
+# Bảng chuẩn HTML Responsive
 def create_responsive_table(df, main_col_name, extra_cols=None):
   if extra_cols is None:
     extra_cols = []
@@ -304,7 +307,7 @@ def create_responsive_table(df, main_col_name, extra_cols=None):
   return html
 
 
-# Khởi tạo dữ liệu
+# Khởi tạo dữ liệu session
 if "web_tools_df" not in st.session_state:
   st.session_state.web_tools_df = reindex_df(pd.DataFrame(DEFAULT_14_WEBS))
 if "data_store" not in st.session_state:
@@ -406,7 +409,7 @@ def add_web_dialog():
       st.warning("Vui lòng nhập mô tả WEB!")
 
 
-@st.dialog("✏️ Chỉnh sửa Website_CV")
+@st.dialog("✏️️ Chỉnh sửa Website_CV")
 def edit_web_dialog(idx):
   df = st.session_state.web_tools_df
   row = df.loc[idx]
@@ -583,41 +586,20 @@ def edit_bc_dialog(idx):
 # 4. SIDEBAR (THANH ĐIỀU HƯỚNG BÊN TRÁI)
 # ==========================================
 with st.sidebar:
+  # ----------------------------------------
+  # A. TIÊU ĐỀ VÀ PHIÊN BẢN HỆ THỐNG
+  # ----------------------------------------
   st.title("🛡️ Quản Lý An Toàn TTM")
-  st.caption("📌 Phiên bản hiệu chỉnh: 28/09/2026")
+  st.caption(
+      f"📌 Phiên bản hiệu chỉnh: {TODAY_STR} _ lần"
+      f" {st.session_state.lan_hieuchinh}"
+  )
   st.divider()
 
-  st.markdown("### 👤 Người dùng: `ttm`")
-
-  col_sb1, col_sb2 = st.columns(2)
-  with col_sb1:
-    if st.button("🚪 Đăng xuất", use_container_width=True):
-      st.info("Đã đăng xuất!")
-  with col_sb2:
-    if st.button("🧹 Xóa Cache", use_container_width=True):
-      st.cache_data.clear()
-      st.success("Đã xóa cache!")
-
-  # Chế độ Sáng/Tối
-  theme_label = "☀️ Sáng" if st.session_state.get("dark_mode") else "🌙 Tối"
-  if st.button(theme_label, use_container_width=True):
-    st.session_state.dark_mode = not st.session_state.dark_mode
-    st.rerun()
-
-  if st.session_state.get("is_admin"):
-    if st.button("🔓 Thoát chế độ Admin", use_container_width=True):
-      st.session_state.is_admin = False
-      st.rerun()
-  else:
-    if st.button("🔐 Đăng nhập Quản trị", use_container_width=True):
-      admin_login_dialog()
-
-  st.divider()
-
-  if st.session_state.get("is_admin"):
-    st.success("Quyền hiện tại: ADMIN")
-
-  st.header("📂 PHÂN MỤC CHÍNH")
+  # ----------------------------------------
+  # B. PHÂN VÙNG LÀM VIỆC (ĐƯA LÊN TRÊN)
+  # ----------------------------------------
+  st.header("📂 PHÂN VÙNG LÀM VIỆC")
   main_menu = st.radio(
       "Điều hướng ứng dụng:",
       [
@@ -629,6 +611,7 @@ with st.sidebar:
       label_visibility="collapsed",
   )
 
+  # Cấu hình Thư mục dành cho ADMIN
   if st.session_state.get("is_admin"):
     st.divider()
     st.header("⚙️ Cấu Hình Thư Mục")
@@ -657,6 +640,39 @@ with st.sidebar:
         else:
           st.error("Đường dẫn thư mục không tồn tại!")
 
+  st.divider()
+
+  # ----------------------------------------
+  # C. CỤM NGƯỜI DÙNG & TIỆN ÍCH (XUỐNG DƯỚI)
+  # ----------------------------------------
+  st.markdown("### 👤 Người dùng: `ttm`")
+  if st.session_state.get("is_admin"):
+    st.success("Quyền hiện tại: ADMIN")
+
+  col_sb1, col_sb2 = st.columns(2)
+  with col_sb1:
+    if st.button("🚪 Đăng xuất", use_container_width=True):
+      st.info("Đã đăng xuất!")
+  with col_sb2:
+    if st.button("🧹 Xóa Cache", use_container_width=True):
+      st.cache_data.clear()
+      st.success("Đã xóa cache!")
+
+  # Nút Chế độ Sáng/Tối
+  theme_label = "☀️ Sáng" if st.session_state.get("dark_mode") else "🌙 Tối"
+  if st.button(theme_label, use_container_width=True):
+    st.session_state.dark_mode = not st.session_state.dark_mode
+    st.rerun()
+
+  # Đăng nhập/Đăng xuất Admin
+  if st.session_state.get("is_admin"):
+    if st.button("🔓 Thoát chế độ Admin", use_container_width=True):
+      st.session_state.is_admin = False
+      st.rerun()
+  else:
+    if st.button("🔐 Đăng nhập Quản trị", use_container_width=True):
+      admin_login_dialog()
+
 
 # ==========================================
 # 5. MAIN LAYOUT (GIAO DIỆN CHÍNH)
@@ -668,13 +684,11 @@ with st.sidebar:
 if main_menu == "1 🌐 DS WEBsites_CV":
   st.subheader("🌐 Danh Sách Các Website Hỗ Trợ CV")
 
-  # Hiển thị bảng HTML Native (Tự động cuộn ngang mượt mà)
   st.markdown(
       create_responsive_table(st.session_state.web_tools_df, "Mô tả WEB"),
       unsafe_allow_html=True,
   )
 
-  # Khu vực Admin quản lý
   if st.session_state.is_admin:
     st.markdown("---")
     st.markdown("### ⚙️ Bảng Điều Khiển Admin")
