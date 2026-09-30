@@ -20,7 +20,6 @@ DEFAULT_EXCEL_DIR = r"D:\0 2025 0 LUU OFFICE drive\0000 chua luu\0 0 0 app\000Tm
 if not os.path.exists(DEFAULT_EXCEL_DIR):
   DEFAULT_EXCEL_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Khởi tạo các biến session state
 if "is_admin" not in st.session_state:
   st.session_state.is_admin = False
 if "excel_dir" not in st.session_state:
@@ -33,11 +32,10 @@ if "theme_mode" not in st.session_state:
   st.session_state.theme_mode = "Dark"
 
 # ==========================================
-# 2. BỘ MÃ CSS TỐI ƯU GIAO DIỆN VÀ NÚT RỰC SÁNG
+# 2. BỘ MÃ CSS ĐÈ TRIỆT ĐỂ NÚT SIDEBAR XANH
 # ==========================================
 is_dark = st.session_state.theme_mode == "Dark"
 
-# Bảng màu tương phản chuẩn UI/UX
 bg_app = "#0B0F19" if is_dark else "#F1F5F9"
 text_app = "#F8FAFC" if is_dark else "#0F172A"
 
@@ -52,13 +50,11 @@ btn_border = "rgba(255, 255, 255, 0.12)" if is_dark else "#94A3B8"
 
 css_style = f"""
 <style>
-/* Khoảng cách chính tránh che Header */
 .block-container {{ 
     padding-top: 3.8rem !important; 
     padding-bottom: 1rem !important; 
 }}
 
-/* Dynamic App Theme Background & Text */
 .stApp {{ 
     background-color: {bg_app} !important; 
     color: {text_app} !important; 
@@ -68,25 +64,35 @@ css_style = f"""
     color: {text_app};
 }}
 
-/* ---------------------------------------------------- */
-/* 🌟 1. NÚT MỞ SIDEBAR ( >> ) RỰC SÁNG "TRƯỢT ĐỂ MỞ"   */
-/* ---------------------------------------------------- */
-[data-testid="stSidebarCollapsedControl"],
-div[data-testid="stSidebarCollapsedControl"],
-button[aria-label="Open sidebar"],
-button[aria-label="Expand sidebar"] {{
+/* ==================================================== */
+/* 🌟 BẮT BỘC NÚT MỞ SIDEBAR ( >> ) PHẢI XANH RỰC SÁNG */
+/* ==================================================== */
+
+/* Khung chứa nút */
+[data-testid="stSidebarCollapsedControl"] {{
     position: fixed !important;
     top: 10px !important;
     left: 12px !important;
-    z-index: 99999 !important;
-    display: inline-flex !important;
-    align-items: center !important;
+    z-index: 999999 !important;
+    display: block !important;
+}}
+
+/* Ép thẻ Button bên trong đổi sang màu XANH GRADIENT */
+[data-testid="stSidebarCollapsedControl"] button,
+header[data-testid="stHeader"] button[aria-label*="sidebar"],
+header[data-testid="stHeader"] button[aria-label*="Sidebar"] {{
     background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
     border: 2px solid #E0F7FA !important;
     border-radius: 30px !important;
-    padding: 3px 14px 3px 5px !important;
+    padding: 6px 18px !important;
+    height: 38px !important;
+    width: auto !important;
+    min-width: 160px !important;
     box-shadow: 0 0 15px rgba(0, 198, 255, 0.9), 0 0 25px rgba(0, 114, 255, 0.7) !important;
     animation: pulseGlow 2s infinite alternate !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     cursor: pointer !important;
 }}
 
@@ -97,56 +103,35 @@ button[aria-label="Expand sidebar"] {{
     }}
     100% {{ 
         box-shadow: 0 0 25px rgba(0, 198, 255, 1), 0 0 35px rgba(0, 114, 255, 0.9); 
-        transform: scale(1.04);
+        transform: scale(1.03);
     }}
 }}
 
-/* Hình tròn màu trắng bao quanh icon mũi tên */
-[data-testid="stSidebarCollapsedControl"] button,
-button[aria-label="Open sidebar"],
-button[aria-label="Expand sidebar"] {{
-    background: #FFFFFF !important;
-    border-radius: 50% !important;
-    width: 28px !important;
-    height: 28px !important;
-    min-height: 28px !important;
-    min-width: 28px !important;
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
-}}
-
-/* Mũi tên xanh đậm bên trong tròn trắng */
-[data-testid="stSidebarCollapsedControl"] svg,
-button[aria-label="Open sidebar"] svg,
-button[aria-label="Expand sidebar"] svg {{
-    fill: #0072FF !important;
-    color: #0072FF !important;
-    stroke: #0072FF !important;
+/* Đổi màu icon mũi tên bên trong thành màu TRẮNG */
+[data-testid="stSidebarCollapsedControl"] button svg,
+header[data-testid="stHeader"] button[aria-label*="sidebar"] svg {{
+    fill: #FFFFFF !important;
+    color: #FFFFFF !important;
+    stroke: #FFFFFF !important;
     width: 18px !important;
     height: 18px !important;
 }}
 
-/* Dòng chữ TRƯỢT ĐỂ MỞ ❯❯ */
-[data-testid="stSidebarCollapsedControl"]::after,
-button[aria-label="Open sidebar"]::after,
-button[aria-label="Expand sidebar"]::after {{
-    content: "TRƯỢT ĐỂ MỞ ❯❯" !important;
-    font-size: 11px !important;
+/* Thêm chữ TRƯỢT ĐỂ MỞ ❯❯ màu trắng */
+[data-testid="stSidebarCollapsedControl"] button::after,
+header[data-testid="stHeader"] button[aria-label*="sidebar"]::after {{
+    content: " TRƯỢT ĐỂ MỞ ❯❯" !important;
+    font-size: 12px !important;
     font-weight: 800 !important;
-    letter-spacing: 1.2px !important;
-    margin-left: 8px !important;
+    letter-spacing: 1px !important;
     color: #FFFFFF !important;
-    text-shadow: 0 0 8px rgba(255,255,255,0.9) !important;
+    margin-left: 6px !important;
     white-space: nowrap !important;
+    text-shadow: 0 0 6px rgba(255, 255, 255, 0.8) !important;
 }}
 
 /* ---------------------------------------------------- */
-/* ⚡ 2. NÚT ĐÓNG SIDEBAR ( << ) BÊN TRONG SIDEBAR      */
+/* ⚡ NÚT ĐÓNG SIDEBAR ( << ) BÊN TRONG SIDEBAR        */
 /* ---------------------------------------------------- */
 [data-testid="stSidebarCollapseButton"] button,
 button[aria-label="Close sidebar"],
@@ -170,19 +155,15 @@ button[aria-label="Collapse sidebar"] {{
 }}
 
 /* ---------------------------------------------------- */
-/* 🎨 3. ÉP MÀU CHỮ SIDEBAR CHUẨN HIỂN THỊ CHỐNG LÓA    */
+/* 🎨 CẤU HÌNH SIDEBAR VÀ BẢNG                           */
 /* ---------------------------------------------------- */
 [data-testid="stSidebar"] {{
     background-color: {sidebar_bg} !important;
     border-right: 1px solid {sidebar_border} !important;
 }}
 
-[data-testid="stSidebar"] h1, 
-[data-testid="stSidebar"] h2, 
-[data-testid="stSidebar"] h3, 
-[data-testid="stSidebar"] p, 
-[data-testid="stSidebar"] span, 
-[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3, 
+[data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label,
 [data-testid="stSidebar"] div {{
     color: {sidebar_text} !important;
 }}
@@ -223,9 +204,6 @@ button[aria-label="Collapse sidebar"] {{
     font-weight: 700 !important;
 }}
 
-/* ---------------------------------------------------- */
-/* 🛠️ 4. HEADER VÀ NÚT LINK                              */
-/* ---------------------------------------------------- */
 header[data-testid="stHeader"] {{
     background: {'rgba(11, 15, 25, 0.85)' if is_dark else 'rgba(241, 245, 249, 0.85)'} !important;
     backdrop-filter: blur(10px) !important;
@@ -421,7 +399,6 @@ def generate_excel_download(df, sheet_name):
   return output.getvalue()
 
 
-# BẢNG DỮ LIỆU CẢI TIẾN TƯƠNG PHẢN ĐẸP MẮT
 def create_responsive_table(df, main_col_name, extra_cols=None):
   if extra_cols is None:
     extra_cols = []
@@ -498,7 +475,7 @@ def create_responsive_table(df, main_col_name, extra_cols=None):
   return html
 
 
-# Kho dữ liệu tĩnh ban đầu
+# Kho dữ liệu
 if "web_tools_df" not in st.session_state:
   st.session_state.web_tools_df = reindex_df(pd.DataFrame(DEFAULT_14_WEBS))
 if "data_store" not in st.session_state:
@@ -560,7 +537,7 @@ if "gsheet_df" not in st.session_state:
 
 
 # ==========================================
-# 4. DIALOGS (HỘP THOẠI ADMIN & CHỈNH SỬA)
+# 4. DIALOGS
 # ==========================================
 @st.dialog("🔐 Đăng Nhập Quản Trị Viên")
 def admin_login_dialog():
@@ -619,7 +596,7 @@ def edit_web_dialog(idx):
 
 
 # ==========================================
-# 5. SIDEBAR (THANH ĐIỀU HƯỚNG BÊN TRÁI)
+# 5. SIDEBAR
 # ==========================================
 with st.sidebar:
   st.title("🛡️ Quản Lý An Toàn TTM")
@@ -629,7 +606,6 @@ with st.sidebar:
   )
   st.divider()
 
-  # NÚT BẬT CHẾ ĐỘ SÁNG / TỐI
   st.markdown("### 🎨 CHẾ ĐỘ GIAO DIỆN")
   col_theme1, col_theme2 = st.columns(2)
   with col_theme1:
@@ -671,7 +647,6 @@ with st.sidebar:
 
   main_menu = st.session_state.main_menu
 
-  # Cấu hình Admin
   if st.session_state.get("is_admin"):
     st.divider()
     st.markdown("### ⚙️ Cấu Hình Thư Mục")
@@ -719,7 +694,7 @@ with st.sidebar:
 
 
 # ==========================================
-# 6. MAIN LAYOUT (GIAO DIỆN CHÍNH)
+# 6. MAIN LAYOUT
 # ==========================================
 if main_menu == "1 🌐 DS WEBsites_CV":
   st.markdown(
