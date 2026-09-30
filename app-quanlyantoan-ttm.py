@@ -29,151 +29,143 @@ if "lan_hieuchinh" not in st.session_state:
   st.session_state.lan_hieuchinh = "001"
 if "main_menu" not in st.session_state:
   st.session_state.main_menu = "1 🌐 DS WEBsites_CV"
+if "theme_mode" not in st.session_state:
+  st.session_state.theme_mode = "Dark"  # Mặc định Chế độ Tối
 
 # ==========================================
-# 2. TOÀN BỘ BỘ MÃ CSS GIAO DIỆN NÂNG CẤP
+# 2. BỘ MÃ CSS DỘNG CHO DARK & LIGHT MODE
 # ==========================================
-css_style = """
+is_dark = st.session_state.theme_mode == "Dark"
+
+bg_app = "#0E1117" if is_dark else "#F8F9FA"
+text_app = "#E0E6ED" if is_dark else "#1F2937"
+sidebar_bg = "#12161F" if is_dark else "#FFFFFF"
+sidebar_border = "rgba(255, 255, 255, 0.08)" if is_dark else "#E0E0E0"
+btn_bg = "rgba(255, 255, 255, 0.03)" if is_dark else "#F1F3F5"
+btn_text = "#B0BEC5" if is_dark else "#495057"
+btn_border = "rgba(255, 255, 255, 0.08)" if is_dark else "#CED4DA"
+
+css_style = f"""
 <style>
 /* Khoảng cách chính tránh che Header */
-.block-container { 
+.block-container {{ 
     padding-top: 3.8rem !important; 
     padding-bottom: 1rem !important; 
-}
+}}
 
-/* Background Dark Mode */
-.stApp { 
-    background-color: #0E1117 !important; 
-    color: #E0E6ED !important; 
-}
-
-/* ---------------------------------------------------- */
-/* 🌟 1. CẤU HÌNH HEADER VÀ BỘ NÚT CÔNG CỤ TẠI HEADER   */
-/* ---------------------------------------------------- */
-header[data-testid="stHeader"] {
-    background: rgba(14, 17, 23, 0.85) !important;
-    backdrop-filter: blur(10px) !important;
-    -webkit-backdrop-filter: blur(10px) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-    z-index: 99990 !important;
-}
-
-/* Các nút công cụ góc phải (Share, Star, Edit, GitHub, Menu) */
-header[data-testid="stHeader"] button,
-[data-testid="stHeaderActionElements"] button,
-[data-testid="stToolbar"] button {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border: 1px solid rgba(66, 165, 245, 0.3) !important;
-    border-radius: 8px !important;
-    color: #E0E6ED !important;
-    padding: 4px 10px !important;
-    margin: 0 2px !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-header[data-testid="stHeader"] button:hover,
-[data-testid="stHeaderActionElements"] button:hover,
-[data-testid="stToolbar"] button:hover {
-    background: rgba(30, 136, 229, 0.25) !important;
-    border-color: #42A5F5 !important;
-    color: #FFFFFF !important;
-    box-shadow: 0 0 12px rgba(66, 165, 245, 0.5) !important;
-    transform: translateY(-2px) !important;
-}
+/* Dynamic App Theme Background */
+.stApp {{ 
+    background-color: {bg_app} !important; 
+    color: {text_app} !important; 
+}}
 
 /* ---------------------------------------------------- */
-/* 🔥 2. NÚT SLIDE BAR MỞ SIDEBAR ( >> ) PHONG CÁCH IOS  */
+/* 🌟 1. NÚT SLIDE BAR ( >> ) THƯỜNG XUYÊN RỰC SÁNG     */
 /* ---------------------------------------------------- */
-[data-testid="stSidebarCollapsedControl"] {
+[data-testid="stSidebarCollapsedControl"] {{
     position: fixed !important;
     top: 10px !important;
     left: 12px !important;
     z-index: 99999 !important;
     display: flex !important;
     align-items: center !important;
-    background: rgba(22, 27, 34, 0.85) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(66, 165, 245, 0.5) !important;
+    background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
+    border: 2px solid #E0F7FA !important;
     border-radius: 30px !important;
     padding: 3px 14px 3px 5px !important;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4), 0 0 12px rgba(30, 136, 229, 0.3) !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 0 15px rgba(0, 198, 255, 0.8), 0 0 25px rgba(0, 114, 255, 0.6) !important;
+    animation: pulseGlow 2s infinite alternate !important;
     cursor: pointer !important;
-}
+}}
 
-[data-testid="stSidebarCollapsedControl"]:hover {
-    border-color: #42A5F5 !important;
-    background: rgba(30, 136, 229, 0.3) !important;
-    box-shadow: 0 8px 22px rgba(30, 136, 229, 0.6) !important;
-    transform: translateY(-1px) scale(1.02) !important;
-}
+@keyframes pulseGlow {{
+    0% {{ 
+        box-shadow: 0 0 12px rgba(0, 198, 255, 0.7), 0 0 20px rgba(0, 114, 255, 0.5); 
+        transform: scale(1);
+    }}
+    100% {{ 
+        box-shadow: 0 0 25px rgba(0, 198, 255, 1), 0 0 35px rgba(0, 114, 255, 0.9); 
+        transform: scale(1.03);
+    }}
+}}
 
-[data-testid="stSidebarCollapsedControl"] button {
-    background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%) !important;
-    color: #FFFFFF !important;
+[data-testid="stSidebarCollapsedControl"] button {{
+    background: #FFFFFF !important;
+    color: #0072FF !important;
     border-radius: 50% !important;
     width: 28px !important;
     height: 28px !important;
     border: none !important;
+    font-weight: bold !important;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
-    transition: transform 0.3s ease !important;
-}
+}}
 
-[data-testid="stSidebarCollapsedControl"]:hover button {
-    transform: translateX(3px) !important;
-}
-
-[data-testid="stSidebarCollapsedControl"]::after {
+[data-testid="stSidebarCollapsedControl"]::after {{
     content: "TRƯỢT ĐỂ MỞ ❯❯" !important;
     font-size: 11px !important;
-    font-weight: 700 !important;
+    font-weight: 800 !important;
     letter-spacing: 1.2px !important;
     margin-left: 8px !important;
-    background: linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0.2) 100%) !important;
-    background-size: 200% auto !important;
-    color: transparent !important;
-    -webkit-background-clip: text !important;
-    background-clip: text !important;
-    animation: iphoneSlideShimmer 2.5s infinite linear !important;
+    color: #FFFFFF !important;
+    text-shadow: 0 0 8px rgba(255,255,255,0.9) !important;
     white-space: nowrap !important;
-}
-
-@keyframes iphoneSlideShimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-}
+}}
 
 /* ---------------------------------------------------- */
-/* ⚡ 3. NÚT ĐÓNG SIDEBAR ( << ) BÊN TRONG SIDEBAR      */
+/* ⚡ 2. NÚT ĐÓNG SIDEBAR ( << ) BÊN TRONG SIDEBAR      */
 /* ---------------------------------------------------- */
 [data-testid="stSidebarCollapseButton"] button,
 button[aria-label="Close sidebar"],
-button[aria-label="Collapse sidebar"] {
+button[aria-label="Collapse sidebar"] {{
     background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%) !important;
     color: #FFFFFF !important;
     border-radius: 50% !important;
     border: 1px solid #42A5F5 !important;
-    box-shadow: 0 0 10px rgba(30, 136, 229, 0.4) !important;
+    box-shadow: 0 0 10px rgba(30, 136, 229, 0.5) !important;
     transition: all 0.3s ease !important;
-}
+}}
 
-[data-testid="stSidebarCollapseButton"] button:hover,
-button[aria-label="Close sidebar"]:hover,
-button[aria-label="Collapse sidebar"]:hover {
+[data-testid="stSidebarCollapseButton"] button:hover {{
     transform: scale(1.1) rotate(-90deg) !important;
-    box-shadow: 0 0 15px rgba(66, 165, 245, 0.8) !important;
-}
+    box-shadow: 0 0 18px rgba(66, 165, 245, 0.9) !important;
+}}
 
 /* ---------------------------------------------------- */
-/* 4. SIDEBAR THIẾT KẾ DARK GLASS                       */
+/* 🛠️ 3. THANH CÔNG CỤ CỐ ĐỊNH PHÍA TRÊN (HEADER)      */
 /* ---------------------------------------------------- */
-[data-testid="stSidebar"] {
-    background-color: #12161F !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
-}
+header[data-testid="stHeader"] {{
+    background: {'rgba(14, 17, 23, 0.85)' if is_dark else 'rgba(248, 249, 250, 0.85)'} !important;
+    backdrop-filter: blur(10px) !important;
+    border-bottom: 1px solid {sidebar_border} !important;
+}}
 
-[data-testid="stSidebar"] div.stButton > button {
+header[data-testid="stHeader"] button,
+[data-testid="stHeaderActionElements"] button,
+[data-testid="stToolbar"] button {{
+    background: {btn_bg} !important;
+    border: 1px solid {btn_border} !important;
+    border-radius: 8px !important;
+    color: {text_app} !important;
+    padding: 4px 10px !important;
+    margin: 0 2px !important;
+    transition: all 0.3s ease !important;
+}}
+
+header[data-testid="stHeader"] button:hover {{
+    background: rgba(30, 136, 229, 0.25) !important;
+    border-color: #42A5F5 !important;
+    box-shadow: 0 0 10px rgba(66, 165, 245, 0.5) !important;
+}}
+
+/* ---------------------------------------------------- */
+/* 4. SIDEBAR ĐIỀU HƯỚNG                                */
+/* ---------------------------------------------------- */
+[data-testid="stSidebar"] {{
+    background-color: {sidebar_bg} !important;
+    border-right: 1px solid {sidebar_border} !important;
+}}
+
+[data-testid="stSidebar"] div.stButton > button {{
     width: 100% !important;
     text-align: left !important;
     justify-content: flex-start !important;
@@ -182,33 +174,32 @@ button[aria-label="Collapse sidebar"]:hover {
     font-size: 15px !important;
     border-radius: 10px !important;
     margin-bottom: 6px !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    background: rgba(255, 255, 255, 0.03) !important;
-    color: #B0BEC5 !important;
-}
+    transition: all 0.3s ease !important;
+    border: 1px solid {btn_border} !important;
+    background: {btn_bg} !important;
+    color: {btn_text} !important;
+}}
 
-[data-testid="stSidebar"] div.stButton > button:hover {
-    background: rgba(30, 136, 229, 0.12) !important;
-    color: #FFFFFF !important;
-    border-color: rgba(30, 136, 229, 0.4) !important;
+[data-testid="stSidebar"] div.stButton > button:hover {{
+    background: rgba(30, 136, 229, 0.15) !important;
+    color: #1E88E5 !important;
+    border-color: rgba(30, 136, 229, 0.5) !important;
     transform: translateX(4px) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-}
+}}
 
 [data-testid="stSidebar"] div.stButton > button[kind="primary"],
-[data-testid="stSidebar"] div.stButton > button[data-testid="baseButton-primary"] {
+[data-testid="stSidebar"] div.stButton > button[data-testid="baseButton-primary"] {{
     background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%) !important;
     color: #FFFFFF !important;
     border: 1px solid #42A5F5 !important;
     box-shadow: 0 4px 15px rgba(30, 136, 229, 0.4) !important;
     font-weight: 700 !important;
-}
+}}
 
 /* ---------------------------------------------------- */
-/* 5. NÚT TRƯỢT LINK (SLIDE BUTTONS) TRONG CỘT BẢNG     */
+/* 5. NÚT TRƯỢT LINK (SLIDE BUTTONS) TRONG BẢNG        */
 /* ---------------------------------------------------- */
-.slide-link-btn {
+.slide-link-btn {{
     display: inline-flex !important;
     align-items: center !important;
     justify-content: space-between !important;
@@ -216,42 +207,34 @@ button[aria-label="Collapse sidebar"]:hover {
     padding: 6px 14px !important;
     margin: 3px 4px !important;
     background: linear-gradient(135deg, rgba(30, 136, 229, 0.2) 0%, rgba(21, 101, 192, 0.35) 100%) !important;
-    border: 1px solid rgba(66, 165, 245, 0.4) !important;
+    border: 1px solid rgba(66, 165, 245, 0.5) !important;
     border-radius: 20px !important;
-    color: #E3F2FD !important;
+    color: {'#E3F2FD' if is_dark else '#1565C0'} !important;
     text-decoration: none !important;
     font-size: 13px !important;
     font-weight: 600 !important;
-    letter-spacing: 0.5px !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    cursor: pointer !important;
-}
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+    transition: all 0.3s ease !important;
+}}
 
-.slide-link-btn:hover {
+.slide-link-btn:hover {{
     background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%) !important;
     color: #FFFFFF !important;
     border-color: #64B5F6 !important;
     box-shadow: 0 4px 14px rgba(30, 136, 229, 0.6) !important;
-    transform: translateX(5px) scale(1.03) !important;
-}
+    transform: translateX(4px) scale(1.02) !important;
+}}
 
-.slide-link-btn .btn-knob {
+.slide-link-btn .btn-knob {{
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
     width: 18px !important;
     height: 18px !important;
-    background: rgba(255, 255, 255, 0.2) !important;
+    background: rgba(255, 255, 255, 0.25) !important;
     border-radius: 50% !important;
     font-size: 10px !important;
-    transition: transform 0.3s ease, background 0.3s ease !important;
-}
-
-.slide-link-btn:hover .btn-knob {
-    transform: translateX(3px) !important;
-    background: rgba(255, 255, 255, 0.4) !important;
-}
+}}
 </style>
 """
 st.markdown(css_style, unsafe_allow_html=True)
@@ -405,28 +388,25 @@ def generate_excel_download(df, sheet_name):
   return output.getvalue()
 
 
-# BẢNG DỮ LIỆU HIỂN THỊ CỘT LINK DẠNG NÚT TRƯỢT IPHONE
+# BẢNG DỮ LIỆU PHÙ HỢP CẢ CHẾ ĐỘ SÁNG VÀ TỐI
 def create_responsive_table(df, main_col_name, extra_cols=None):
   if extra_cols is None:
     extra_cols = []
 
-  html = (
-      '<div style="max-height: 580px; overflow-y: auto; overflow-x: auto;'
-      ' margin-bottom: 20px; border-radius: 12px; border: 1px solid'
-      ' rgba(255,255,255,0.08); background-color: #0E1117; box-shadow: 0 8px'
-      ' 24px rgba(0,0,0,0.4);">'
-  )
-  html += (
-      '<table style="width: 100%; border-collapse: separate; border-spacing: 0;'
-      ' font-size: 15px; text-align: left; color: #E0E6ED;">'
-  )
+  dark = st.session_state.theme_mode == "Dark"
+  tb_bg = "#0E1117" if dark else "#FFFFFF"
+  tb_text = "#E0E6ED" if dark else "#212529"
+  th_bg = "#161B22" if dark else "#F1F3F5"
+  th_text = "#64B5F6" if dark else "#1565C0"
+  border_col = "rgba(255,255,255,0.08)" if dark else "#DEE2E6"
+  row_border = "rgba(255,255,255,0.05)" if dark else "#E9ECEF"
 
-  th_style = (
-      "padding: 14px 16px; color: #64B5F6; position: sticky; top: 0;"
-      " background-color: #161B22; z-index: 10; border-bottom: 2px solid"
-      " #1E88E5; box-shadow: 0 2px 4px rgba(0,0,0,0.5); font-weight: bold;"
-      " font-size: 15px; vertical-align: middle;"
-  )
+  html = f"""
+    <div style="max-height: 580px; overflow-y: auto; overflow-x: auto; margin-bottom: 20px; border-radius: 12px; border: 1px solid {border_col}; background-color: {tb_bg}; box-shadow: 0 8px 24px rgba(0,0,0,0.15);">
+    <table style="width: 100%; border-collapse: separate; border-spacing: 0; font-size: 15px; text-align: left; color: {tb_text};">
+    """
+
+  th_style = f"padding: 14px 16px; color: {th_text}; position: sticky; top: 0; background-color: {th_bg}; z-index: 10; border-bottom: 2px solid #1E88E5; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-weight: bold; font-size: 15px; vertical-align: middle;"
 
   html += "<thead><tr>"
   html += f'<th style="{th_style} white-space: nowrap;">STT</th>'
@@ -438,28 +418,15 @@ def create_responsive_table(df, main_col_name, extra_cols=None):
   html += "</tr></thead><tbody>"
 
   if df.empty:
-    html += (
-        '<tr><td colspan="10" style="padding: 20px; text-align: center; color:'
-        ' #78909C;">Chưa có dữ liệu</td></tr>'
-    )
+    html += f'<tr><td colspan="10" style="padding: 20px; text-align: center; color: #78909C;">Chưa có dữ liệu</td></tr>'
   else:
     for idx, row in df.iterrows():
-      html += '<tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">'
-      html += (
-          '<td style="padding: 12px 16px; font-weight: bold; border-bottom: 1px'
-          f' solid rgba(255,255,255,0.05);">{row.get("STT", "")}</td>'
-      )
-      html += (
-          '<td style="padding: 12px 16px; border-bottom: 1px solid'
-          f' rgba(255,255,255,0.05);">{row.get(main_col_name, "")}</td>'
-      )
+      html += f'<tr style="border-bottom: 1px solid {row_border};">'
+      html += f'<td style="padding: 12px 16px; font-weight: bold; border-bottom: 1px solid {row_border};">{row.get("STT", "")}</td>'
+      html += f'<td style="padding: 12px 16px; border-bottom: 1px solid {row_border};">{row.get(main_col_name, "")}</td>'
       for ec in extra_cols:
-        html += (
-            '<td style="padding: 12px 16px; border-bottom: 1px solid'
-            f' rgba(255,255,255,0.05);">{row.get(ec, "")}</td>'
-        )
+        html += f'<td style="padding: 12px 16px; border-bottom: 1px solid {row_border};">{row.get(ec, "")}</td>'
 
-      # Render nút Slide Link Capsule
       links = []
       l1, l2, l3 = (
           row.get("Link 1", ""),
@@ -488,17 +455,11 @@ def create_responsive_table(df, main_col_name, extra_cols=None):
       links_str = (
           "".join(links)
           if links
-          else '<span style="color: #546E7A; font-style: italic;">-</span>'
+          else '<span style="color: #78909C; font-style: italic;">-</span>'
       )
 
-      html += (
-          '<td style="padding: 10px 16px; border-bottom: 1px solid'
-          f' rgba(255,255,255,0.05);">{links_str}</td>'
-      )
-      html += (
-          '<td style="padding: 12px 16px; border-bottom: 1px solid'
-          f' rgba(255,255,255,0.05);">{row.get("Ghi chú", "")}</td>'
-      )
+      html += f'<td style="padding: 10px 16px; border-bottom: 1px solid {row_border};">{links_str}</td>'
+      html += f'<td style="padding: 12px 16px; border-bottom: 1px solid {row_border};">{row.get("Ghi chú", "")}</td>'
       html += "</tr>"
   html += "</tbody></table></div>"
   return html
@@ -633,6 +594,27 @@ with st.sidebar:
       f"📌 Phiên bản hiệu chỉnh: {TODAY_STR} _ lần"
       f" {st.session_state.lan_hieuchinh}"
   )
+  st.divider()
+
+  # 🔥 NÚT BẬT CHẾ ĐỘ SÁNG / TỐI
+  st.markdown("### 🎨 CHẾ ĐỘ GIAO DIỆN")
+  col_theme1, col_theme2 = st.columns(2)
+  with col_theme1:
+    btn_light_type = (
+        "primary" if st.session_state.theme_mode == "Light" else "secondary"
+    )
+    if st.button("☀️ Sáng", use_container_width=True, type=btn_light_type):
+      st.session_state.theme_mode = "Light"
+      st.rerun()
+
+  with col_theme2:
+    btn_dark_type = (
+        "primary" if st.session_state.theme_mode == "Dark" else "secondary"
+    )
+    if st.button("🌙 Tối", use_container_width=True, type=btn_dark_type):
+      st.session_state.theme_mode = "Dark"
+      st.rerun()
+
   st.divider()
 
   st.markdown("### 📂 PHÂN VÙNG LÀM VIỆC")
