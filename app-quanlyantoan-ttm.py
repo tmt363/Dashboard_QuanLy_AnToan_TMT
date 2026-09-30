@@ -4,6 +4,7 @@ import os
 import openpyxl
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 
 # ==========================================
 # 1. CẤU HÌNH TRANG VÀ SESSION STATE
@@ -32,7 +33,7 @@ if "theme_mode" not in st.session_state:
   st.session_state.theme_mode = "Dark"
 
 # ==========================================
-# 2. BỘ MÃ CSS ĐÈ TRIỆT ĐỂ NÚT SIDEBAR XANH
+# 2. BỘ MÃ CSS & JAVASCRIPT CAN THIỆP TRIỆT ĐỂ
 # ==========================================
 is_dark = st.session_state.theme_mode == "Dark"
 
@@ -65,69 +66,51 @@ css_style = f"""
 }}
 
 /* ==================================================== */
-/* 🌟 BẮT BỘC NÚT MỞ SIDEBAR ( >> ) PHẢI XANH RỰC SÁNG */
+/* 🌟 TỐI ƯU KHUNG CHỨA HEADER ĐỂ KHÔNG BỊ TRUY CẤP CẮT XÉN */
 /* ==================================================== */
-
-/* Khung chứa nút */
-[data-testid="stSidebarCollapsedControl"] {{
-    position: fixed !important;
-    top: 10px !important;
-    left: 12px !important;
-    z-index: 999999 !important;
-    display: block !important;
+header[data-testid="stHeader"] {{
+    background: {'rgba(11, 15, 25, 0.85)' if is_dark else 'rgba(241, 245, 249, 0.85)'} !important;
+    backdrop-filter: blur(10px) !important;
+    border-bottom: 1px solid {sidebar_border} !important;
+    z-index: 99999 !important;
+    overflow: visible !important;
 }}
 
-/* Ép thẻ Button bên trong đổi sang màu XANH GRADIENT */
-[data-testid="stSidebarCollapsedControl"] button,
-header[data-testid="stHeader"] button[aria-label*="sidebar"],
-header[data-testid="stHeader"] button[aria-label*="Sidebar"] {{
+[data-testid="stSidebarCollapsedControl"],
+[data-testid="stSidebarControl"] {{
+    overflow: visible !important;
+    z-index: 999999 !important;
+}}
+
+/* CSS Bao Phủ Mọi Selector Nút Mở Sidebar */
+[data-testid*="Sidebar"] button,
+[data-testid*="sidebar"] button,
+header button[aria-label*="sidebar" i],
+header button[aria-label*="Sidebar" i],
+div[data-testid="stSidebarCollapsedControl"] button {{
     background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
     border: 2px solid #E0F7FA !important;
     border-radius: 30px !important;
     padding: 6px 18px !important;
     height: 38px !important;
-    width: auto !important;
-    min-width: 160px !important;
+    min-width: 165px !important;
     box-shadow: 0 0 15px rgba(0, 198, 255, 0.9), 0 0 25px rgba(0, 114, 255, 0.7) !important;
-    animation: pulseGlow 2s infinite alternate !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
     cursor: pointer !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }}
 
-@keyframes pulseGlow {{
-    0% {{ 
-        box-shadow: 0 0 12px rgba(0, 198, 255, 0.7), 0 0 20px rgba(0, 114, 255, 0.5); 
-        transform: scale(1);
-    }}
-    100% {{ 
-        box-shadow: 0 0 25px rgba(0, 198, 255, 1), 0 0 35px rgba(0, 114, 255, 0.9); 
-        transform: scale(1.03);
-    }}
-}}
-
-/* Đổi màu icon mũi tên bên trong thành màu TRẮNG */
-[data-testid="stSidebarCollapsedControl"] button svg,
-header[data-testid="stHeader"] button[aria-label*="sidebar"] svg {{
+[data-testid*="Sidebar"] button svg,
+[data-testid*="sidebar"] button svg,
+header button[aria-label*="sidebar" i] svg {{
     fill: #FFFFFF !important;
     color: #FFFFFF !important;
     stroke: #FFFFFF !important;
     width: 18px !important;
     height: 18px !important;
-}}
-
-/* Thêm chữ TRƯỢT ĐỂ MỞ ❯❯ màu trắng */
-[data-testid="stSidebarCollapsedControl"] button::after,
-header[data-testid="stHeader"] button[aria-label*="sidebar"]::after {{
-    content: " TRƯỢT ĐỂ MỞ ❯❯" !important;
-    font-size: 12px !important;
-    font-weight: 800 !important;
-    letter-spacing: 1px !important;
-    color: #FFFFFF !important;
-    margin-left: 6px !important;
-    white-space: nowrap !important;
-    text-shadow: 0 0 6px rgba(255, 255, 255, 0.8) !important;
 }}
 
 /* ---------------------------------------------------- */
@@ -204,12 +187,6 @@ button[aria-label="Collapse sidebar"] {{
     font-weight: 700 !important;
 }}
 
-header[data-testid="stHeader"] {{
-    background: {'rgba(11, 15, 25, 0.85)' if is_dark else 'rgba(241, 245, 249, 0.85)'} !important;
-    backdrop-filter: blur(10px) !important;
-    border-bottom: 1px solid {sidebar_border} !important;
-}}
-
 .slide-link-btn {{
     display: inline-flex !important;
     align-items: center !important;
@@ -249,6 +226,52 @@ header[data-testid="stHeader"] {{
 </style>
 """
 st.markdown(css_style, unsafe_allow_html=True)
+
+# 🚀 ÉP BẮT MÀU NÚT BẰNG JAVASCRIPT TRỰC TIẾP
+components.html(
+    """
+    <script>
+    function forceStyleSidebarButton() {
+        const doc = window.parent.document;
+        // Tìm tất cả các nút có khả năng là nút đóng/mở sidebar
+        const targets = doc.querySelectorAll('[data-testid="stSidebarCollapsedControl"] button, [data-testid="stSidebarControl"] button, header button[aria-label*="sidebar" i], header button[aria-label*="Sidebar" i]');
+        
+        targets.forEach(btn => {
+            if (btn) {
+                btn.style.background = 'linear-gradient(135deg, #00C6FF 0%, #0072FF 100%)';
+                btn.style.border = '2px solid #E0F7FA';
+                btn.style.borderRadius = '30px';
+                btn.style.boxShadow = '0 0 15px rgba(0, 198, 255, 0.9)';
+                btn.style.padding = '6px 16px';
+                
+                // Đảm bảo icon mũi tên trắng rõ
+                const svgs = btn.querySelectorAll('svg');
+                svgs.forEach(svg => {
+                    svg.style.fill = '#FFFFFF';
+                    svg.style.color = '#FFFFFF';
+                });
+
+                // Thêm chữ TRƯỢT ĐỂ MỞ nếu chưa có
+                if (!btn.querySelector('.custom-btn-text')) {
+                    const span = doc.createElement('span');
+                    span.className = 'custom-btn-text';
+                    span.innerText = ' TRƯỢT ĐỂ MỞ ❯❯';
+                    span.style.color = '#FFFFFF';
+                    span.style.fontSize = '12px';
+                    span.style.fontWeight = '800';
+                    span.style.marginLeft = '6px';
+                    span.style.whiteSpace = 'nowrap';
+                    btn.appendChild(span);
+                }
+            }
+        });
+    }
+    // Chạy lặp để kiểm soát sự kiện đóng/mở
+    setInterval(forceStyleSidebarButton, 300);
+    </script>
+""",
+    height=0,
+)
 
 
 # ==========================================
