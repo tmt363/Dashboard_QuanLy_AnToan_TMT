@@ -10,7 +10,7 @@ import streamlit as st
 # ==========================================
 st.set_page_config(
     page_title="Quản Lý An Toàn TTM",
-    page_icon="🛡️",
+    page_icon="🛡️️",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -33,7 +33,7 @@ if "theme_mode" not in st.session_state:
   st.session_state.theme_mode = "Dark"
 
 # ==========================================
-# 2. BỘ MÃ CSS ĐIỀU CHỈNH ĐỘ TƯƠNG PHẢN RÕ RÀNG
+# 2. BỘ MÃ CSS TỐI ƯU GIAO DIỆN VÀ TƯƠNG PHẢN
 # ==========================================
 is_dark = st.session_state.theme_mode == "Dark"
 
@@ -69,55 +69,36 @@ css_style = f"""
 }}
 
 /* ---------------------------------------------------- */
-/* 🌟 1. NÚT SLIDE BAR ( >> ) THƯỜNG XUYÊN RỰC SÁNG     */
+/* 🌟 1. NÚT MỞ SIDEBAR ( >> ) NỔI BẬT CHỐNG ẨN        */
 /* ---------------------------------------------------- */
 [data-testid="stSidebarCollapsedControl"] {{
     position: fixed !important;
-    top: 10px !important;
+    top: 12px !important;
     left: 12px !important;
     z-index: 99999 !important;
-    display: flex !important;
-    align-items: center !important;
-    background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
-    border: 2px solid #E0F7FA !important;
-    border-radius: 30px !important;
-    padding: 3px 14px 3px 5px !important;
-    box-shadow: 0 0 15px rgba(0, 198, 255, 0.8), 0 0 25px rgba(0, 114, 255, 0.6) !important;
-    animation: pulseGlow 2s infinite alternate !important;
-    cursor: pointer !important;
-}}
-
-@keyframes pulseGlow {{
-    0% {{ 
-        box-shadow: 0 0 12px rgba(0, 198, 255, 0.7), 0 0 20px rgba(0, 114, 255, 0.5); 
-        transform: scale(1);
-    }}
-    100% {{ 
-        box-shadow: 0 0 25px rgba(0, 198, 255, 1), 0 0 35px rgba(0, 114, 255, 0.9); 
-        transform: scale(1.03);
-    }}
 }}
 
 [data-testid="stSidebarCollapsedControl"] button {{
-    background: #FFFFFF !important;
-    color: #0072FF !important;
-    border-radius: 50% !important;
-    width: 28px !important;
-    height: 28px !important;
-    border: none !important;
-    font-weight: bold !important;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+    background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
+    border: 2px solid #FFFFFF !important;
+    border-radius: 10px !important;
+    box-shadow: 0 0 15px rgba(0, 198, 255, 0.8) !important;
+    padding: 6px 10px !important;
+    transition: all 0.3s ease !important;
 }}
 
-[data-testid="stSidebarCollapsedControl"]::after {{
-    content: "TRƯỢT ĐỂ MỞ ❯❯" !important;
-    font-size: 11px !important;
-    font-weight: 800 !important;
-    letter-spacing: 1.2px !important;
-    margin-left: 8px !important;
+[data-testid="stSidebarCollapsedControl"] button:hover {{
+    transform: scale(1.1) !important;
+    box-shadow: 0 0 22px rgba(0, 198, 255, 1) !important;
+}}
+
+/* Ép biểu tượng mũi tên >> bên trong nút thành màu trắng rõ nét */
+[data-testid="stSidebarCollapsedControl"] button svg {{
+    fill: #FFFFFF !important;
     color: #FFFFFF !important;
-    text-shadow: 0 0 8px rgba(255,255,255,0.9) !important;
-    white-space: nowrap !important;
+    stroke: #FFFFFF !important;
+    width: 22px !important;
+    height: 22px !important;
 }}
 
 /* ---------------------------------------------------- */
@@ -132,6 +113,11 @@ button[aria-label="Collapse sidebar"] {{
     border: 1px solid #42A5F5 !important;
     box-shadow: 0 0 10px rgba(30, 136, 229, 0.5) !important;
     transition: all 0.3s ease !important;
+}}
+
+[data-testid="stSidebarCollapseButton"] button svg {{
+    fill: #FFFFFF !important;
+    color: #FFFFFF !important;
 }}
 
 [data-testid="stSidebarCollapseButton"] button:hover {{
