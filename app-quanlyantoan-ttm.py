@@ -32,7 +32,7 @@ if "theme_mode" not in st.session_state:
   st.session_state.theme_mode = "Dark"
 
 # ==========================================
-# 2. BỘ MÃ CSS GIỮ NÚT SLIDE 1 & SLIDE 2 LUÔN HIỆN CỐ ĐỊNH
+# 2. BỘ MÃ CSS ÉP NÚT SLIDE 1 VÀ SLIDE 2 BẮT BUỘC MÀU XANH
 # ==========================================
 is_dark = st.session_state.theme_mode == "Dark"
 
@@ -73,55 +73,25 @@ header[data-testid="stHeader"] {{
 }}
 
 /* ==================================================== */
-/* 🔵 ÉP CẢ 2 NÚT SLIDE LUÔN LUÔN HIỂN THỊ (KHÔNG ẨN)     */
+/* 🔵 CẤU HÌNH NÚT SLIDE 1 VÀ SLIDE 2 ÉP MÀU XANH 100%  */
 /* ==================================================== */
+
+/* Ép vùng chứa luôn hiển thị */
 [data-testid="stSidebarCollapseButton"],
-[data-testid="stSidebarCollapsedControl"] {{
+[data-testid="stSidebarCollapsedControl"],
+[data-testid="collapsedControl"] {{
     opacity: 1 !important;
     visibility: visible !important;
     display: flex !important;
     z-index: 999999 !important;
 }}
 
-/* 🔵 NÚT SLIDE 1 ( << - ĐÓNG SIDEBAR ) */
+/* Ép kiểu dáng Nút Oval Xanh cho CẢ NÚT SLIDE 1 (<<) VÀ SLIDE 2 (>>) */
 [data-testid="stSidebarCollapseButton"] button,
-button[aria-label="Close sidebar"],
-button[aria-label="Collapse sidebar"] {{
-    opacity: 1 !important;
-    visibility: visible !important;
-    background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
-    color: #FFFFFF !important;
-    border-radius: 30px !important;
-    border: 2px solid #E0F7FA !important;
-    box-shadow: 0 0 15px rgba(0, 198, 255, 0.8) !important;
-    padding: 6px 28px !important;
-    height: 38px !important;
-    min-width: 90px !important;
-    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    cursor: pointer !important;
-}}
-
-[data-testid="stSidebarCollapseButton"] button svg {{
-    fill: #FFFFFF !important;
-    color: #FFFFFF !important;
-    stroke: #FFFFFF !important;
-    width: 20px !important;
-    height: 20px !important;
-}}
-
-/* Hiệu ứng trượt ngang sang trái khi di chuột */
-[data-testid="stSidebarCollapseButton"] button:hover {{
-    transform: translateX(-8px) scale(1.05) !important;
-    box-shadow: 0 0 25px rgba(0, 198, 255, 1) !important;
-}}
-
-/* 🔵 NÚT SLIDE 2 ( >> - MỞ SIDEBAR ) */
 [data-testid="stSidebarCollapsedControl"] button,
-button[aria-label="Expand sidebar"],
-button[aria-label="Open sidebar"],
+[data-testid="collapsedControl"] button,
+button[aria-label*="sidebar" i],
+button[aria-label*="Sidebar" i],
 header button[aria-label*="sidebar" i],
 header button[aria-label*="Sidebar" i] {{
     opacity: 1 !important;
@@ -131,9 +101,9 @@ header button[aria-label*="Sidebar" i] {{
     border-radius: 30px !important;
     border: 2px solid #E0F7FA !important;
     box-shadow: 0 0 15px rgba(0, 198, 255, 0.8) !important;
-    padding: 6px 28px !important;
+    padding: 6px 24px !important;
     height: 38px !important;
-    min-width: 90px !important;
+    min-width: 85px !important;
     transition: transform 0.3s ease, box-shadow 0.3s ease !important;
     display: inline-flex !important;
     align-items: center !important;
@@ -141,9 +111,17 @@ header button[aria-label*="Sidebar" i] {{
     cursor: pointer !important;
 }}
 
+/* Ép mũi tên bên trong luôn có màu TRẮNG tinh */
+[data-testid="stSidebarCollapseButton"] svg,
+[data-testid="stSidebarCollapseButton"] path,
 [data-testid="stSidebarCollapsedControl"] svg,
-[data-testid="stSidebarCollapsedControl"] button svg,
-header button[aria-label*="sidebar" i] svg {{
+[data-testid="stSidebarCollapsedControl"] path,
+[data-testid="collapsedControl"] svg,
+[data-testid="collapsedControl"] path,
+button[aria-label*="sidebar" i] svg,
+button[aria-label*="sidebar" i] path,
+header button[aria-label*="sidebar" i] svg,
+header button[aria-label*="sidebar" i] path {{
     fill: #FFFFFF !important;
     color: #FFFFFF !important;
     stroke: #FFFFFF !important;
@@ -151,8 +129,15 @@ header button[aria-label*="sidebar" i] svg {{
     height: 20px !important;
 }}
 
-/* Hiệu ứng trượt ngang sang phải khi di chuột */
+/* Hiệu ứng trượt cho Nút Slide 1 (Trượt sang trái) */
+[data-testid="stSidebarCollapseButton"] button:hover {{
+    transform: translateX(-8px) scale(1.05) !important;
+    box-shadow: 0 0 25px rgba(0, 198, 255, 1) !important;
+}}
+
+/* Hiệu ứng trượt cho Nút Slide 2 (Trượt sang phải) */
 [data-testid="stSidebarCollapsedControl"] button:hover,
+[data-testid="collapsedControl"] button:hover,
 header button[aria-label*="sidebar" i]:hover {{
     transform: translateX(8px) scale(1.05) !important;
     box-shadow: 0 0 25px rgba(0, 198, 255, 1) !important;
