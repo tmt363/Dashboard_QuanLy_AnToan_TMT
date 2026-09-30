@@ -35,7 +35,7 @@ if "main_menu" not in st.session_state:
 # Xử lý CSS Giao diện
 css_style = """
 <style>
-.block-container { padding-top: 2rem !important; padding-bottom: 1rem !important; }
+.block-container { padding-top: 1rem !important; padding-bottom: 1rem !important; }
 
 /* Tùy chỉnh nút Menu ở Sidebar */
 [data-testid="stSidebar"] div.stButton > button {
@@ -236,36 +236,37 @@ def generate_excel_download(df, sheet_name):
   return output.getvalue()
 
 
-# BẢNG HTML TỰ ĐỘNG CỐ ĐỊNH THANH TIÊU ĐỀ KHI CUỘN
+# BẢNG HTML TỰ ĐỘNG CỐ ĐỊNH TIÊU ĐỀ + CHỮ TO RÕ (17px)
 def create_responsive_table(df, main_col_name, extra_cols=None):
   if extra_cols is None:
     extra_cols = []
 
-  # Khung chứa hỗ trợ cuộn dọc max 520px
+  # Khung chứa hỗ trợ cuộn dọc max 580px, Font size tăng lên 17px
   html = (
-      '<div style="max-height: 520px; overflow-y: auto; overflow-x: auto;'
+      '<div style="max-height: 580px; overflow-y: auto; overflow-x: auto;'
       ' margin-bottom: 20px; border-radius: 8px; border: 1px solid #333333;'
       ' background-color: #0E1117;">'
   )
   html += (
       '<table style="width: 100%; border-collapse: separate; border-spacing: 0;'
-      ' font-size: 14.5px; text-align: left;">'
+      ' font-size: 17px; text-align: left;">'
   )
 
-  # Style cố định tiêu đề (Sticky Header)
+  # Style cố định tiêu đề bảng (Sticky Header)
   th_style = (
-      'padding: 12px; color: #1E88E5; position: sticky; top: 0;'
+      'padding: 14px 12px; color: #1E88E5; position: sticky; top: 0;'
       ' background-color: #161B22; z-index: 10; border-bottom: 2px solid'
       ' #1E88E5; box-shadow: 0 2px 4px rgba(0,0,0,0.5); font-weight: bold;'
+      ' font-size: 17px;'
   )
 
   html += '<thead><tr>'
   html += f'<th style="{th_style} white-space: nowrap;">STT</th>'
-  html += f'<th style="{th_style} min-width: 250px;">{main_col_name}</th>'
+  html += f'<th style="{th_style} min-width: 280px;">{main_col_name}</th>'
   for ec in extra_cols:
     html += f'<th style="{th_style} white-space: nowrap;">{ec}</th>'
-  html += f'<th style="{th_style} min-width: 150px;">Links truy cập</th>'
-  html += f'<th style="{th_style} min-width: 200px;">Ghi chú</th>'
+  html += f'<th style="{th_style} min-width: 170px;">Links truy cập</th>'
+  html += f'<th style="{th_style} min-width: 220px;">Ghi chú</th>'
   html += '</tr></thead><tbody>'
 
   if df.empty:
@@ -277,16 +278,16 @@ def create_responsive_table(df, main_col_name, extra_cols=None):
     for idx, row in df.iterrows():
       html += '<tr style="border-bottom: 1px solid #222;">'
       html += (
-          '<td style="padding: 12px; font-weight: bold; border-bottom: 1px'
+          '<td style="padding: 14px 12px; font-weight: bold; border-bottom: 1px'
           f' solid #262730;">{row.get("STT", "")}</td>'
       )
       html += (
-          '<td style="padding: 12px; border-bottom: 1px solid'
+          '<td style="padding: 14px 12px; border-bottom: 1px solid'
           f' #262730;">{row.get(main_col_name, "")}</td>'
       )
       for ec in extra_cols:
         html += (
-            '<td style="padding: 12px; border-bottom: 1px solid'
+            '<td style="padding: 14px 12px; border-bottom: 1px solid'
             f' #262730;">{row.get(ec, "")}</td>'
         )
 
@@ -314,11 +315,11 @@ def create_responsive_table(df, main_col_name, extra_cols=None):
       links_str = ' | '.join(links) if links else '-'
 
       html += (
-          '<td style="padding: 12px; border-bottom: 1px solid'
+          '<td style="padding: 14px 12px; border-bottom: 1px solid'
           f' #262730;">{links_str}</td>'
       )
       html += (
-          '<td style="padding: 12px; border-bottom: 1px solid'
+          '<td style="padding: 14px 12px; border-bottom: 1px solid'
           f' #262730;">{row.get("Ghi chú", "")}</td>'
       )
       html += '</tr>'
@@ -698,8 +699,7 @@ with st.sidebar:
 # PHẦN 1: DS WEBsites_CV
 # ------------------------------------------
 if main_menu == "1 🌐 DS WEBsites_CV":
-  st.title("🌐 Danh Sách Các Website Hỗ Trợ CV")
-
+  # Đã lược bỏ st.title() để bảng đẩy lên cao nhất
   st.markdown(
       create_responsive_table(st.session_state.web_tools_df, "Mô tả WEB"),
       unsafe_allow_html=True,
@@ -744,7 +744,7 @@ if main_menu == "1 🌐 DS WEBsites_CV":
         else:
           st.info("Bảng đang trống.")
 
-    with st.expander("⚙️️ Quản lý Nhập / Xuất Excel (WEBsites)", expanded=False):
+    with st.expander("⚙ Quản lý Nhập / Xuất Excel (WEBsites)", expanded=False):
       col_w1, col_w2 = st.columns(2)
       with col_w1:
         st.markdown("#### Tải dữ liệu xuống máy")
@@ -785,8 +785,8 @@ if main_menu == "1 🌐 DS WEBsites_CV":
 # ------------------------------------------
 elif main_menu == "2 📋 DM QL Files_CV":
   selected_cat = st.selectbox("📌 Chọn Mảng Công Việc:", CATEGORIES)
-  st.title(f"📂 Hồ Sơ: {selected_cat}")
 
+  # Đã lược bỏ st.title()
   st.markdown(
       create_responsive_table(
           st.session_state.data_store[selected_cat], "Thư mục / Hồ sơ"
@@ -878,8 +878,7 @@ elif main_menu == "2 📋 DM QL Files_CV":
 # PHẦN 3: DS BCdinhky_CV
 # ------------------------------------------
 elif main_menu == "3 📊 DS BCdinhky_CV":
-  st.title("📊 Quản Lý Báo Cáo Định Kỳ")
-
+  # Đã lược bỏ st.title()
   st.markdown(
       create_responsive_table(
           st.session_state.bc_dinhky_df,
@@ -963,8 +962,7 @@ elif main_menu == "3 📊 DS BCdinhky_CV":
 # PHẦN 4: DS Gsheet_CV
 # ------------------------------------------
 elif main_menu == "4 🟢 DS Gsheet_CV":
-  st.title("🟢 Danh Sách Gsheet Hỗ Trợ CV")
-
+  # Đã lược bỏ st.title()
   st.markdown(
       create_responsive_table(
           st.session_state.gsheet_df, "Mô tả Gsheet"
@@ -1026,7 +1024,7 @@ elif main_menu == "4 🟢 DS Gsheet_CV":
         else:
           st.info("Bảng đang trống.")
 
-    with st.expander("⚙️️ Quản lý Nhập / Xuất Excel (Gsheet)", expanded=False):
+    with st.expander("⚙ Quản lý Nhập / Xuất Excel (Gsheet)", expanded=False):
       col_g1, col_g2 = st.columns(2)
       with col_g1:
         st.markdown("#### Tải dữ liệu xuống máy")
