@@ -4,7 +4,6 @@ import os
 import openpyxl
 import pandas as pd
 import streamlit as st
-import streamlit.components.v1 as components
 
 # ==========================================
 # 1. CẤU HÌNH TRANG VÀ SESSION STATE
@@ -33,7 +32,7 @@ if "theme_mode" not in st.session_state:
   st.session_state.theme_mode = "Dark"
 
 # ==========================================
-# 2. BỘ MÃ CSS & JAVASCRIPT CAN THIỆP TRIỆT ĐỂ
+# 2. BỘ MÃ CSS TẠO NÚT SLIDE 1 VÀ SLIDE 2 TRƯỢT NGANG
 # ==========================================
 is_dark = st.session_state.theme_mode == "Dark"
 
@@ -65,76 +64,88 @@ css_style = f"""
     color: {text_app};
 }}
 
-/* ==================================================== */
-/* 🌟 TỐI ƯU KHUNG CHỨA HEADER ĐỂ KHÔNG BỊ TRUY CẤP CẮT XÉN */
-/* ==================================================== */
 header[data-testid="stHeader"] {{
     background: {'rgba(11, 15, 25, 0.85)' if is_dark else 'rgba(241, 245, 249, 0.85)'} !important;
     backdrop-filter: blur(10px) !important;
     border-bottom: 1px solid {sidebar_border} !important;
+    overflow: visible !important;
     z-index: 99999 !important;
-    overflow: visible !important;
 }}
 
-[data-testid="stSidebarCollapsedControl"],
-[data-testid="stSidebarControl"] {{
-    overflow: visible !important;
-    z-index: 999999 !important;
-}}
-
-/* CSS Bao Phủ Mọi Selector Nút Mở Sidebar */
-[data-testid*="Sidebar"] button,
-[data-testid*="sidebar"] button,
-header button[aria-label*="sidebar" i],
-header button[aria-label*="Sidebar" i],
-div[data-testid="stSidebarCollapsedControl"] button {{
+/* ==================================================== */
+/* 🔵 NÚT SLIDE 1 ( << - ĐÓNG SIDEBAR )                  */
+/* ==================================================== */
+[data-testid="stSidebarCollapseButton"] button,
+button[aria-label="Close sidebar"],
+button[aria-label="Collapse sidebar"] {{
     background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
-    border: 2px solid #E0F7FA !important;
+    color: #FFFFFF !important;
     border-radius: 30px !important;
-    padding: 6px 18px !important;
+    border: 2px solid #E0F7FA !important;
+    box-shadow: 0 0 15px rgba(0, 198, 255, 0.8) !important;
+    padding: 6px 28px !important;
     height: 38px !important;
-    min-width: 165px !important;
-    box-shadow: 0 0 15px rgba(0, 198, 255, 0.9), 0 0 25px rgba(0, 114, 255, 0.7) !important;
+    min-width: 90px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
     cursor: pointer !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-}}
-
-[data-testid*="Sidebar"] button svg,
-[data-testid*="sidebar"] button svg,
-header button[aria-label*="sidebar" i] svg {{
-    fill: #FFFFFF !important;
-    color: #FFFFFF !important;
-    stroke: #FFFFFF !important;
-    width: 18px !important;
-    height: 18px !important;
-}}
-
-/* ---------------------------------------------------- */
-/* ⚡ NÚT ĐÓNG SIDEBAR ( << ) BÊN TRONG SIDEBAR        */
-/* ---------------------------------------------------- */
-[data-testid="stSidebarCollapseButton"] button,
-button[aria-label="Close sidebar"],
-button[aria-label="Collapse sidebar"] {{
-    background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%) !important;
-    color: #FFFFFF !important;
-    border-radius: 50% !important;
-    border: 1px solid #42A5F5 !important;
-    box-shadow: 0 0 10px rgba(30, 136, 229, 0.5) !important;
-    transition: all 0.3s ease !important;
 }}
 
 [data-testid="stSidebarCollapseButton"] button svg {{
     fill: #FFFFFF !important;
     color: #FFFFFF !important;
+    stroke: #FFFFFF !important;
+    width: 20px !important;
+    height: 20px !important;
 }}
 
+/* Hiệu ứng TRƯỢT NGANG SANG TRÁI khi di chuột nút Slide 1 */
 [data-testid="stSidebarCollapseButton"] button:hover {{
-    transform: scale(1.1) rotate(-90deg) !important;
-    box-shadow: 0 0 18px rgba(66, 165, 245, 0.9) !important;
+    transform: translateX(-8px) scale(1.05) !important;
+    box-shadow: 0 0 25px rgba(0, 198, 255, 1) !important;
+}}
+
+/* ==================================================== */
+/* 🔵 NÚT SLIDE 2 ( >> - MỞ SIDEBAR )                   */
+/* ==================================================== */
+[data-testid="stSidebarCollapsedControl"],
+[data-testid="stSidebarCollapsedControl"] button,
+button[aria-label="Expand sidebar"],
+button[aria-label="Open sidebar"],
+header button[aria-label*="sidebar" i],
+header button[aria-label*="Sidebar" i] {{
+    background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
+    color: #FFFFFF !important;
+    border-radius: 30px !important;
+    border: 2px solid #E0F7FA !important;
+    box-shadow: 0 0 15px rgba(0, 198, 255, 0.8) !important;
+    padding: 6px 28px !important;
+    height: 38px !important;
+    min-width: 90px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+}}
+
+[data-testid="stSidebarCollapsedControl"] svg,
+[data-testid="stSidebarCollapsedControl"] button svg,
+header button[aria-label*="sidebar" i] svg {{
+    fill: #FFFFFF !important;
+    color: #FFFFFF !important;
+    stroke: #FFFFFF !important;
+    width: 20px !important;
+    height: 20px !important;
+}}
+
+/* Hiệu ứng TRƯỢT NGANG SANG PHẢI khi di chuột nút Slide 2 */
+[data-testid="stSidebarCollapsedControl"] button:hover,
+header button[aria-label*="sidebar" i]:hover {{
+    transform: translateX(8px) scale(1.05) !important;
+    box-shadow: 0 0 25px rgba(0, 198, 255, 1) !important;
 }}
 
 /* ---------------------------------------------------- */
@@ -226,52 +237,6 @@ button[aria-label="Collapse sidebar"] {{
 </style>
 """
 st.markdown(css_style, unsafe_allow_html=True)
-
-# 🚀 ÉP BẮT MÀU NÚT BẰNG JAVASCRIPT TRỰC TIẾP
-components.html(
-    """
-    <script>
-    function forceStyleSidebarButton() {
-        const doc = window.parent.document;
-        // Tìm tất cả các nút có khả năng là nút đóng/mở sidebar
-        const targets = doc.querySelectorAll('[data-testid="stSidebarCollapsedControl"] button, [data-testid="stSidebarControl"] button, header button[aria-label*="sidebar" i], header button[aria-label*="Sidebar" i]');
-        
-        targets.forEach(btn => {
-            if (btn) {
-                btn.style.background = 'linear-gradient(135deg, #00C6FF 0%, #0072FF 100%)';
-                btn.style.border = '2px solid #E0F7FA';
-                btn.style.borderRadius = '30px';
-                btn.style.boxShadow = '0 0 15px rgba(0, 198, 255, 0.9)';
-                btn.style.padding = '6px 16px';
-                
-                // Đảm bảo icon mũi tên trắng rõ
-                const svgs = btn.querySelectorAll('svg');
-                svgs.forEach(svg => {
-                    svg.style.fill = '#FFFFFF';
-                    svg.style.color = '#FFFFFF';
-                });
-
-                // Thêm chữ TRƯỢT ĐỂ MỞ nếu chưa có
-                if (!btn.querySelector('.custom-btn-text')) {
-                    const span = doc.createElement('span');
-                    span.className = 'custom-btn-text';
-                    span.innerText = ' TRƯỢT ĐỂ MỞ ❯❯';
-                    span.style.color = '#FFFFFF';
-                    span.style.fontSize = '12px';
-                    span.style.fontWeight = '800';
-                    span.style.marginLeft = '6px';
-                    span.style.whiteSpace = 'nowrap';
-                    btn.appendChild(span);
-                }
-            }
-        });
-    }
-    // Chạy lặp để kiểm soát sự kiện đóng/mở
-    setInterval(forceStyleSidebarButton, 300);
-    </script>
-""",
-    height=0,
-)
 
 
 # ==========================================
