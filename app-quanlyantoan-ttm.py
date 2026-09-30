@@ -10,7 +10,7 @@ import streamlit as st
 # ==========================================
 st.set_page_config(
     page_title="Quản Lý An Toàn TTM",
-    page_icon="🛡️️",
+    page_icon="🛡",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -35,9 +35,9 @@ if "main_menu" not in st.session_state:
 # Xử lý CSS Giao diện
 css_style = """
 <style>
-.block-container { padding-top: 2.5rem !important; padding-bottom: 1rem !important; }
+.block-container { padding-top: 2rem !important; padding-bottom: 1rem !important; }
 
-/* Tùy chỉnh nút Menu ở Sidebar chuyên nghiệp */
+/* Tùy chỉnh nút Menu ở Sidebar */
 [data-testid="stSidebar"] div.stButton > button {
     text-align: left !important;
     justify-content: flex-start !important;
@@ -51,8 +51,8 @@ css_style = """
 if st.session_state.get("dark_mode"):
   css_style += """
 <style>
-.stApp { background-color: #1E1E1E !important; color: #FFFFFF !important; }
-.stSidebar { background-color: #2D2D2D !important; }
+.stApp { background-color: #0E1117 !important; color: #FFFFFF !important; }
+.stSidebar { background-color: #161B22 !important; }
 h1, h2, h3, h4, h5, h6, p, span, div, strong { color: #E0E0E0 !important; }
 </style>
 """
@@ -236,42 +236,37 @@ def generate_excel_download(df, sheet_name):
   return output.getvalue()
 
 
-# Bảng chuẩn HTML Responsive
+# BẢNG HTML TỰ ĐỘNG CỐ ĐỊNH THANH TIÊU ĐỀ KHI CUỘN
 def create_responsive_table(df, main_col_name, extra_cols=None):
   if extra_cols is None:
     extra_cols = []
+
+  # Khung chứa hỗ trợ cuộn dọc max 520px
   html = (
-      '<div style="overflow-x: auto; margin-bottom: 20px; border-radius: 6px;'
-      ' border: 1px solid #555;">'
+      '<div style="max-height: 520px; overflow-y: auto; overflow-x: auto;'
+      ' margin-bottom: 20px; border-radius: 8px; border: 1px solid #333333;'
+      ' background-color: #0E1117;">'
   )
   html += (
-      '<table style="width: 100%; border-collapse: collapse; font-size:'
-      ' 14.5px; text-align: left;">'
+      '<table style="width: 100%; border-collapse: separate; border-spacing: 0;'
+      ' font-size: 14.5px; text-align: left;">'
   )
-  html += '<thead style="background-color: rgba(30, 136, 229, 0.1);">'
-  html += '<tr style="border-bottom: 2px solid #1E88E5;">'
-  html += (
-      '<th style="padding: 12px; color: #1E88E5; white-space:'
-      ' nowrap;">STT</th>'
+
+  # Style cố định tiêu đề (Sticky Header)
+  th_style = (
+      'padding: 12px; color: #1E88E5; position: sticky; top: 0;'
+      ' background-color: #161B22; z-index: 10; border-bottom: 2px solid'
+      ' #1E88E5; box-shadow: 0 2px 4px rgba(0,0,0,0.5); font-weight: bold;'
   )
-  html += (
-      f'<th style="padding: 12px; color: #1E88E5; min-width:'
-      f' 250px;">{main_col_name}</th>'
-  )
+
+  html += '<thead><tr>'
+  html += f'<th style="{th_style} white-space: nowrap;">STT</th>'
+  html += f'<th style="{th_style} min-width: 250px;">{main_col_name}</th>'
   for ec in extra_cols:
-    html += (
-        f'<th style="padding: 12px; color: #1E88E5; white-space:'
-        f' nowrap;">{ec}</th>'
-    )
-  html += (
-      '<th style="padding: 12px; color: #1E88E5; min-width: 150px;">Links truy'
-      " cập</th>"
-  )
-  html += (
-      '<th style="padding: 12px; color: #1E88E5; min-width: 200px;">Ghi'
-      " chú</th>"
-  )
-  html += "</tr></thead><tbody>"
+    html += f'<th style="{th_style} white-space: nowrap;">{ec}</th>'
+  html += f'<th style="{th_style} min-width: 150px;">Links truy cập</th>'
+  html += f'<th style="{th_style} min-width: 200px;">Ghi chú</th>'
+  html += '</tr></thead><tbody>'
 
   if df.empty:
     html += (
@@ -280,42 +275,54 @@ def create_responsive_table(df, main_col_name, extra_cols=None):
     )
   else:
     for idx, row in df.iterrows():
-      html += '<tr style="border-bottom: 1px dashed #666;">'
+      html += '<tr style="border-bottom: 1px solid #222;">'
       html += (
-          '<td style="padding: 12px; font-weight:'
-          f' bold;">{row.get("STT", "")}</td>'
+          '<td style="padding: 12px; font-weight: bold; border-bottom: 1px'
+          f' solid #262730;">{row.get("STT", "")}</td>'
       )
-      html += f'<td style="padding: 12px;">{row.get(main_col_name, "")}</td>'
+      html += (
+          '<td style="padding: 12px; border-bottom: 1px solid'
+          f' #262730;">{row.get(main_col_name, "")}</td>'
+      )
       for ec in extra_cols:
-        html += f'<td style="padding: 12px;">{row.get(ec, "")}</td>'
+        html += (
+            '<td style="padding: 12px; border-bottom: 1px solid'
+            f' #262730;">{row.get(ec, "")}</td>'
+        )
 
       links = []
       l1, l2, l3 = (
-          row.get("Link 1", ""),
-          row.get("Link 2", ""),
-          row.get("Link 3", ""),
+          row.get('Link 1', ''),
+          row.get('Link 2', ''),
+          row.get('Link 3', ''),
       )
-      if l1 and str(l1).strip().startswith("http"):
+      if l1 and str(l1).strip().startswith('http'):
         links.append(
             f'<a href="{str(l1).strip()}" target="_blank" style="color:'
             ' #64B5F6; text-decoration: none; font-weight: bold;">Link 1</a>'
         )
-      if l2 and str(l2).strip().startswith("http"):
+      if l2 and str(l2).strip().startswith('http'):
         links.append(
             f'<a href="{str(l2).strip()}" target="_blank" style="color:'
             ' #64B5F6; text-decoration: none; font-weight: bold;">Link 2</a>'
         )
-      if l3 and str(l3).strip().startswith("http"):
+      if l3 and str(l3).strip().startswith('http'):
         links.append(
             f'<a href="{str(l3).strip()}" target="_blank" style="color:'
             ' #64B5F6; text-decoration: none; font-weight: bold;">Link 3</a>'
         )
-      links_str = " | ".join(links) if links else "-"
+      links_str = ' | '.join(links) if links else '-'
 
-      html += f'<td style="padding: 12px;">{links_str}</td>'
-      html += f'<td style="padding: 12px;">{row.get("Ghi chú", "")}</td>'
-      html += "</tr>"
-  html += "</tbody></table></div>"
+      html += (
+          '<td style="padding: 12px; border-bottom: 1px solid'
+          f' #262730;">{links_str}</td>'
+      )
+      html += (
+          '<td style="padding: 12px; border-bottom: 1px solid'
+          f' #262730;">{row.get("Ghi chú", "")}</td>'
+      )
+      html += '</tr>'
+  html += '</tbody></table></div>'
   return html
 
 
@@ -598,9 +605,6 @@ def edit_bc_dialog(idx):
 # 4. SIDEBAR (THANH ĐIỀU HƯỚNG BÊN TRÁI)
 # ==========================================
 with st.sidebar:
-  # ----------------------------------------
-  # A. TIÊU ĐỀ VÀ PHIÊN BẢN HỆ THỐNG
-  # ----------------------------------------
   st.title("🛡️ Quản Lý An Toàn TTM")
   st.caption(
       f"📌 Phiên bản hiệu chỉnh: {TODAY_STR} _ lần"
@@ -608,9 +612,6 @@ with st.sidebar:
   )
   st.divider()
 
-  # ----------------------------------------
-  # B. PHÂN VÙNG LÀM VIỆC (NÚT BẤM DẠNG MENU)
-  # ----------------------------------------
   st.header("📂 PHÂN VÙNG LÀM VIỆC")
 
   menu_options = [
@@ -621,7 +622,6 @@ with st.sidebar:
   ]
 
   for item in menu_options:
-    # Nếu là mục đang chọn thì hiển thị nổi bật dạng Primary
     is_active = st.session_state.main_menu == item
     btn_type = "primary" if is_active else "secondary"
 
@@ -633,7 +633,6 @@ with st.sidebar:
 
   main_menu = st.session_state.main_menu
 
-  # Cấu hình Thư mục dành cho ADMIN
   if st.session_state.get("is_admin"):
     st.divider()
     st.header("⚙️ Cấu Hình Thư Mục")
@@ -664,9 +663,6 @@ with st.sidebar:
 
   st.divider()
 
-  # ----------------------------------------
-  # C. CỤM NGƯỜI DÙNG & TIỆN ÍCH (GÓC DƯỚI)
-  # ----------------------------------------
   st.markdown("### 👤 Người dùng: `ttm`")
   if st.session_state.get("is_admin"):
     st.success("Quyền hiện tại: ADMIN")
@@ -680,13 +676,11 @@ with st.sidebar:
       st.cache_data.clear()
       st.success("Đã xóa cache!")
 
-  # Nút Chế độ Sáng/Tối
   theme_label = "☀️ Sáng" if st.session_state.get("dark_mode") else "🌙 Tối"
   if st.button(theme_label, use_container_width=True):
     st.session_state.dark_mode = not st.session_state.dark_mode
     st.rerun()
 
-  # Đăng nhập/Đăng xuất Admin
   if st.session_state.get("is_admin"):
     if st.button("🔓 Thoát chế độ Admin", use_container_width=True):
       st.session_state.is_admin = False
@@ -704,7 +698,7 @@ with st.sidebar:
 # PHẦN 1: DS WEBsites_CV
 # ------------------------------------------
 if main_menu == "1 🌐 DS WEBsites_CV":
-  st.subheader("🌐 Danh Sách Các Website Hỗ Trợ CV")
+  st.title("🌐 Danh Sách Các Website Hỗ Trợ CV")
 
   st.markdown(
       create_responsive_table(st.session_state.web_tools_df, "Mô tả WEB"),
@@ -750,7 +744,7 @@ if main_menu == "1 🌐 DS WEBsites_CV":
         else:
           st.info("Bảng đang trống.")
 
-    with st.expander("⚙️ Quản lý Nhập / Xuất Excel (WEBsites)", expanded=False):
+    with st.expander("⚙️️ Quản lý Nhập / Xuất Excel (WEBsites)", expanded=False):
       col_w1, col_w2 = st.columns(2)
       with col_w1:
         st.markdown("#### Tải dữ liệu xuống máy")
@@ -791,7 +785,7 @@ if main_menu == "1 🌐 DS WEBsites_CV":
 # ------------------------------------------
 elif main_menu == "2 📋 DM QL Files_CV":
   selected_cat = st.selectbox("📌 Chọn Mảng Công Việc:", CATEGORIES)
-  st.subheader(f"📂 Hồ Sơ: {selected_cat}")
+  st.title(f"📂 Hồ Sơ: {selected_cat}")
 
   st.markdown(
       create_responsive_table(
@@ -884,7 +878,7 @@ elif main_menu == "2 📋 DM QL Files_CV":
 # PHẦN 3: DS BCdinhky_CV
 # ------------------------------------------
 elif main_menu == "3 📊 DS BCdinhky_CV":
-  st.subheader("📊 Quản Lý Báo Cáo Định Kỳ")
+  st.title("📊 Quản Lý Báo Cáo Định Kỳ")
 
   st.markdown(
       create_responsive_table(
@@ -969,7 +963,7 @@ elif main_menu == "3 📊 DS BCdinhky_CV":
 # PHẦN 4: DS Gsheet_CV
 # ------------------------------------------
 elif main_menu == "4 🟢 DS Gsheet_CV":
-  st.subheader("🟢 Danh Sách Gsheet Hỗ Trợ CV")
+  st.title("🟢 Danh Sách Gsheet Hỗ Trợ CV")
 
   st.markdown(
       create_responsive_table(
@@ -1032,7 +1026,7 @@ elif main_menu == "4 🟢 DS Gsheet_CV":
         else:
           st.info("Bảng đang trống.")
 
-    with st.expander("⚙️ Quản lý Nhập / Xuất Excel (Gsheet)", expanded=False):
+    with st.expander("⚙️️ Quản lý Nhập / Xuất Excel (Gsheet)", expanded=False):
       col_g1, col_g2 = st.columns(2)
       with col_g1:
         st.markdown("#### Tải dữ liệu xuống máy")
