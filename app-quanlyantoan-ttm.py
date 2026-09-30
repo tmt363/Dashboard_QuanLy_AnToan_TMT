@@ -10,7 +10,7 @@ import streamlit as st
 # ==========================================
 st.set_page_config(
     page_title="Quản Lý An Toàn TTM",
-    page_icon="🛡️️",
+    page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -33,7 +33,7 @@ if "theme_mode" not in st.session_state:
   st.session_state.theme_mode = "Dark"
 
 # ==========================================
-# 2. BỘ MÃ CSS TỐI ƯU GIAO DIỆN VÀ TƯƠNG PHẢN
+# 2. BỘ MÃ CSS TỐI ƯU GIAO DIỆN VÀ NÚT RỰC SÁNG
 # ==========================================
 is_dark = st.session_state.theme_mode == "Dark"
 
@@ -42,7 +42,7 @@ bg_app = "#0B0F19" if is_dark else "#F1F5F9"
 text_app = "#F8FAFC" if is_dark else "#0F172A"
 
 sidebar_bg = "#111827" if is_dark else "#FFFFFF"
-sidebar_text = "#F8FAFC" if is_dark else "#0F172A"  # Chữ cực rõ trên nền sáng/tối
+sidebar_text = "#F8FAFC" if is_dark else "#0F172A"
 sidebar_caption = "#94A3B8" if is_dark else "#475569"
 sidebar_border = "rgba(255, 255, 255, 0.1)" if is_dark else "#CBD5E1"
 
@@ -69,36 +69,80 @@ css_style = f"""
 }}
 
 /* ---------------------------------------------------- */
-/* 🌟 1. NÚT MỞ SIDEBAR ( >> ) NỔI BẬT CHỐNG ẨN        */
+/* 🌟 1. NÚT MỞ SIDEBAR ( >> ) RỰC SÁNG "TRƯỢT ĐỂ MỞ"   */
 /* ---------------------------------------------------- */
-[data-testid="stSidebarCollapsedControl"] {{
+[data-testid="stSidebarCollapsedControl"],
+div[data-testid="stSidebarCollapsedControl"],
+button[aria-label="Open sidebar"],
+button[aria-label="Expand sidebar"] {{
     position: fixed !important;
-    top: 12px !important;
+    top: 10px !important;
     left: 12px !important;
     z-index: 99999 !important;
-}}
-
-[data-testid="stSidebarCollapsedControl"] button {{
+    display: inline-flex !important;
+    align-items: center !important;
     background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
-    border: 2px solid #FFFFFF !important;
-    border-radius: 10px !important;
-    box-shadow: 0 0 15px rgba(0, 198, 255, 0.8) !important;
-    padding: 6px 10px !important;
-    transition: all 0.3s ease !important;
+    border: 2px solid #E0F7FA !important;
+    border-radius: 30px !important;
+    padding: 3px 14px 3px 5px !important;
+    box-shadow: 0 0 15px rgba(0, 198, 255, 0.9), 0 0 25px rgba(0, 114, 255, 0.7) !important;
+    animation: pulseGlow 2s infinite alternate !important;
+    cursor: pointer !important;
 }}
 
-[data-testid="stSidebarCollapsedControl"] button:hover {{
-    transform: scale(1.1) !important;
-    box-shadow: 0 0 22px rgba(0, 198, 255, 1) !important;
+@keyframes pulseGlow {{
+    0% {{ 
+        box-shadow: 0 0 12px rgba(0, 198, 255, 0.7), 0 0 20px rgba(0, 114, 255, 0.5); 
+        transform: scale(1);
+    }}
+    100% {{ 
+        box-shadow: 0 0 25px rgba(0, 198, 255, 1), 0 0 35px rgba(0, 114, 255, 0.9); 
+        transform: scale(1.04);
+    }}
 }}
 
-/* Ép biểu tượng mũi tên >> bên trong nút thành màu trắng rõ nét */
-[data-testid="stSidebarCollapsedControl"] button svg {{
-    fill: #FFFFFF !important;
+/* Hình tròn màu trắng bao quanh icon mũi tên */
+[data-testid="stSidebarCollapsedControl"] button,
+button[aria-label="Open sidebar"],
+button[aria-label="Expand sidebar"] {{
+    background: #FFFFFF !important;
+    border-radius: 50% !important;
+    width: 28px !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    min-width: 28px !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+}}
+
+/* Mũi tên xanh đậm bên trong tròn trắng */
+[data-testid="stSidebarCollapsedControl"] svg,
+button[aria-label="Open sidebar"] svg,
+button[aria-label="Expand sidebar"] svg {{
+    fill: #0072FF !important;
+    color: #0072FF !important;
+    stroke: #0072FF !important;
+    width: 18px !important;
+    height: 18px !important;
+}}
+
+/* Dòng chữ TRƯỢT ĐỂ MỞ ❯❯ */
+[data-testid="stSidebarCollapsedControl"]::after,
+button[aria-label="Open sidebar"]::after,
+button[aria-label="Expand sidebar"]::after {{
+    content: "TRƯỢT ĐỂ MỞ ❯❯" !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1.2px !important;
+    margin-left: 8px !important;
     color: #FFFFFF !important;
-    stroke: #FFFFFF !important;
-    width: 22px !important;
-    height: 22px !important;
+    text-shadow: 0 0 8px rgba(255,255,255,0.9) !important;
+    white-space: nowrap !important;
 }}
 
 /* ---------------------------------------------------- */
