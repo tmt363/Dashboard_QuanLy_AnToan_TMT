@@ -32,7 +32,7 @@ if "theme_mode" not in st.session_state:
     st.session_state.theme_mode = "Dark"
 
 # ==========================================
-# 2. BỘ MÃ CSS ÉP NÚT VÀ GIAO DIỆN CHUẨN
+# 2. BỘ MÃ CSS ĐỒNG BỘ 100% HAI NÚT SLIDE
 # ==========================================
 is_dark = st.session_state.theme_mode == "Dark"
 
@@ -66,13 +66,12 @@ header[data-testid="stHeader"] {{
     z-index: 99999 !important;
 }}
 
-/* Nút trượt Sidebar màu xanh Gradient (Ép cả nút đóng và mở) */
-[data-testid="stSidebarCollapseButton"] button, 
-[data-testid="collapsedControl"], 
-[data-testid="collapsedControl"] button, 
-[data-testid="stSidebarCollapsedControl"],
-button[aria-label*="sidebar" i],
-button[aria-label*="Sidebar" i] {{
+/* ==================================================== */
+/* 🔵 CHIẾN DỊCH ÉP MÀU XANH CHO CẢ 2 NÚT (<< VÀ >>)      */
+/* ==================================================== */
+
+/* 1. Nút Đóng Sidebar (<<) */
+[data-testid="stSidebarCollapseButton"] button {{
     background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
     color: #FFFFFF !important;
     border-radius: 30px !important;
@@ -81,35 +80,57 @@ button[aria-label*="Sidebar" i] {{
     padding: 6px 24px !important;
     height: 38px !important;
     min-width: 85px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    cursor: pointer !important;
     transition: all 0.3s ease !important;
-    opacity: 1 !important;
-    visibility: visible !important;
+}}
+[data-testid="stSidebarCollapseButton"] button:hover {{
+    box-shadow: 0 0 25px rgba(0, 198, 255, 1) !important;
+    transform: scale(1.05) !important;
+}}
+[data-testid="stSidebarCollapseButton"] svg {{
+    fill: #FFFFFF !important; 
+    color: #FFFFFF !important; 
 }}
 
-/* Đảm bảo mũi tên màu trắng */
-[data-testid="stSidebarCollapseButton"] svg, 
+/* 2. Nút Mở Sidebar (>>) - Ép bằng vùng chứa do Streamlit giấu nút gốc */
+[data-testid="collapsedControl"] {{
+    background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
+    border-radius: 30px !important;
+    border: 2px solid #E0F7FA !important;
+    box-shadow: 0 0 15px rgba(0, 198, 255, 0.8) !important;
+    height: 38px !important;
+    width: 85px !important;
+    min-width: 85px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin-top: 14px !important; 
+    margin-left: 14px !important;
+    transition: all 0.3s ease !important;
+    z-index: 999999 !important;
+    cursor: pointer !important;
+}}
+[data-testid="collapsedControl"]:hover {{
+    box-shadow: 0 0 25px rgba(0, 198, 255, 1) !important;
+    transform: scale(1.05) !important;
+}}
+/* Tàng hình nút mặc định bên trong để lộ lớp nền xanh mới */
+[data-testid="collapsedControl"] button {{
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    height: 100% !important;
+}}
 [data-testid="collapsedControl"] svg, 
-[data-testid="stSidebarCollapsedControl"] svg,
-button[aria-label*="sidebar" i] svg {{
+[data-testid="collapsedControl"] path {{
     fill: #FFFFFF !important; 
     color: #FFFFFF !important; 
     stroke: #FFFFFF !important;
 }}
 
-/* Hiệu ứng khi đưa chuột vào nút */
-[data-testid="stSidebarCollapseButton"] button:hover, 
-[data-testid="collapsedControl"]:hover, 
-[data-testid="stSidebarCollapsedControl"]:hover,
-button[aria-label*="sidebar" i]:hover {{
-    box-shadow: 0 0 25px rgba(0, 198, 255, 1) !important;
-    transform: scale(1.05) !important;
-}}
-
-/* Sidebar UI */
+/* ==================================================== */
+/* 🎨 CẤU HÌNH SIDEBAR VÀ BẢNG                          */
+/* ==================================================== */
 [data-testid="stSidebar"] {{
     background-color: {sidebar_bg} !important;
     border-right: 1px solid {sidebar_border} !important;
@@ -386,7 +407,6 @@ def render_admin_panel(df_key, cat_key=None, main_col="Mô tả", title="Dữ li
 if main_menu == "1 🌐 DS WEBsites_CV":
     st.markdown(create_responsive_table(st.session_state.web_tools_df, "Mô tả WEB"), unsafe_allow_html=True)
     if st.session_state.is_admin: 
-        # Nút Thêm mới và Sửa hiển thị riêng cho mục 1 như bạn yêu cầu ban đầu
         c1, c2 = st.columns(2)
         if c1.button("➕ Thêm mới Website", type="primary"): add_web_dialog()
         render_admin_panel("web_tools_df", title="WEBSITES")
