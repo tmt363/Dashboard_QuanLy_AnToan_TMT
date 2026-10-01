@@ -25,7 +25,7 @@ if "is_admin" not in st.session_state:
 if "excel_dir" not in st.session_state:
     st.session_state.excel_dir = DEFAULT_EXCEL_DIR
 if "lan_hieuchinh" not in st.session_state:
-    st.session_state.lan_hieuchinh = "002"
+    st.session_state.lan_hieuchinh = "003"
 if "main_menu" not in st.session_state:
     st.session_state.main_menu = "1 🌐 DS WEBsites_CV"
 if "theme_mode" not in st.session_state:
@@ -66,8 +66,13 @@ header[data-testid="stHeader"] {{
     z-index: 99999 !important;
 }}
 
-/* Nút trượt Sidebar màu xanh Gradient */
-[data-testid="stSidebarCollapseButton"] button, [data-testid="collapsedControl"] button, button[aria-label*="sidebar" i] {{
+/* Nút trượt Sidebar màu xanh Gradient (Ép cả nút đóng và mở) */
+[data-testid="stSidebarCollapseButton"] button, 
+[data-testid="collapsedControl"], 
+[data-testid="collapsedControl"] button, 
+[data-testid="stSidebarCollapsedControl"],
+button[aria-label*="sidebar" i],
+button[aria-label*="Sidebar" i] {{
     background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
     color: #FFFFFF !important;
     border-radius: 30px !important;
@@ -79,9 +84,29 @@ header[data-testid="stHeader"] {{
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }}
-[data-testid="stSidebarCollapseButton"] svg, [data-testid="collapsedControl"] svg, button[aria-label*="sidebar" i] svg {{
-    fill: #FFFFFF !important; color: #FFFFFF !important; stroke: #FFFFFF !important;
+
+/* Đảm bảo mũi tên màu trắng */
+[data-testid="stSidebarCollapseButton"] svg, 
+[data-testid="collapsedControl"] svg, 
+[data-testid="stSidebarCollapsedControl"] svg,
+button[aria-label*="sidebar" i] svg {{
+    fill: #FFFFFF !important; 
+    color: #FFFFFF !important; 
+    stroke: #FFFFFF !important;
+}}
+
+/* Hiệu ứng khi đưa chuột vào nút */
+[data-testid="stSidebarCollapseButton"] button:hover, 
+[data-testid="collapsedControl"]:hover, 
+[data-testid="stSidebarCollapsedControl"]:hover,
+button[aria-label*="sidebar" i]:hover {{
+    box-shadow: 0 0 25px rgba(0, 198, 255, 1) !important;
+    transform: scale(1.05) !important;
 }}
 
 /* Sidebar UI */
@@ -232,9 +257,36 @@ def admin_login_dialog():
             st.rerun()
         else: st.error("Mật khẩu sai!")
 
-def render_admin_dialog(df_name, title, col_main, extra_cols=None):
-    if extra_cols is None: extra_cols = []
-    # Hàm Dialog dùng chung để tối ưu code (Sẽ dùng trực tiếp trong code UI)
+@st.dialog("➕ Thêm mới Website_CV")
+def add_web_dialog():
+    mota = st.text_input("Mô tả WEB (*):")
+    l1 = st.text_input("Link 1 (*):")
+    l2 = st.text_input("Link 2 (bổ sung):")
+    l3 = st.text_input("Link 3 (bổ sung):")
+    ghichu = st.text_input("Ghi chú:")
+    if st.button("💾 Lưu Mới", type="primary", use_container_width=True):
+        if mota:
+            new_row = pd.DataFrame([{"Mô tả WEB": mota, "Link 1": l1, "Link 2": l2, "Link 3": l3, "Ghi chú": ghichu}])
+            st.session_state.web_tools_df = reindex_df(pd.concat([st.session_state.web_tools_df, new_row], ignore_index=True))
+            st.success("Đã thêm thành công!")
+            st.rerun()
+        else:
+            st.warning("Vui lòng nhập mô tả WEB!")
+
+@st.dialog("✏️ Chỉnh sửa Website_CV")
+def edit_web_dialog(idx):
+    df = st.session_state.web_tools_df
+    row = df.loc[idx]
+    mota = st.text_input("Mô tả WEB:", value=row["Mô tả WEB"])
+    l1 = st.text_input("Link 1:", value=row["Link 1"])
+    l2 = st.text_input("Link 2:", value=row["Link 2"])
+    l3 = st.text_input("Link 3:", value=row["Link 3"])
+    ghichu = st.text_input("Ghi chú:", value=row["Ghi chú"])
+    if st.button("💾 Cập Nhật", type="primary", use_container_width=True):
+        st.session_state.web_tools_df.loc[idx, ["Mô tả WEB", "Link 1", "Link 2", "Link 3", "Ghi chú"]] = [mota, l1, l2, l3, ghichu]
+        st.session_state.web_tools_df = reindex_df(st.session_state.web_tools_df)
+        st.success("Đã cập nhật!")
+        st.rerun()
 
 # ==========================================
 # 5. SIDEBAR
@@ -333,7 +385,11 @@ def render_admin_panel(df_key, cat_key=None, main_col="Mô tả", title="Dữ li
 # --- HIỂN THỊ THEO MENU ---
 if main_menu == "1 🌐 DS WEBsites_CV":
     st.markdown(create_responsive_table(st.session_state.web_tools_df, "Mô tả WEB"), unsafe_allow_html=True)
-    if st.session_state.is_admin: render_admin_panel("web_tools_df", title="WEBSITES")
+    if st.session_state.is_admin: 
+        # Nút Thêm mới và Sửa hiển thị riêng cho mục 1 như bạn yêu cầu ban đầu
+        c1, c2 = st.columns(2)
+        if c1.button("➕ Thêm mới Website", type="primary"): add_web_dialog()
+        render_admin_panel("web_tools_df", title="WEBSITES")
 
 elif main_menu == "2 📋 DM QL Files_CV":
     selected_cat = st.selectbox("📌 Chọn Mảng Công Việc:", CATEGORIES)
