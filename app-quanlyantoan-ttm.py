@@ -2,6 +2,7 @@ import io
 from datetime import datetime
 import os
 import openpyxl
+from openpyxl.styles import PatternFill, Font, Alignment
 import pandas as pd
 import streamlit as st
 
@@ -25,14 +26,14 @@ if "is_admin" not in st.session_state:
 if "excel_dir" not in st.session_state:
     st.session_state.excel_dir = DEFAULT_EXCEL_DIR
 if "lan_hieuchinh" not in st.session_state:
-    st.session_state.lan_hieuchinh = "005"
+    st.session_state.lan_hieuchinh = "006"
 if "main_menu" not in st.session_state:
     st.session_state.main_menu = "1 🌐 DS WEBsites_CV"
 if "theme_mode" not in st.session_state:
     st.session_state.theme_mode = "Dark"
 
 # ==========================================
-# 2. BỘ MÃ CSS ÉP NÚT VÀ GIAO DIỆN CHUẨN
+# 2. BỘ MÃ CSS TỐI ƯU HÓA
 # ==========================================
 is_dark = st.session_state.theme_mode == "Dark"
 
@@ -66,64 +67,15 @@ header[data-testid="stHeader"] {{
     z-index: 99999 !important;
 }}
 
-/* ==================================================== */
-/* 🔵 CHIẾN DỊCH ÉP CẢ 2 NÚT MỞ/ĐÓNG SIDEBAR MÀU XANH    */
-/* ==================================================== */
-
-/* Nhắm mục tiêu trực tiếp vào thẻ BUTTON sâu nhất của cả 2 trạng thái */
-button[data-testid="collapsedControl"],
-div[data-testid="collapsedControl"] button,
-button[data-testid="stSidebarCollapsedControl"],
-div[data-testid="stSidebarCollapsedControl"] button,
-[data-testid="stSidebarCollapseButton"] button {{
-    background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
-    color: #FFFFFF !important;
-    border-radius: 50px !important;
-    border: 2px solid #E0F7FA !important;
-    box-shadow: 0 0 15px rgba(0, 198, 255, 0.8) !important;
-    height: 38px !important;
-    width: 38px !important;
-    min-width: 38px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    transition: all 0.3s ease !important;
-    opacity: 1 !important;
-    visibility: visible !important;
+/* Trả lại thiết kế gốc ổn định cho nút Menu Mở rộng/Thu gọn của Streamlit */
+[data-testid="collapsedControl"], [data-testid="stSidebarCollapseButton"] {{
+    transition: transform 0.2s ease !important;
 }}
-
-/* Hiệu ứng Phóng to / Sáng lên khi di chuột */
-button[data-testid="collapsedControl"]:hover,
-div[data-testid="collapsedControl"] button:hover,
-button[data-testid="stSidebarCollapsedControl"]:hover,
-div[data-testid="stSidebarCollapsedControl"] button:hover,
-[data-testid="stSidebarCollapseButton"] button:hover {{
-    box-shadow: 0 0 25px rgba(0, 198, 255, 1) !important;
+[data-testid="collapsedControl"]:hover, [data-testid="stSidebarCollapseButton"]:hover {{
     transform: scale(1.1) !important;
 }}
 
-/* Ép màu mũi tên SVG bên trong thành Trắng Tinh */
-button[data-testid="collapsedControl"] svg,
-div[data-testid="collapsedControl"] button svg,
-button[data-testid="stSidebarCollapsedControl"] svg,
-div[data-testid="stSidebarCollapsedControl"] button svg,
-[data-testid="stSidebarCollapseButton"] button svg {{
-    fill: #FFFFFF !important; 
-    color: #FFFFFF !important; 
-    stroke: #FFFFFF !important;
-}}
-
-/* Xóa bỏ mọi định dạng nền rác của Streamlit (nếu có) trên thẻ div bao bọc ngoài nút >> */
-div[data-testid="collapsedControl"],
-div[data-testid="stSidebarCollapsedControl"] {{
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-}}
-
-/* ==================================================== */
-/* 🎨 CẤU HÌNH SIDEBAR VÀ BẢNG                          */
-/* ==================================================== */
+/* CẤU HÌNH SIDEBAR VÀ BẢNG */
 [data-testid="stSidebar"] {{
     background-color: {sidebar_bg} !important;
     border-right: 1px solid {sidebar_border} !important;
@@ -132,32 +84,26 @@ div[data-testid="stSidebarCollapsedControl"] {{
     color: {sidebar_text} !important;
 }}
 
-/* Làm cho TẤT CẢ các nút Menu đều có viền và chữ xanh đẹp mắt */
 [data-testid="stSidebar"] div.stButton > button {{
     width: 100% !important; text-align: left !important; justify-content: flex-start !important;
     padding: 12px 16px !important; font-weight: 600 !important; border-radius: 10px !important;
     transition: all 0.3s ease !important;
 }}
 
-/* Nút không được chọn (Secondary) */
 [data-testid="stSidebar"] div.stButton > button[kind="secondary"] {{
     border: 1px solid {btn_border} !important; 
     background: {btn_bg} !important; 
     color: {btn_text} !important;
-    box-shadow: 0 2px 5px rgba(30, 136, 229, 0.1) !important;
 }}
-
 [data-testid="stSidebar"] div.stButton > button[kind="secondary"]:hover {{
     background: rgba(30, 136, 229, 0.2) !important;
     transform: translateX(4px) !important;
 }}
 
-/* Nút đang được chọn (Primary) */
 [data-testid="stSidebar"] div.stButton > button[kind="primary"] {{
     background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%) !important; 
     color: #FFFFFF !important;
     border: 1px solid #42A5F5 !important; 
-    box-shadow: 0 4px 15px rgba(30, 136, 229, 0.4) !important;
 }}
 
 /* Nút Link trong Bảng */
@@ -181,7 +127,7 @@ st.markdown(css_style, unsafe_allow_html=True)
 
 
 # ==========================================
-# 3. DỮ LIỆU VÀ HÀM TRỢ GIÚP
+# 3. DỮ LIỆU VÀ HÀM TRỢ GIÚP (TÍCH HỢP XUẤT EXCEL KIỂU 2)
 # ==========================================
 TODAY_STR = datetime.now().strftime("%d/%m/%Y")
 DATE_STR = datetime.now().strftime("%Y%m%d")
@@ -213,19 +159,32 @@ def reindex_df(df):
         else: df[col] = df[col].fillna("")
     return df
 
-def auto_fit_columns(workbook):
-    for sheetname in workbook.sheetnames:
-        worksheet = workbook[sheetname]
+# Cập nhật hàm xuất Excel chuẩn Kiểu 2 (Màu xanh, tách cột)
+def generate_excel_download(df, sheet_name):
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        # Xuất dữ liệu thô (Các cột STT, Mô tả, Link 1, Link 2, Link 3, Ghi chú)
+        df.to_excel(writer, sheet_name=sheet_name, index=False)
+        
+        workbook = writer.book
+        worksheet = workbook[sheet_name]
+        
+        # Style Header: Nền Xanh lá cây (Kiểu 2), Chữ đen đậm
+        header_fill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
+        header_font = Font(bold=True, color="000000")
+        header_alignment = Alignment(horizontal="center", vertical="center")
+
+        for cell in worksheet[1]: # Dòng 1 là Header
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = header_alignment
+
+        # Căn chỉnh tự động độ rộng cột
         for col in worksheet.columns:
             max_len = max((len(str(cell.value)) for cell in col if cell.value), default=0)
             col_letter = openpyxl.utils.get_column_letter(col[0].column)
             worksheet.column_dimensions[col_letter].width = min(max(max_len + 4, 12), 60)
 
-def generate_excel_download(df, sheet_name):
-    output = io.BytesIO()
-    with pd.ExcelWriter(output, engine="openpyxl") as writer:
-        df.to_excel(writer, sheet_name=sheet_name, index=False)
-        auto_fit_columns(writer.book)
     return output.getvalue()
 
 def create_responsive_table(df, main_col_name, extra_cols=None):
@@ -396,7 +355,7 @@ def render_admin_panel(df_key, export_file_name, cat_key=None, title="Dữ liệ
     with st.expander(f"⚙️ Tải xuống / Tải lên Excel ({title})", expanded=False):
         c_up1, c_up2 = st.columns(2)
         with c_up1:
-            st.markdown("#### 📥 Tải xuống (Backup)")
+            st.markdown("#### 📥 Tải xuống (Backup Kiểu 2)")
             excel_data = generate_excel_download(df_target, "DATA")
             st.download_button("📥 Click để Tải File Excel", data=excel_data, file_name=export_file_name, mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", type="primary", use_container_width=True)
         with c_up2:
