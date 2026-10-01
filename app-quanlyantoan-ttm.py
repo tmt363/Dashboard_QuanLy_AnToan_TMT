@@ -25,14 +25,14 @@ if "is_admin" not in st.session_state:
 if "excel_dir" not in st.session_state:
     st.session_state.excel_dir = DEFAULT_EXCEL_DIR
 if "lan_hieuchinh" not in st.session_state:
-    st.session_state.lan_hieuchinh = "003"
+    st.session_state.lan_hieuchinh = "004"
 if "main_menu" not in st.session_state:
     st.session_state.main_menu = "1 🌐 DS WEBsites_CV"
 if "theme_mode" not in st.session_state:
     st.session_state.theme_mode = "Dark"
 
 # ==========================================
-# 2. BỘ MÃ CSS ĐỒNG BỘ 100% HAI NÚT SLIDE
+# 2. BỘ MÃ CSS ÉP NÚT VÀ GIAO DIỆN CHUẨN
 # ==========================================
 is_dark = st.session_state.theme_mode == "Dark"
 
@@ -42,9 +42,9 @@ sidebar_bg = "#111827" if is_dark else "#FFFFFF"
 sidebar_text = "#F8FAFC" if is_dark else "#0F172A"
 sidebar_caption = "#94A3B8" if is_dark else "#475569"
 sidebar_border = "rgba(255, 255, 255, 0.1)" if is_dark else "#CBD5E1"
-btn_bg = "rgba(255, 255, 255, 0.05)" if is_dark else "#F8FAFC"
-btn_text = "#E2E8F0" if is_dark else "#1E293B"
-btn_border = "rgba(255, 255, 255, 0.12)" if is_dark else "#94A3B8"
+btn_bg = "rgba(30, 136, 229, 0.1)" if is_dark else "rgba(30, 136, 229, 0.05)"
+btn_text = "#90CAF9" if is_dark else "#1E88E5"
+btn_border = "#1E88E5"
 
 css_style = f"""
 <style>
@@ -67,62 +67,38 @@ header[data-testid="stHeader"] {{
 }}
 
 /* ==================================================== */
-/* 🔵 CHIẾN DỊCH ÉP MÀU XANH CHO CẢ 2 NÚT (<< VÀ >>)      */
+/* 🔵 ÉP TẤT CẢ NÚT MỞ/ĐÓNG SIDEBAR MÀU XANH            */
 /* ==================================================== */
-
-/* 1. Nút Đóng Sidebar (<<) */
-[data-testid="stSidebarCollapseButton"] button {{
+[data-testid="stSidebarCollapseButton"] button, 
+[data-testid="collapsedControl"], 
+[data-testid="collapsedControl"] button, 
+[data-testid="stSidebarCollapsedControl"],
+button[aria-label="Expand sidebar"],
+button[aria-label="Collapse sidebar"],
+button[aria-label*="sidebar" i] {{
     background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
     color: #FFFFFF !important;
     border-radius: 30px !important;
     border: 2px solid #E0F7FA !important;
     box-shadow: 0 0 15px rgba(0, 198, 255, 0.8) !important;
-    padding: 6px 24px !important;
-    height: 38px !important;
-    min-width: 85px !important;
-    transition: all 0.3s ease !important;
-}}
-[data-testid="stSidebarCollapseButton"] button:hover {{
-    box-shadow: 0 0 25px rgba(0, 198, 255, 1) !important;
-    transform: scale(1.05) !important;
-}}
-[data-testid="stSidebarCollapseButton"] svg {{
-    fill: #FFFFFF !important; 
-    color: #FFFFFF !important; 
-}}
-
-/* 2. Nút Mở Sidebar (>>) - Ép bằng vùng chứa do Streamlit giấu nút gốc */
-[data-testid="collapsedControl"] {{
-    background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
-    border-radius: 30px !important;
-    border: 2px solid #E0F7FA !important;
-    box-shadow: 0 0 15px rgba(0, 198, 255, 0.8) !important;
-    height: 38px !important;
-    width: 85px !important;
-    min-width: 85px !important;
-    display: flex !important;
+    display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 999999 !important;
+}}
+
+[data-testid="collapsedControl"] {{
     margin-top: 14px !important; 
     margin-left: 14px !important;
-    transition: all 0.3s ease !important;
-    z-index: 999999 !important;
-    cursor: pointer !important;
+    width: 60px !important;
+    height: 38px !important;
 }}
-[data-testid="collapsedControl"]:hover {{
-    box-shadow: 0 0 25px rgba(0, 198, 255, 1) !important;
-    transform: scale(1.05) !important;
-}}
-/* Tàng hình nút mặc định bên trong để lộ lớp nền xanh mới */
-[data-testid="collapsedControl"] button {{
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    width: 100% !important;
-    height: 100% !important;
-}}
+
+[data-testid="stSidebarCollapseButton"] svg, 
 [data-testid="collapsedControl"] svg, 
-[data-testid="collapsedControl"] path {{
+button[aria-label*="sidebar" i] svg {{
     fill: #FFFFFF !important; 
     color: #FFFFFF !important; 
     stroke: #FFFFFF !important;
@@ -138,18 +114,33 @@ header[data-testid="stHeader"] {{
 [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h3, [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] div {{
     color: {sidebar_text} !important;
 }}
+
+/* Làm cho TẤT CẢ các nút Menu đều có viền và chữ xanh đẹp mắt */
 [data-testid="stSidebar"] div.stButton > button {{
     width: 100% !important; text-align: left !important; justify-content: flex-start !important;
     padding: 12px 16px !important; font-weight: 600 !important; border-radius: 10px !important;
-    border: 1px solid {btn_border} !important; background: {btn_bg} !important; color: {btn_text} !important;
+    transition: all 0.3s ease !important;
 }}
-[data-testid="stSidebar"] div.stButton > button:hover {{
-    background: rgba(30, 136, 229, 0.15) !important; color: #1E88E5 !important;
-    border-color: rgba(30, 136, 229, 0.6) !important; transform: translateX(4px) !important;
+
+/* Nút không được chọn (Secondary) */
+[data-testid="stSidebar"] div.stButton > button[kind="secondary"] {{
+    border: 1px solid {btn_border} !important; 
+    background: {btn_bg} !important; 
+    color: {btn_text} !important;
+    box-shadow: 0 2px 5px rgba(30, 136, 229, 0.1) !important;
 }}
+
+[data-testid="stSidebar"] div.stButton > button[kind="secondary"]:hover {{
+    background: rgba(30, 136, 229, 0.2) !important;
+    transform: translateX(4px) !important;
+}}
+
+/* Nút đang được chọn (Primary) */
 [data-testid="stSidebar"] div.stButton > button[kind="primary"] {{
-    background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%) !important; color: #FFFFFF !important;
-    border: 1px solid #42A5F5 !important; box-shadow: 0 4px 15px rgba(30, 136, 229, 0.4) !important;
+    background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%) !important; 
+    color: #FFFFFF !important;
+    border: 1px solid #42A5F5 !important; 
+    box-shadow: 0 4px 15px rgba(30, 136, 229, 0.4) !important;
 }}
 
 /* Nút Link trong Bảng */
@@ -356,7 +347,7 @@ with st.sidebar:
 # 6. MAIN LAYOUT (RENDER DATA & ADMIN PANELS)
 # ==========================================
 
-def render_admin_panel(df_key, cat_key=None, main_col="Mô tả", title="Dữ liệu"):
+def render_admin_panel(df_key, export_file_name, cat_key=None, title="Dữ liệu"):
     st.markdown("---")
     st.markdown(f"### ⚙ Bảng Điều Khiển Admin ({title})")
     col_add, col_edit = st.columns([1, 2])
@@ -390,7 +381,8 @@ def render_admin_panel(df_key, cat_key=None, main_col="Mô tả", title="Dữ li
         with c_up1:
             st.markdown("#### 📥 Tải xuống (Backup)")
             excel_data = generate_excel_download(df_target, "DATA")
-            st.download_button("📥 Click để Tải File Excel", data=excel_data, file_name=f"{title}_{DATE_STR}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", type="primary", use_container_width=True)
+            # Tên file xuất được gán lại chính xác theo yêu cầu
+            st.download_button("📥 Click để Tải File Excel", data=excel_data, file_name=export_file_name, mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", type="primary", use_container_width=True)
         with c_up2:
             st.markdown("#### 🚀 Tải lên (Update)")
             up_file = st.file_uploader("Chọn file Excel để ghi đè dữ liệu:", type=["xlsx", "xls"], key=f"up_{title}")
@@ -409,17 +401,25 @@ if main_menu == "1 🌐 DS WEBsites_CV":
     if st.session_state.is_admin: 
         c1, c2 = st.columns(2)
         if c1.button("➕ Thêm mới Website", type="primary"): add_web_dialog()
-        render_admin_panel("web_tools_df", title="WEBSITES")
+        # Nạp tên file chuẩn
+        render_admin_panel("web_tools_df", export_file_name=f"1 DS WEBsites_CV out_{DATE_STR}.xlsx", title="WEBSITES")
 
 elif main_menu == "2 📋 DM QL Files_CV":
     selected_cat = st.selectbox("📌 Chọn Mảng Công Việc:", CATEGORIES)
     st.markdown(create_responsive_table(st.session_state.data_store[selected_cat], "Thư mục / Hồ sơ"), unsafe_allow_html=True)
-    if st.session_state.is_admin: render_admin_panel("data_store", cat_key=selected_cat, title=f"HOSO_{selected_cat.replace(' ','_')}")
+    if st.session_state.is_admin: 
+        safe_name = selected_cat.replace(" ", "_")
+        # Nạp tên file chuẩn
+        render_admin_panel("data_store", export_file_name=f"2 DM QL Files_CV_{safe_name}_out_{DATE_STR}.xlsx", cat_key=selected_cat, title=f"HOSO_{safe_name}")
 
 elif main_menu == "3 📊 DS BCdinhky_CV":
     st.markdown(create_responsive_table(st.session_state.bc_dinhky_df, "Tên Báo Cáo / Công Việc", ["Tần suất", "Đơn vị nhận"]), unsafe_allow_html=True)
-    if st.session_state.is_admin: render_admin_panel("bc_dinhky_df", title="BAOCAO")
+    if st.session_state.is_admin: 
+        # Nạp tên file chuẩn
+        render_admin_panel("bc_dinhky_df", export_file_name=f"3 DS BCdinhky_CV out_{DATE_STR}.xlsx", title="BAOCAO")
 
 elif main_menu == "4 🟢 DS Gsheet_CV":
     st.markdown(create_responsive_table(st.session_state.gsheet_df, "Mô tả Gsheet"), unsafe_allow_html=True)
-    if st.session_state.is_admin: render_admin_panel("gsheet_df", title="GSHEET")
+    if st.session_state.is_admin: 
+        # Nạp tên file chuẩn
+        render_admin_panel("gsheet_df", export_file_name=f"4 DS Gsheet_CV out_{DATE_STR}.xlsx", title="GSHEET")
