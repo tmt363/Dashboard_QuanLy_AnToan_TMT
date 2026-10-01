@@ -25,7 +25,7 @@ if "is_admin" not in st.session_state:
 if "excel_dir" not in st.session_state:
     st.session_state.excel_dir = DEFAULT_EXCEL_DIR
 if "lan_hieuchinh" not in st.session_state:
-    st.session_state.lan_hieuchinh = "004"
+    st.session_state.lan_hieuchinh = "005"
 if "main_menu" not in st.session_state:
     st.session_state.main_menu = "1 🌐 DS WEBsites_CV"
 if "theme_mode" not in st.session_state:
@@ -67,41 +67,58 @@ header[data-testid="stHeader"] {{
 }}
 
 /* ==================================================== */
-/* 🔵 ÉP TẤT CẢ NÚT MỞ/ĐÓNG SIDEBAR MÀU XANH            */
+/* 🔵 CHIẾN DỊCH ÉP CẢ 2 NÚT MỞ/ĐÓNG SIDEBAR MÀU XANH    */
 /* ==================================================== */
-[data-testid="stSidebarCollapseButton"] button, 
-[data-testid="collapsedControl"], 
-[data-testid="collapsedControl"] button, 
-[data-testid="stSidebarCollapsedControl"],
-button[aria-label="Expand sidebar"],
-button[aria-label="Collapse sidebar"],
-button[aria-label*="sidebar" i] {{
+
+/* Nhắm mục tiêu trực tiếp vào thẻ BUTTON sâu nhất của cả 2 trạng thái */
+button[data-testid="collapsedControl"],
+div[data-testid="collapsedControl"] button,
+button[data-testid="stSidebarCollapsedControl"],
+div[data-testid="stSidebarCollapsedControl"] button,
+[data-testid="stSidebarCollapseButton"] button {{
     background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
     color: #FFFFFF !important;
-    border-radius: 30px !important;
+    border-radius: 50px !important;
     border: 2px solid #E0F7FA !important;
     box-shadow: 0 0 15px rgba(0, 198, 255, 0.8) !important;
+    height: 38px !important;
+    width: 38px !important;
+    min-width: 38px !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
+    transition: all 0.3s ease !important;
     opacity: 1 !important;
     visibility: visible !important;
-    z-index: 999999 !important;
 }}
 
-[data-testid="collapsedControl"] {{
-    margin-top: 14px !important; 
-    margin-left: 14px !important;
-    width: 60px !important;
-    height: 38px !important;
+/* Hiệu ứng Phóng to / Sáng lên khi di chuột */
+button[data-testid="collapsedControl"]:hover,
+div[data-testid="collapsedControl"] button:hover,
+button[data-testid="stSidebarCollapsedControl"]:hover,
+div[data-testid="stSidebarCollapsedControl"] button:hover,
+[data-testid="stSidebarCollapseButton"] button:hover {{
+    box-shadow: 0 0 25px rgba(0, 198, 255, 1) !important;
+    transform: scale(1.1) !important;
 }}
 
-[data-testid="stSidebarCollapseButton"] svg, 
-[data-testid="collapsedControl"] svg, 
-button[aria-label*="sidebar" i] svg {{
+/* Ép màu mũi tên SVG bên trong thành Trắng Tinh */
+button[data-testid="collapsedControl"] svg,
+div[data-testid="collapsedControl"] button svg,
+button[data-testid="stSidebarCollapsedControl"] svg,
+div[data-testid="stSidebarCollapsedControl"] button svg,
+[data-testid="stSidebarCollapseButton"] button svg {{
     fill: #FFFFFF !important; 
     color: #FFFFFF !important; 
     stroke: #FFFFFF !important;
+}}
+
+/* Xóa bỏ mọi định dạng nền rác của Streamlit (nếu có) trên thẻ div bao bọc ngoài nút >> */
+div[data-testid="collapsedControl"],
+div[data-testid="stSidebarCollapsedControl"] {{
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }}
 
 /* ==================================================== */
@@ -381,7 +398,6 @@ def render_admin_panel(df_key, export_file_name, cat_key=None, title="Dữ liệ
         with c_up1:
             st.markdown("#### 📥 Tải xuống (Backup)")
             excel_data = generate_excel_download(df_target, "DATA")
-            # Tên file xuất được gán lại chính xác theo yêu cầu
             st.download_button("📥 Click để Tải File Excel", data=excel_data, file_name=export_file_name, mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", type="primary", use_container_width=True)
         with c_up2:
             st.markdown("#### 🚀 Tải lên (Update)")
@@ -401,7 +417,6 @@ if main_menu == "1 🌐 DS WEBsites_CV":
     if st.session_state.is_admin: 
         c1, c2 = st.columns(2)
         if c1.button("➕ Thêm mới Website", type="primary"): add_web_dialog()
-        # Nạp tên file chuẩn
         render_admin_panel("web_tools_df", export_file_name=f"1 DS WEBsites_CV out_{DATE_STR}.xlsx", title="WEBSITES")
 
 elif main_menu == "2 📋 DM QL Files_CV":
@@ -409,17 +424,14 @@ elif main_menu == "2 📋 DM QL Files_CV":
     st.markdown(create_responsive_table(st.session_state.data_store[selected_cat], "Thư mục / Hồ sơ"), unsafe_allow_html=True)
     if st.session_state.is_admin: 
         safe_name = selected_cat.replace(" ", "_")
-        # Nạp tên file chuẩn
         render_admin_panel("data_store", export_file_name=f"2 DM QL Files_CV_{safe_name}_out_{DATE_STR}.xlsx", cat_key=selected_cat, title=f"HOSO_{safe_name}")
 
 elif main_menu == "3 📊 DS BCdinhky_CV":
     st.markdown(create_responsive_table(st.session_state.bc_dinhky_df, "Tên Báo Cáo / Công Việc", ["Tần suất", "Đơn vị nhận"]), unsafe_allow_html=True)
     if st.session_state.is_admin: 
-        # Nạp tên file chuẩn
         render_admin_panel("bc_dinhky_df", export_file_name=f"3 DS BCdinhky_CV out_{DATE_STR}.xlsx", title="BAOCAO")
 
 elif main_menu == "4 🟢 DS Gsheet_CV":
     st.markdown(create_responsive_table(st.session_state.gsheet_df, "Mô tả Gsheet"), unsafe_allow_html=True)
     if st.session_state.is_admin: 
-        # Nạp tên file chuẩn
         render_admin_panel("gsheet_df", export_file_name=f"4 DS Gsheet_CV out_{DATE_STR}.xlsx", title="GSHEET")
