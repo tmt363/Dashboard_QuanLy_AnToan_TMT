@@ -11,7 +11,7 @@ import streamlit as st
 # ==========================================
 st.set_page_config(
     page_title="Quản Lý An Toàn TTM",
-    page_icon="🛡️️",
+    page_icon="🛡",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -26,14 +26,14 @@ if "is_admin" not in st.session_state:
 if "excel_dir" not in st.session_state:
     st.session_state.excel_dir = DEFAULT_EXCEL_DIR
 if "lan_hieuchinh" not in st.session_state:
-    st.session_state.lan_hieuchinh = "007"
+    st.session_state.lan_hieuchinh = "008"
 if "main_menu" not in st.session_state:
     st.session_state.main_menu = "1 🌐 DS WEBsites_CV"
 if "theme_mode" not in st.session_state:
     st.session_state.theme_mode = "Dark"
 
 # ==========================================
-# 2. BỘ MÃ CSS TỐI ƯU HÓA (CÓ NÚT XANH PHÁT SÁNG)
+# 2. BỘ MÃ CSS TỐI ƯU HÓA (MÀU SẮC DỊU MẮT & HIỆU ỨNG CHẠM)
 # ==========================================
 is_dark = st.session_state.theme_mode == "Dark"
 
@@ -46,6 +46,11 @@ sidebar_border = "rgba(255, 255, 255, 0.1)" if is_dark else "#CBD5E1"
 btn_bg = "rgba(30, 136, 229, 0.1)" if is_dark else "rgba(30, 136, 229, 0.05)"
 btn_text = "#90CAF9" if is_dark else "#1E88E5"
 btn_border = "#1E88E5"
+
+# Nền và viền cho nút Secondary ở Main Layout
+sec_bg_main = "rgba(255, 255, 255, 0.05)" if is_dark else "#FFFFFF"
+sec_border_main = "rgba(255, 255, 255, 0.2)" if is_dark else "#CBD5E1"
+sec_text_main = "#E2E8F0" if is_dark else "#334155"
 
 css_style = f"""
 <style>
@@ -114,7 +119,46 @@ button[aria-label*="sidebar" i]:hover {{
 }}
 
 
-/* CẤU HÌNH SIDEBAR VÀ BẢNG */
+/* ==================================================== */
+/* 🎨 CẤU HÌNH GIAO DIỆN CHÍNH (NÚT THÊM, SỬA, XÓA)      */
+/* ==================================================== */
+
+/* Đổi màu Nút "Thêm mới", "Tải Excel" (Primary) thành màu Xanh Dịu Mắt (Teal/Ocean Blue) */
+[data-testid="stMain"] div.stButton > button[kind="primary"] {{
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3) !important;
+    transition: all 0.3s ease !important;
+    font-weight: bold !important;
+}}
+[data-testid="stMain"] div.stButton > button[kind="primary"]:hover {{
+    background: linear-gradient(135deg, #0369a1 0%, #075985 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 15px rgba(2, 132, 199, 0.5) !important;
+}}
+
+/* Đổi hiệu ứng Nút "Làm mới STT", "Xóa dòng này" (Secondary) -> Hover sáng màu xanh như nút Link */
+[data-testid="stMain"] div.stButton > button[kind="secondary"] {{
+    background: {sec_bg_main} !important;
+    color: {sec_text_main} !important;
+    border: 1px solid {sec_border_main} !important;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+    font-weight: 600 !important;
+}}
+[data-testid="stMain"] div.stButton > button[kind="secondary"]:hover {{
+    background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%) !important;
+    color: #FFFFFF !important;
+    border-color: #1E88E5 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(30, 136, 229, 0.4) !important;
+}}
+
+/* ==================================================== */
+/* 🎨 CẤU HÌNH SIDEBAR                                  */
+/* ==================================================== */
 [data-testid="stSidebar"] {{
     background-color: {sidebar_bg} !important;
     border-right: 1px solid {sidebar_border} !important;
@@ -144,6 +188,7 @@ button[aria-label*="sidebar" i]:hover {{
     color: #FFFFFF !important;
     border: 1px solid #42A5F5 !important; 
 }}
+
 
 /* Nút Link trong Bảng */
 .slide-link-btn {{
@@ -198,27 +243,23 @@ def reindex_df(df):
         else: df[col] = df[col].fillna("")
     return df
 
-# Cập nhật hàm xuất Excel chuẩn Kiểu 2 (Màu xanh, tách cột)
 def generate_excel_download(df, sheet_name):
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
-        # Xuất dữ liệu thô (Các cột STT, Mô tả, Link 1, Link 2, Link 3, Ghi chú)
         df.to_excel(writer, sheet_name=sheet_name, index=False)
-        
         workbook = writer.book
         worksheet = workbook[sheet_name]
         
-        # Style Header: Nền Xanh lá cây (Kiểu 2), Chữ đen đậm
+        # Đổ màu Xanh lá cho Header đúng chuẩn Kiểu 2
         header_fill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
         header_font = Font(bold=True, color="000000")
         header_alignment = Alignment(horizontal="center", vertical="center")
 
-        for cell in worksheet[1]: # Dòng 1 là Header
+        for cell in worksheet[1]: 
             cell.fill = header_fill
             cell.font = header_font
             cell.alignment = header_alignment
 
-        # Căn chỉnh tự động độ rộng cột
         for col in worksheet.columns:
             max_len = max((len(str(cell.value)) for cell in col if cell.value), default=0)
             col_letter = openpyxl.utils.get_column_letter(col[0].column)
@@ -319,7 +360,7 @@ def edit_web_dialog(idx):
 # 5. SIDEBAR
 # ==========================================
 with st.sidebar:
-    st.title("🛡️️ Quản Lý An Toàn TTM")
+    st.title("🛡 Quản Lý An Toàn TTM")
     st.caption(f"📌 Cập nhật: {TODAY_STR} _ V{st.session_state.lan_hieuchinh}")
     st.divider()
 
@@ -371,7 +412,8 @@ def render_admin_panel(df_key, export_file_name, cat_key=None, title="Dữ liệ
 
     with col_add:
         st.caption("📌 **Quản lý Hệ thống**")
-        if st.button(f"🔄 Làm mới STT", use_container_width=True, key=f"re_{title}"):
+        # Nút "Làm mới STT" sẽ có màu mặc định và hover xanh lam dịu mắt
+        if st.button(f"🔄 Làm mới STT", use_container_width=True, key=f"re_{title}", type="secondary"):
             if cat_key: st.session_state[df_key][cat_key] = reindex_df(df_target)
             else: st.session_state[df_key] = reindex_df(df_target)
             st.rerun()
@@ -383,7 +425,8 @@ def render_admin_panel(df_key, export_file_name, cat_key=None, title="Dữ liệ
             if stt_list:
                 c1, c2 = st.columns([3, 1], vertical_alignment="bottom")
                 selected_stt = c1.selectbox("Chọn STT cần Xóa:", stt_list, key=f"sel_{title}")
-                if c2.button("🗑 Xóa dòng này", use_container_width=True, key=f"del_{title}"):
+                # Nút "Xóa dòng này" sẽ có màu mặc định và hover xanh lam dịu mắt
+                if c2.button("🗑 Xóa dòng này", use_container_width=True, key=f"del_{title}", type="secondary"):
                     idx = df_target[df_target["STT"] == selected_stt].index[0]
                     new_df = reindex_df(df_target.drop(idx))
                     if cat_key: st.session_state[df_key][cat_key] = new_df
@@ -396,11 +439,12 @@ def render_admin_panel(df_key, export_file_name, cat_key=None, title="Dữ liệ
         with c_up1:
             st.markdown("#### 📥 Tải xuống (Backup Kiểu 2)")
             excel_data = generate_excel_download(df_target, "DATA")
-            # Tên file xuất được gán lại chính xác theo yêu cầu
+            # Nút Tải file mang màu Xanh dịu mát
             st.download_button("📥 Click để Tải File Excel", data=excel_data, file_name=export_file_name, mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", type="primary", use_container_width=True)
         with c_up2:
             st.markdown("#### 🚀 Tải lên (Update)")
             up_file = st.file_uploader("Chọn file Excel để ghi đè dữ liệu:", type=["xlsx", "xls"], key=f"up_{title}")
+            # Nút Cập nhật mang màu Xanh dịu mát
             if up_file and st.button("🚀 Cập nhật từ File", type="primary", use_container_width=True, key=f"up_btn_{title}"):
                 try:
                     new_up_df = reindex_df(pd.read_excel(up_file))
@@ -415,8 +459,8 @@ if main_menu == "1 🌐 DS WEBsites_CV":
     st.markdown(create_responsive_table(st.session_state.web_tools_df, "Mô tả WEB"), unsafe_allow_html=True)
     if st.session_state.is_admin: 
         c1, c2 = st.columns(2)
+        # Nút Thêm mới mang màu Xanh dương mát mẻ thay vì Đỏ
         if c1.button("➕ Thêm mới Website", type="primary"): add_web_dialog()
-        # Nạp tên file chuẩn
         render_admin_panel("web_tools_df", export_file_name=f"1 DS WEBsites_CV out_{DATE_STR}.xlsx", title="WEBSITES")
 
 elif main_menu == "2 📋 DM QL Files_CV":
@@ -424,17 +468,14 @@ elif main_menu == "2 📋 DM QL Files_CV":
     st.markdown(create_responsive_table(st.session_state.data_store[selected_cat], "Thư mục / Hồ sơ"), unsafe_allow_html=True)
     if st.session_state.is_admin: 
         safe_name = selected_cat.replace(" ", "_")
-        # Nạp tên file chuẩn
         render_admin_panel("data_store", export_file_name=f"2 DM QL Files_CV_{safe_name}_out_{DATE_STR}.xlsx", cat_key=selected_cat, title=f"HOSO_{safe_name}")
 
 elif main_menu == "3 📊 DS BCdinhky_CV":
     st.markdown(create_responsive_table(st.session_state.bc_dinhky_df, "Tên Báo Cáo / Công Việc", ["Tần suất", "Đơn vị nhận"]), unsafe_allow_html=True)
     if st.session_state.is_admin: 
-        # Nạp tên file chuẩn
         render_admin_panel("bc_dinhky_df", export_file_name=f"3 DS BCdinhky_CV out_{DATE_STR}.xlsx", title="BAOCAO")
 
 elif main_menu == "4 🟢 DS Gsheet_CV":
     st.markdown(create_responsive_table(st.session_state.gsheet_df, "Mô tả Gsheet"), unsafe_allow_html=True)
     if st.session_state.is_admin: 
-        # Nạp tên file chuẩn
         render_admin_panel("gsheet_df", export_file_name=f"4 DS Gsheet_CV out_{DATE_STR}.xlsx", title="GSHEET")
