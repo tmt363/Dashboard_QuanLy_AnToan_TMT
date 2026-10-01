@@ -11,7 +11,7 @@ import streamlit as st
 # ==========================================
 st.set_page_config(
     page_title="Quản Lý An Toàn TTM",
-    page_icon="🛡️",
+    page_icon="🛡️️",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -26,14 +26,14 @@ if "is_admin" not in st.session_state:
 if "excel_dir" not in st.session_state:
     st.session_state.excel_dir = DEFAULT_EXCEL_DIR
 if "lan_hieuchinh" not in st.session_state:
-    st.session_state.lan_hieuchinh = "006"
+    st.session_state.lan_hieuchinh = "007"
 if "main_menu" not in st.session_state:
     st.session_state.main_menu = "1 🌐 DS WEBsites_CV"
 if "theme_mode" not in st.session_state:
     st.session_state.theme_mode = "Dark"
 
 # ==========================================
-# 2. BỘ MÃ CSS TỐI ƯU HÓA
+# 2. BỘ MÃ CSS TỐI ƯU HÓA (CÓ NÚT XANH PHÁT SÁNG)
 # ==========================================
 is_dark = st.session_state.theme_mode == "Dark"
 
@@ -67,13 +67,52 @@ header[data-testid="stHeader"] {{
     z-index: 99999 !important;
 }}
 
-/* Trả lại thiết kế gốc ổn định cho nút Menu Mở rộng/Thu gọn của Streamlit */
-[data-testid="collapsedControl"], [data-testid="stSidebarCollapseButton"] {{
-    transition: transform 0.2s ease !important;
+/* ==================================================== */
+/* 🔵 KHÔI PHỤC NÚT MỞ/ĐÓNG SIDEBAR MÀU XANH            */
+/* ==================================================== */
+[data-testid="stSidebarCollapseButton"] button, 
+[data-testid="collapsedControl"], 
+[data-testid="collapsedControl"] button, 
+[data-testid="stSidebarCollapsedControl"],
+button[aria-label="Expand sidebar"],
+button[aria-label="Collapse sidebar"],
+button[aria-label*="sidebar" i] {{
+    background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
+    color: #FFFFFF !important;
+    border-radius: 30px !important;
+    border: 2px solid #E0F7FA !important;
+    box-shadow: 0 0 15px rgba(0, 198, 255, 0.8) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 999999 !important;
+    transition: all 0.3s ease !important;
 }}
-[data-testid="collapsedControl"]:hover, [data-testid="stSidebarCollapseButton"]:hover {{
+
+[data-testid="collapsedControl"] {{
+    margin-top: 14px !important; 
+    margin-left: 14px !important;
+    width: 45px !important;
+    height: 38px !important;
+}}
+
+[data-testid="stSidebarCollapseButton"] svg, 
+[data-testid="collapsedControl"] svg, 
+button[aria-label*="sidebar" i] svg {{
+    fill: #FFFFFF !important; 
+    color: #FFFFFF !important; 
+    stroke: #FFFFFF !important;
+}}
+
+[data-testid="stSidebarCollapseButton"] button:hover, 
+[data-testid="collapsedControl"]:hover, 
+button[aria-label*="sidebar" i]:hover {{
+    box-shadow: 0 0 25px rgba(0, 198, 255, 1) !important;
     transform: scale(1.1) !important;
 }}
+
 
 /* CẤU HÌNH SIDEBAR VÀ BẢNG */
 [data-testid="stSidebar"] {{
@@ -280,7 +319,7 @@ def edit_web_dialog(idx):
 # 5. SIDEBAR
 # ==========================================
 with st.sidebar:
-    st.title("🛡️ Quản Lý An Toàn TTM")
+    st.title("🛡️️ Quản Lý An Toàn TTM")
     st.caption(f"📌 Cập nhật: {TODAY_STR} _ V{st.session_state.lan_hieuchinh}")
     st.divider()
 
@@ -357,6 +396,7 @@ def render_admin_panel(df_key, export_file_name, cat_key=None, title="Dữ liệ
         with c_up1:
             st.markdown("#### 📥 Tải xuống (Backup Kiểu 2)")
             excel_data = generate_excel_download(df_target, "DATA")
+            # Tên file xuất được gán lại chính xác theo yêu cầu
             st.download_button("📥 Click để Tải File Excel", data=excel_data, file_name=export_file_name, mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", type="primary", use_container_width=True)
         with c_up2:
             st.markdown("#### 🚀 Tải lên (Update)")
@@ -376,6 +416,7 @@ if main_menu == "1 🌐 DS WEBsites_CV":
     if st.session_state.is_admin: 
         c1, c2 = st.columns(2)
         if c1.button("➕ Thêm mới Website", type="primary"): add_web_dialog()
+        # Nạp tên file chuẩn
         render_admin_panel("web_tools_df", export_file_name=f"1 DS WEBsites_CV out_{DATE_STR}.xlsx", title="WEBSITES")
 
 elif main_menu == "2 📋 DM QL Files_CV":
@@ -383,14 +424,17 @@ elif main_menu == "2 📋 DM QL Files_CV":
     st.markdown(create_responsive_table(st.session_state.data_store[selected_cat], "Thư mục / Hồ sơ"), unsafe_allow_html=True)
     if st.session_state.is_admin: 
         safe_name = selected_cat.replace(" ", "_")
+        # Nạp tên file chuẩn
         render_admin_panel("data_store", export_file_name=f"2 DM QL Files_CV_{safe_name}_out_{DATE_STR}.xlsx", cat_key=selected_cat, title=f"HOSO_{safe_name}")
 
 elif main_menu == "3 📊 DS BCdinhky_CV":
     st.markdown(create_responsive_table(st.session_state.bc_dinhky_df, "Tên Báo Cáo / Công Việc", ["Tần suất", "Đơn vị nhận"]), unsafe_allow_html=True)
     if st.session_state.is_admin: 
+        # Nạp tên file chuẩn
         render_admin_panel("bc_dinhky_df", export_file_name=f"3 DS BCdinhky_CV out_{DATE_STR}.xlsx", title="BAOCAO")
 
 elif main_menu == "4 🟢 DS Gsheet_CV":
     st.markdown(create_responsive_table(st.session_state.gsheet_df, "Mô tả Gsheet"), unsafe_allow_html=True)
     if st.session_state.is_admin: 
+        # Nạp tên file chuẩn
         render_admin_panel("gsheet_df", export_file_name=f"4 DS Gsheet_CV out_{DATE_STR}.xlsx", title="GSHEET")
